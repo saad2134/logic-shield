@@ -169,11 +169,5 @@ It does not guarantee real-world outcomes or predict future controversy with cer
 
 ## 🏷 Tags
 
-Here are **30+ strong, relevant tags** you can use for LogicShield to improve discoverability on GitHub:
-
----
-
-## 🏷 Tags
-
 `nlp` `natural-language-processing` `transformers` `bert` `llm` `large-language-models` `argument-mining` `computational-argumentation` `logical-fallacy-detection` `fallacy-classification` `debate-ai` `debate-training` `argument-analysis` `critical-thinking` `reasoning-ai` `semantic-embeddings` `sentence-bert` `text-classification` `ai-webapp` `fastapi` `nextjs` `react` `machine-learning` `deep-learning` `reputation-analysis` `communication-intelligence` `ai-simulation` `adversarial-ai` `persuasion-analysis` `explainable-ai` `data-driven-feedback` `education-tech` `edtech-ai` `logicshield`
 
