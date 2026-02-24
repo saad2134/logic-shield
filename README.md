@@ -120,7 +120,6 @@ logic-shield/
 └── docs/            # Research & documentation
 ```
 
----
 
 ## 📱 Screenshots
 
