@@ -1,0 +1,9 @@
+
+# For AI Models, ML & NLP
+numpy
+pandas
+scikit-learn
+nltk
+
+# For APIs
+fastapi==0.104.1
