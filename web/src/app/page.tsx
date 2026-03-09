@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site";
-import ColorBends from '@/components/landing/hero/ColorBends';
+import Hero from "@/components/landing/hero/Hero";
 
 export const metadata = {
   title: `${siteConfig.name} ✦ ${siteConfig.tagline}`,
@@ -11,8 +11,7 @@ export default function Home() {
   return (
     <div>
       <main className="min-h-screen w-full overflow-hidden bg-background text-foreground">
-        
-        <h1>Hello</h1>
+        <Hero />
       </main>
     </div>
   );
