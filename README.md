@@ -4,6 +4,10 @@
 
 <div align="center">
 
+<a href="https://logic-shield.vercel.app/" target="_blank">
+  <img  style="width:350px;" src="https://img.shields.io/badge/🚀_Access_the_Prototype_Here-Live-brightgreen?style=for-the-badge&labelColor=fca503" alt="Access the Prototype Here"  />
+</a>
+
 ![Phase](https://img.shields.io/badge/🛠️%20Phase-Active%20Development-blue?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/🌐%20Platform-Web-28a745?style=for-the-badge)
 
@@ -43,8 +47,8 @@ LogicShield combines adversarial argument simulation with structured NLP analysi
   </thead>
   <tbody>
     <tr>
-      <td>Web Application</td>
-      <td>Modern Browser (Chrome, Edge, Firefox)</td>
+      <td>Web Application (Fully Responsive)</td>
+      <td>Modern Browser (Chrome, Brave, Edge, Firefox, etc)</td>
       <td>✅</td>
     </tr>
   </tbody>
@@ -55,12 +59,13 @@ LogicShield combines adversarial argument simulation with structured NLP analysi
 
 ### Frontend
 
-* Next.js
-* React
+* React Next.js
+* TypeScript
 * Tailwind CSS
 
 ### Backend
 
+* PostgresQL + Redis + Adminer
 * FastAPI (Python)
 
 ### NLP & ML
@@ -88,10 +93,10 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-### 3️⃣ Frontend Setup
+### 3️⃣ Frontend (Web) Setup
 
 ```bash
-cd frontend
+cd web
 npm install
 npm run dev
 ```
@@ -113,11 +118,8 @@ http://localhost:3000
 ```
 logic-shield/
 │
-├── frontend/        # Next.js UI
-├── backend/         # FastAPI server
-├── models/          # NLP models & classifiers
-├── database/        # Schema & migration scripts
-└── docs/            # Research & documentation
+├── web/        # React Next.js UI
+├── backend/    # FastAPI server, Database, Models
 ```
 
 
