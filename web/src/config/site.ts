@@ -1,15 +1,12 @@
-import { describe } from "node:test";
-
 export const siteConfig = {
   name: "LogicShield",
   version: "v0.1.0",
   url: "",
-  getStartedUrl:
-    "/auth",
+  getStartedUrl: "/auth",
   ogImage: "",
   tagline: "AI-Argument Simulator With Risk Forecasting.",
   description: 
-    "AI-powered debate training and communication risk analysis platform. LogicShield strengthens your arguments, detects logical fallacies, and evaluates reputational risk before you publish, pitch, or perform.",
+    "AI-powered debate training & communication risk analysis platform that strengthens your arguments, detects logical fallacies, and evaluates reputational risk before you publish, pitch, or perform.",
   links: {
     twitter: "",
     github: "https://github.com/saad2134/logic-shield",
@@ -19,3 +16,10 @@ export const siteConfig = {
 };
 
 export type SiteConfig = typeof siteConfig;
+
+export const CORE_CONFIG = {
+  appName: siteConfig.name,
+  appDescription: siteConfig.description,
+};
+
+export const SOCIAL_LINKS = siteConfig.links;

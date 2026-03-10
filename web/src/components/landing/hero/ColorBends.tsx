@@ -258,7 +258,7 @@ export default function ColorBends({
     material.uniforms.uParallax.value = parallax;
     material.uniforms.uNoise.value = noise;
 
-    const toVec3 = (hex: string) => {
+    const hexToRgb = (hex: string) => {
       const h = hex.replace('#', '').trim();
       const v =
         h.length === 3
@@ -267,7 +267,24 @@ export default function ColorBends({
       return new THREE.Vector3(v[0] / 255, v[1] / 255, v[2] / 255);
     };
 
-    const arr = (colors || []).filter(Boolean).slice(0, MAX_COLORS).map(toVec3);
+    const getColorValue = (color: string) => {
+      if (color.startsWith('chart-') || color.startsWith('--')) {
+        const cssVar = color.startsWith('--') ? color : `--${color}`;
+        const dummy = document.createElement('div');
+        dummy.style.color = `var(${cssVar})`;
+        dummy.style.display = 'hidden';
+        document.body.appendChild(dummy);
+        const rgb = window.getComputedStyle(dummy).color;
+        document.body.removeChild(dummy);
+        const match = rgb.match(/\d+/g);
+        if (match && match.length >= 3) {
+          return new THREE.Vector3(Number(match[0]) / 255, Number(match[1]) / 255, Number(match[2]) / 255);
+        }
+      }
+      return hexToRgb(color);
+    };
+
+    const arr = (colors || []).filter(Boolean).slice(0, MAX_COLORS).map(getColorValue);
     for (let i = 0; i < MAX_COLORS; i++) {
       const vec = material.uniforms.uColors.value[i];
       if (i < arr.length) vec.copy(arr[i]);
