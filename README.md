@@ -19,9 +19,9 @@
 LogicShield combines adversarial argument simulation with structured NLP analysis to help users improve both logic and long-term communication safety.
 
 * 🧠 **AI Debate Simulation** – Real-time adversarial opponent with selectable personas (logical, aggressive, skeptical).
-* ⚖️ **Logical Fallacy Detection** – Automatically identifies common fallacies (ad hominem, strawman, false dilemma, slippery slope).
-* 📊 **Argument Strength Scoring** – Quantifies coherence, evidence support, and emotional bias.
-* 🛡️ **Reputation Risk Estimation** – Flags extreme phrasing, moral polarity, and identity-sensitive language.
+* ⚖️ **Logical Fallacy Detection** – Automatically identifies common fallacies using transformer-based ML models (ad hominem, strawman, false dilemma, slippery slope).
+* 📊 **Argument Strength Scoring** – Quantifies coherence, evidence support, sentiment, and logical structure.
+* 🛡️ **Reputation Risk Estimation** – Flags extreme phrasing, moral polarity, identity-sensitive language using toxicity and hate speech detection.
 * 📈 **Progress Analytics Dashboard** – Track improvement across debate sessions.
 * 📝 **Rewrite Suggestions** – AI-powered refinement for stronger, clearer, safer arguments.
 
@@ -59,22 +59,43 @@ LogicShield combines adversarial argument simulation with structured NLP analysi
 
 ### Frontend
 
-* React Next.js
-* TypeScript
+* Next.js 14
+* React 18
 * Tailwind CSS
+* TypeScript
 
 ### Backend
 
-* PostgresQL + Redis + Adminer
-* FastAPI (Python)
+* **Framework**: FastAPI (Python)
+* **ORM**: SQLAlchemy 2.0
+* **Database**: SQLite (dev) / PostgreSQL (prod)
+* **Authentication**: JWT with python-jose
+
+#### Backend Configuration
+
+Copy `.env.template` to `.env` and configure:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | Database connection URL | `sqlite:///./logicshield.db` |
+| `USE_SQLITE` | Use SQLite (true/false) | `true` |
+| `SECRET_KEY` | Secret key for JWT | (auto-generated) |
+| `HF_TOKEN` | Hugging Face token | (optional) |
+| `PORT` | Server port | `8000` |
+| `DEBUG` | Debug mode | `true` |
 
 ### NLP & ML
 
-* Hugging Face Transformers
-* Sentence-BERT (Semantic Embeddings)
-* scikit-learn
-* PostgreSQL
+* **Deep Learning**: PyTorch 2.1+
+* **Transformers**: Hugging Face Transformers
+  * `facebook/bart-large-mnli` - Fallacy detection
+  * `martin-ha/toxic-comment-model` - Toxicity detection
+  * `facebook/roberta-hate-speech-dynabench-r4-target` - Hate speech detection
+  * `distilbert-base-uncased-finetuned-sst-2-english` - Sentiment analysis
+* **Embeddings**: Sentence-BERT (`sentence-transformers/all-MiniLM-L6-v2`)
+* **ML**: scikit-learn
 
+---
 
 ## 🚀 Getting Started
 
@@ -89,11 +110,27 @@ cd logic-shield
 
 ```bash
 cd backend
+
+# Create virtual environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or: venv\Scripts\activate  # Windows
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Copy environment template and configure
+cp .env.template .env
+
+# Run the server
 uvicorn main:app --reload
 ```
 
-### 3️⃣ Frontend (Web) Setup
+The API will be available at `http://localhost:8000`
+- API Docs: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+### 3️⃣ Frontend Setup
 
 ```bash
 cd web
@@ -101,27 +138,82 @@ npm install
 npm run dev
 ```
 
-Open:
+Open `http://localhost:3000`
 
-```
-http://localhost:3000
-```
-
-
-
-## 🏛️ Project Architecture
-
-*Coming Soon*
+---
 
 ## 📁 Folder Structure
 
 ```
 logic-shield/
 │
-├── web/        # React Next.js UI
-├── backend/    # FastAPI server, Database, Models
+├── web/                 # Next.js frontend
+├── backend/             # FastAPI backend
+│   ├── app/            # Application config
+│   ├── api/            # API routes & schemas
+│   ├── database/       # Database models & connection
+│   ├── services/       # NLP/ML services
+│   ├── main.py         # Application entry point
+│   ├── requirements.txt
+│   └── .env.template   # Environment variables template
+│
+└── docs/               # Documentation
 ```
 
+---
+
+## 🏛️ Project Architecture
+
+```mermaid
+graph TB
+    subgraph Client["Frontend (Web)"]
+        UI[Next.js UI]
+    end
+
+    subgraph Backend["Backend (FastAPI)"]
+        API[API Routes]
+        Auth[JWT Auth]
+        Config[Config]
+    end
+
+    subgraph Services["NLP/ML Services"]
+        FD[Fallacy Detector]
+        AS[Argument Strength]
+        RR[Reputation Risk]
+        DS[Debate Simulator]
+    end
+
+    subgraph MLModels["ML Models"]
+        BART[BART-Large-MNLI]
+        TOX[Toxicity Model]
+        HATE[Hate Speech Model]
+        SENT[Sentiment Model]
+        EMB[Sentence-BERT]
+    end
+
+    subgraph DB["Database"]
+        SQLite[(SQLite)]
+        PG[(PostgreSQL)]
+    end
+
+    UI -->|HTTP| API
+    API --> Auth
+    API --> Services
+    API --> DB
+    
+    Services --> MLModels
+    FD --> BART
+    RR --> TOX
+    RR --> HATE
+    AS --> SENT
+    AS --> EMB
+    
+    Config -.->|Config| Services
+```
+
+*See `docs/BACKEND.md` for detailed architecture documentation.*
+
+---
 
 ## 📱 Screenshots
 
@@ -172,4 +264,3 @@ It does not guarantee real-world outcomes or predict future controversy with cer
 ## 🏷 Tags
 
 `nlp` `natural-language-processing` `transformers` `bert` `llm` `large-language-models` `argument-mining` `computational-argumentation` `logical-fallacy-detection` `fallacy-classification` `debate-ai` `debate-training` `argument-analysis` `critical-thinking` `reasoning-ai` `semantic-embeddings` `sentence-bert` `text-classification` `ai-webapp` `fastapi` `nextjs` `react` `machine-learning` `deep-learning` `reputation-analysis` `communication-intelligence` `ai-simulation` `adversarial-ai` `persuasion-analysis` `explainable-ai` `data-driven-feedback` `education-tech` `edtech-ai` `logicshield`
-
