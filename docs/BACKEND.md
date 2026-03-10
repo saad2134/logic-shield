@@ -1,14 +1,14 @@
-# LogicShield Backend Documentation
+# 📚 LogicShield Backend Documentation
 
-## Overview
+## 📖 Overview
 
 The LogicShield backend is a FastAPI-based Python application that provides AI-powered argument analysis, debate simulation, logical fallacy detection, and reputation risk estimation using state-of-the-art transformer models. This document provides comprehensive documentation of the backend architecture, components, and API endpoints.
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
-### Tech Stack
+### 🛠️ Tech Stack
 
 - **Framework**: FastAPI 0.104.1+
 - **Database**: SQLite (dev) / PostgreSQL (prod) with SQLAlchemy ORM
@@ -16,7 +16,7 @@ The LogicShield backend is a FastAPI-based Python application that provides AI-p
 - **Deep Learning**: PyTorch 2.1.0+ (CPU or GPU)
 - **API Documentation**: OpenAPI/Swagger (built-in)
 
-### Project Structure
+### 📁 Project Structure
 
 ```
 backend/
@@ -40,9 +40,9 @@ backend/
 
 ---
 
-## Core Components
+## ⚙️ Core Components
 
-### 1. Configuration (`app/config.py`)
+### 1️⃣ Configuration (`app/config.py`)
 
 The configuration module manages all application settings using Pydantic:
 
@@ -56,7 +56,7 @@ from app.config import settings
 # Access settings like: settings.DATABASE_URL
 ```
 
-### 2. Database Layer
+### 2️⃣ Database Layer
 
 #### Connection Management (`database/core/database.py`)
 
@@ -101,9 +101,9 @@ def some_route(db: Session = Depends(get_db)):
 
 ---
 
-## NLP/ML Services
+## 🤖 NLP/ML Services
 
-### 1. Fallacy Detection (`services/fallacy_detector.py`)
+### 1️⃣ Fallacy Detection (`services/fallacy_detector.py`)
 
 The `FallacyDetector` class identifies 9 types of logical fallacies using transformer-based zero-shot classification:
 
@@ -139,7 +139,7 @@ fallacies, confidences = detector.detect_fallacies("Your argument is stupid beca
 # confidences: {"ad_hominem": 0.85}
 ```
 
-### 2. Argument Strength Scoring (`services/fallacy_detector.py`)
+### 2️⃣ Argument Strength Scoring (`services/fallacy_detector.py`)
 
 The `ArgumentStrengthScorer` class evaluates argument quality across 4 dimensions using ML:
 
@@ -177,7 +177,7 @@ scores = scorer.calculate_strength(
 # }
 ```
 
-### 3. Reputation Risk Estimation (`services/reputation_risk.py`)
+### 3️⃣ Reputation Risk Estimation (`services/reputation_risk.py`)
 
 The `ReputationRiskEstimator` class assesses potential backlash risk using multiple ML classifiers:
 
@@ -227,7 +227,7 @@ risk = estimator.estimate_risk("This is absolutely the worst policy ever...")
 # }
 ```
 
-### 4. Debate Simulation (`services/debate_simulator.py`)
+### 4️⃣ Debate Simulation (`services/debate_simulator.py`)
 
 The `DebateSimulator` class generates adversarial counter-arguments with selectable personas:
 
@@ -259,7 +259,7 @@ counter = simulator.generate_counter_argument(
 )
 ```
 
-### 5. Unified Analysis Service (`services/analysis.py`)
+### 5️⃣ Unified Analysis Service (`services/analysis.py`)
 
 Combines all ML services into a single interface:
 
@@ -277,15 +277,15 @@ result = service.analyze_argument(
 
 ---
 
-## API Endpoints
+## 🌐 API Endpoints
 
-### Base URL
+### 🔗 Base URL
 
 ```
 http://localhost:8000/api/v1
 ```
 
-### Health & Info
+### 💚 Health & Info
 
 #### GET `/health`
 
@@ -305,7 +305,7 @@ Returns API health status and available services.
 }
 ```
 
-### Analysis Endpoints
+### 📊 Analysis Endpoints
 
 #### POST `/analyze`
 
@@ -356,7 +356,7 @@ Returns all supported fallacy types and their descriptions.
 
 Returns available debate opponent personas.
 
-### Debate Session Endpoints
+### 💬 Debate Session Endpoints
 
 #### POST `/debate/start`
 
@@ -410,7 +410,7 @@ Ends a debate session.
 
 ---
 
-## Data Flow
+## 🔀 Data Flow
 
 ### Argument Analysis Flow (ML Pipeline)
 
@@ -454,7 +454,7 @@ Repeat or End Session
 
 ---
 
-## ML Models Summary
+## 🧠 ML Models Summary
 
 | Service | Model | Purpose |
 |---------|-------|---------|
@@ -466,7 +466,7 @@ Repeat or End Session
 
 ---
 
-## Database Schema
+## 🗃️ Database Schema
 
 The backend uses SQLAlchemy ORM with support for SQLite (development) and PostgreSQL (production).
 
@@ -522,7 +522,7 @@ The backend uses SQLAlchemy ORM with support for SQLite (development) and Postgr
 
 ---
 
-### 1. Users Table
+### 1️⃣ Users Table
 
 **Table Name:** `users`
 
@@ -549,7 +549,7 @@ The backend uses SQLAlchemy ORM with support for SQLite (development) and Postgr
 
 ---
 
-### 2. Debate Sessions Table
+### 2️⃣ Debate Sessions Table
 
 **Table Name:** `debate_sessions`
 
@@ -583,7 +583,7 @@ The backend uses SQLAlchemy ORM with support for SQLite (development) and Postgr
 
 ---
 
-### 3. Arguments Table
+### 3️⃣ Arguments Table
 
 **Table Name:** `arguments`
 
@@ -603,7 +603,7 @@ The backend uses SQLAlchemy ORM with support for SQLite (development) and Postgr
 
 ---
 
-### 4. Analysis Results Table
+### 4️⃣ Analysis Results Table
 
 **Table Name:** `analysis_results`
 
@@ -667,7 +667,7 @@ The backend uses SQLAlchemy ORM with support for SQLite (development) and Postgr
 
 ---
 
-### 5. User Analytics Table
+### 5️⃣ User Analytics Table
 
 **Table Name:** `user_analytics`
 
@@ -721,7 +721,7 @@ The backend uses SQLAlchemy ORM with support for SQLite (development) and Postgr
 
 ---
 
-### 6. Fallacy Examples Table
+### 6️⃣ Fallacy Examples Table
 
 **Table Name:** `fallacy_examples`
 
@@ -849,7 +849,7 @@ CREATE TABLE fallacy_examples (
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### Environment Variables
 
@@ -883,7 +883,7 @@ cp backend/.env.template backend/.env
 
 ---
 
-## Running the Backend
+## 🚀 Running the Backend
 
 ### Installation
 
@@ -942,7 +942,7 @@ Access the interactive API docs at:
 
 ---
 
-## Model Caching
+## 💾 Model Caching
 
 Models are automatically cached after first use in:
 - Linux/Mac: `~/.cache/huggingface/`
@@ -961,7 +961,7 @@ sentence_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 ---
 
-## Performance Considerations
+## ⚡ Performance Considerations
 
 - **First Request**: Models load on first use (~5-10 seconds)
 - **Subsequent Requests**: Fast inference (~100-500ms)
@@ -971,7 +971,7 @@ sentence_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 ---
 
-## Extending the Backend
+## 🔧 Extending the Backend
 
 ### Adding New Fallacy Types
 
@@ -1001,9 +1001,9 @@ self.toxicity_classifier = pipeline(
 
 ---
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
-### Windows-Specific Issues
+### 🪟 Windows-Specific Issues
 
 #### PyTorch DLL Errors
 If you encounter "DLL load failed" errors on Windows:
@@ -1018,25 +1018,25 @@ The warning about symlinks is harmless. To silence it:
 set HF_HUB_DISABLE_SYMLINKS_WARNING=1
 ```
 
-### Model Download Errors
+### 📥 Model Download Errors
 
 1. Check internet connection
 2. Set HF_TOKEN environment variable for higher rate limits
 3. Use mirror: `set HF_ENDPOINT=https://hf-mirror.com`
 
-### Memory Issues
+### 💾 Memory Issues
 
 1. Reduce batch size
 2. Use smaller models (e.g., distilbert instead of roberta)
 3. Enable model offloading
 
-### CUDA/GPU Errors
+### 🎮 CUDA/GPU Errors
 
 1. Ensure PyTorch with CUDA installed: `pip install torch --index-url https://download.pytorch.org/whl/cu118`
 2. Check GPU availability: `python -c "import torch; print(torch.cuda.is_available())"`
 
 ---
 
-## License
+## 📜 License
 
 This project is part of LogicShield - AI-Argument Simulator with Risk Forecasting.
