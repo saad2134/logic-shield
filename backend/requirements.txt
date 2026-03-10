@@ -1,9 +1,21 @@
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+sqlalchemy>=2.0.23
+pydantic>=2.5.2
+pydantic-settings>=2.1.0
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-dotenv>=1.0.0
 
-# For AI Models, ML & NLP
-numpy
-pandas
-scikit-learn
-nltk
+torch>=2.1.0
+transformers>=4.36.0
+sentence-transformers>=2.2.2
+accelerate>=0.25.0
 
-# For APIs
-fastapi==0.104.1
+numpy>=1.26.0
+pandas>=2.1.0
+scikit-learn>=1.3.0
+nltk>=3.8.0
+
+httpx>=0.25.0
