@@ -13,7 +13,7 @@ export default function Hero() {
   const brightness = theme === "light" ? 2.5 : 1.0;
 
   return (
-    <section className="pt-16 relative min-h-[90vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative pt-32 py-24 flex items-center justify-center overflow-hidden px-8">
       {/* Animated Light Rays Background */}
       <div className="absolute inset-0 z-0">
         <LightRays

@@ -91,7 +91,7 @@ export default function FeaturesSection() {
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
 
   return (
-    <section id="features" className="relative py-16 lg:py-24 overflow-hidden">
+    <section id="features" className="relative py-16 lg:py-24 overflow-hidden px-4">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
       
       <div className="relative max-w-7xl mx-auto px-4 lg:px-6">

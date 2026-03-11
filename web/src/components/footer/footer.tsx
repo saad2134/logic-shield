@@ -296,8 +296,16 @@ export default function FooterSection({
 
 
         </Footer>
-        <div className="flex items-center justify-center w-full text-sm text-muted-foreground/75 pb-8">
-          {copyright}
+        <div className="flex flex-col items-center justify-center w-full pb-8 gap-3">
+          <div className="max-w-2xl text-center px-4">
+            <p className="text-xs text-muted-foreground/60">
+              <strong>Disclaimer:</strong> LogicShield provides probabilistic analysis based on NLP models. 
+              It does not guarantee real-world outcomes or predict future controversy with certainty.
+            </p>
+          </div>
+          <div className="text-sm text-muted-foreground/75">
+            {copyright}
+          </div>
         </div>
       </div>
       {/* <div className="xl:h-[20rem] lg:h-[15rem] md:h-[12rem] h-[6rem] flex items-center justify-center">

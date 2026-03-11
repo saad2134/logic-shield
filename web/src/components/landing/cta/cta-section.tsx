@@ -12,7 +12,7 @@ export default function CTASection() {
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
 
   return (
-    <section className="relative py-14 lg:py-20 overflow-hidden">
+    <section className="relative py-14 lg:py-20 overflow-hidden px-4">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
       
       {/* Animated background elements */}

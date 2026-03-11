@@ -66,7 +66,7 @@ export default function FAQSection() {
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
 
   return (
-    <section id="faqs" className="relative py-14 lg:py-20 overflow-hidden bg-muted/30">
+    <section id="faqs" className="relative py-14 lg:py-20 overflow-hidden bg-muted/30 px-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
       
       <div className="relative max-w-7xl mx-auto px-4 lg:px-6">

@@ -192,7 +192,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   compact = false
 }) => {
   return (
-    <section id="pricing" className="w-full">
+    <section id="pricing" className="w-full px-4">
       {showHeader && (
         <div className="relative overflow-hidden py-8 lg:py-10">
           <div className="absolute inset-0 "></div>
