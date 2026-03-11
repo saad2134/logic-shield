@@ -9,7 +9,7 @@ import LightRays from './LightRays';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[90vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden">
       {/* Animated Light Rays Background */}
       <div className="absolute inset-0 z-0">
         <LightRays

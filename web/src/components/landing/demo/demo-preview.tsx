@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { siteConfig } from "@/config/site";
-import { 
+import {
   Zap,
   AlertTriangle,
   Shield,
@@ -44,7 +44,7 @@ export default function DemoPreviewSection() {
     setCurrentStep(0);
     setShowAnalysis(false);
     setAnalysisProgress(0);
-    
+
     setTimeout(() => {
       setCurrentStep(1);
       setIsTyping(true);
@@ -76,9 +76,9 @@ export default function DemoPreviewSection() {
   return (
     <section className="relative py-14 lg:py-20 overflow-hidden bg-muted/30">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-      
+
       <div className="relative max-w-7xl mx-auto px-4 lg:px-6">
-        <motion.div 
+        <motion.div
           ref={containerRef}
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -89,7 +89,7 @@ export default function DemoPreviewSection() {
             <Zap className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">See It In Action</span>
           </div>
-          
+
           <h2 className="text-2xl lg:text-4xl md:text-3xl font-bold mb-3">
             Watch{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[var(--chart-2)] to-primary">
@@ -97,7 +97,7 @@ export default function DemoPreviewSection() {
             </span>
             {' '}Work
           </h2>
-          
+
           <p className="text-sm lg:text-base text-muted-foreground max-w-xl mx-auto">
             See how our AI analyzes arguments and detects fallacies in real-time.
           </p>
@@ -110,7 +110,7 @@ export default function DemoPreviewSection() {
           className="max-w-4xl mx-auto"
         >
           <Card className="border-2 border-primary/20 overflow-hidden">
-            <CardHeader className="pb-3 bg-muted/30 border-b">
+            <CardHeader className="pb-6 bg-muted/30 border-b">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
@@ -120,16 +120,16 @@ export default function DemoPreviewSection() {
                   </div>
                   <span className="text-xs text-muted-foreground ml-2">LogicShield Demo</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={runDemo} className="h-7 px-2 text-xs">
+                <Button variant="destructive" size="sm" onClick={runDemo} className="h-7 px-2 text-xs">
                   <RotateCcw className="w-3 h-3 mr-1" />
                   Replay
                 </Button>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-4 space-y-4">
               {/* Topic Selection */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: currentStep >= 0 ? 1 : 0, x: 0 }}
                 className="flex items-center gap-2"
@@ -142,7 +142,7 @@ export default function DemoPreviewSection() {
               </motion.div>
 
               {/* Arrow */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: currentStep >= 1 ? 1 : 0 }}
                 className="flex justify-center"
@@ -151,7 +151,7 @@ export default function DemoPreviewSection() {
               </motion.div>
 
               {/* Argument Input */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: currentStep >= 1 ? 1 : 0, x: 0 }}
                 className="p-3 rounded-lg bg-muted/50 border border-border"
@@ -169,7 +169,7 @@ export default function DemoPreviewSection() {
               </motion.div>
 
               {/* Analysis Progress / Results */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: currentStep >= 2 ? 1 : 0 }}
               >
@@ -185,7 +185,7 @@ export default function DemoPreviewSection() {
                     </div>
 
                     {/* Results */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: analysisProgress >= 100 ? 1 : 0, y: 0 }}
                       className="grid md:grid-cols-2 gap-3 pt-2"
@@ -259,6 +259,8 @@ export default function DemoPreviewSection() {
         </motion.div>
 
       </div>
+
+      
     </section>
   );
 }
