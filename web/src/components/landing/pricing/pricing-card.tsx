@@ -35,52 +35,64 @@ interface PricingCardsProps {
 }
 
 export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", compact = false }) => {
+  const p = compact ? "p-4 lg:p-5" : "p-6 lg:p-8";
+  const mb = compact ? "mb-4" : "mb-5";
+  const gap = compact ? "gap-4" : "gap-6 lg:gap-8";
+  const featureGap = compact ? "space-y-2" : "space-y-3 lg:space-y-4";
+  const featureIcon = compact ? "w-4 h-4" : "w-5 h-5";
+  const featureText = compact ? "text-xs" : "text-sm lg:text-base";
+  const badge = compact ? "text-[10px] px-2 py-1" : "text-xs px-4 lg:px-6 py-1.5 lg:py-2";
+  const iconSize = compact ? "w-8 h-8" : "w-10 h-10 lg:w-12 lg:h-12";
+  const iconInner = compact ? "w-4 h-4" : "w-5 h-5 lg:w-6 lg:h-6";
+  const priceSize = compact ? "text-3xl lg:text-4xl" : "text-4xl lg:text-5xl";
+  const valueHighlight = compact ? "mt-4 p-3" : "mt-6 lg:mt-8 p-4";
+  
   return (
     <div className={className}>
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch">
+      <div className={`flex flex-col lg:flex-row ${gap} items-stretch`}>
         {/* Freemium Card */}
         <div className="flex-1 bg-card text-card-foreground rounded-2xl border border-border overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-          <div className={compact ? "p-5 lg:p-6" : "p-6 lg:p-8"}>
+          <div className={p}>
             {/* Card Header */}
-            <div className="mb-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-muted rounded-xl flex items-center justify-center">
-                  <Users className="w-5 h-5 lg:w-6 lg:h-6 text-muted-foreground" />
+            <div className={mb}>
+              <div className={`flex items-center gap-2 mb-3`}>
+                <div className={`${iconSize} bg-muted rounded-lg flex items-center justify-center`}>
+                  <Users className={`${iconInner} text-muted-foreground`} />
                 </div>
-                <h2 className="text-2xl lg:text-3xl font-bold">Freemium</h2>
+                <h2 className="text-xl lg:text-2xl font-bold">Freemium</h2>
               </div>
               
-              <div className="mb-5">
+              <div className={mb}>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-bold">$0</span>
-                  <span className="text-muted-foreground text-lg">/forever</span>
+                  <span className={`${priceSize} font-bold`}>$0</span>
+                  <span className="text-muted-foreground text-sm">/forever</span>
                 </div>
-                <p className="text-muted-foreground mt-2 text-sm lg:text-base">Perfect for testing and getting started with debate training</p>
+                <p className="text-muted-foreground mt-1 text-xs lg:text-sm">Perfect for testing and getting started</p>
               </div>
 
-              <button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-3 lg:py-4 px-5 lg:px-6 rounded-xl transition-all duration-200 border border-border hover:border-primary/30">
+              <button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-2.5 lg:py-3 px-4 rounded-lg transition-all duration-200 border border-border hover:border-primary/30 text-sm">
                 Get Started Free
               </button>
 
-              <p className="text-center text-muted-foreground text-xs lg:text-sm mt-3">
-                Free Forever
+              <p className="text-center text-muted-foreground text-[10px] lg:text-xs mt-2">
+                Try It Out • Free Forever
               </p>
             </div>
 
             {/* Features List */}
-            <div className="space-y-3 lg:space-y-4">
-              <div className="flex items-center gap-2 mb-4 lg:mb-6">
+            <div className={featureGap}>
+              <div className="flex items-center gap-2 mb-2 lg:mb-3">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></div>
-                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Features</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Features</span>
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></div>
               </div>
               
               {freemiumFeatures.map((feature, index) => (
-                <div key={index} className="flex items-start gap-3 group">
-                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-muted flex items-center justify-center mt-0.5 group-hover:bg-muted/80 transition-colors">
-                    <Check className="w-3 h-3 text-muted-foreground" />
+                <div key={index} className="flex items-start gap-2 group">
+                  <div className={`${featureIcon} rounded-full bg-muted flex items-center justify-center mt-0.5 group-hover:bg-muted/80 transition-colors`}>
+                    <Check className="w-2.5 h-2.5 text-muted-foreground" />
                   </div>
-                  <span className="text-sm lg:text-base leading-relaxed">{feature}</span>
+                  <span className={`${featureText} leading-tight`}>{feature}</span>
                 </div>
               ))}
             </div>
@@ -90,53 +102,53 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
         {/* Premium Card */}
         <div className="flex-1 bg-gradient-to-br from-primary/10 via-card to-card rounded-2xl border-2 border-primary/30 overflow-hidden relative hover:shadow-xl hover:border-primary/50 transition-all duration-300">
           {/* Popular Badge */}
-          <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 text-xs font-bold px-4 lg:px-6 py-1.5 lg:py-2 rounded-bl-xl lg:rounded-bl-2xl flex items-center gap-1">
+          <div className={`absolute top-0 right-0 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-bold ${badge} rounded-bl-xl lg:rounded-bl-2xl flex items-center gap-1`}>
             <Award className="w-3 h-3" />
             MOST POPULAR
           </div>
 
-          <div className={compact ? "p-5 lg:p-6" : "p-6 lg:p-8"}>
+          <div className={p}>
             {/* Card Header */}
-            <div className="mb-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-primary/20 rounded-xl flex items-center justify-center">
-                  <Rocket className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
+            <div className={mb}>
+              <div className={`flex items-center gap-2 mb-3`}>
+                <div className={`${iconSize} bg-primary/20 rounded-lg flex items-center justify-center`}>
+                  <Rocket className={`${iconInner} text-primary`} />
                 </div>
-                <h2 className="text-2xl lg:text-3xl font-bold">Premium</h2>
+                <h2 className="text-xl lg:text-2xl font-bold">Premium</h2>
               </div>
               
-              <div className="mb-5">
+              <div className={mb}>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-bold">$15</span>
-                  <span className="text-primary text-lg">/month</span>
+                  <span className={`${priceSize} font-bold`}>$15</span>
+                  <span className="text-primary text-sm">/month</span>
                 </div>
-                <p className="text-primary/80 mt-2 text-sm lg:text-base">For serious debaters ready to sharpen their argument skills</p>
+                <p className="text-primary/80 mt-1 text-xs lg:text-sm">For serious debaters ready to sharpen skills</p>
               </div>
 
-              <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 lg:py-4 px-5 lg:px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                <Zap className="w-4 h-4 lg:w-5 lg:h-5" />
+              <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 lg:py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm">
+                <Zap className="w-4 h-4" />
                 Start Premium Trial
               </button>
               
-              <p className="text-center text-muted-foreground text-xs lg:text-sm mt-3">
-                14-day free trial • Cancel anytime
+              <p className="text-center text-muted-foreground text-[10px] lg:text-xs mt-2">
+                14-day Free Trial • Cancel Anytime
               </p>
             </div>
 
             {/* Features List */}
-            <div className="space-y-3 lg:space-y-4">
-              <div className="flex items-center gap-2 mb-4 lg:mb-6">
+            <div className={featureGap}>
+              <div className="flex items-center gap-2 mb-2 lg:mb-3">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
-                <span className="text-xs text-primary/80 uppercase tracking-wider font-semibold">Everything Included</span>
+                <span className="text-[10px] text-primary/80 uppercase tracking-wider font-semibold">Everything Included</span>
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
               </div>
               
               {premiumFeatures.map((feature, index) => (
-                <div key={index} className="flex items-start gap-3 group">
-                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5 group-hover:bg-primary/30 transition-colors">
-                    <Check className="w-3 h-3 text-primary" />
+                <div key={index} className="flex items-start gap-2 group">
+                  <div className={`${featureIcon} rounded-full bg-primary/20 flex items-center justify-center mt-0.5 group-hover:bg-primary/30 transition-colors`}>
+                    <Check className="w-2.5 h-2.5 text-primary" />
                   </div>
-                  <span className={`text-sm lg:text-base leading-relaxed ${index === 0 ? 'font-semibold' : ''}`}>
+                  <span className={`${featureText} leading-tight ${index === 0 ? 'font-semibold' : ''}`}>
                     {feature}
                   </span>
                 </div>
@@ -144,13 +156,13 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
             </div>
 
             {/* Value Highlight */}
-            <div className="mt-6 lg:mt-8 p-4 bg-primary/5 border border-primary/20 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">Premium Value</span>
+            <div className={`${valueHighlight} bg-primary/5 border border-primary/20 rounded-lg`}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-semibold text-primary">Premium Value</span>
               </div>
-              <p className="text-xs lg:text-sm text-muted-foreground">
-                Includes 1 free coaching session worth $199 + unlimited access to all premium features
+              <p className="text-[10px] lg:text-xs text-muted-foreground">
+                Includes 1 free coaching session worth $199
               </p>
             </div>
           </div>
@@ -171,28 +183,30 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
 interface PricingSectionProps {
   showHeader?: boolean;
   showBottom?: boolean;
+  compact?: boolean;
 }
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ 
   showHeader = true, 
-  showBottom = true 
+  showBottom = true,
+  compact = false
 }) => {
   return (
     <section id="pricing" className="w-full">
       {showHeader && (
-        <div className="relative overflow-hidden py-12 lg:py-14">
+        <div className="relative overflow-hidden py-8 lg:py-10">
           <div className="absolute inset-0 "></div>
           <div className="relative max-w-4xl mx-auto px-4 lg:px-6 text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-3 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-3 py-1.5 mb-3">
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">Simple, Transparent Pricing</span>
             </div>
             
-            <h1 className="text-2xl lg:text-4xl md:text-3xl font-bold mb-3">
+            <h1 className="text-2xl lg:text-3xl md:text-3xl font-bold mb-2">
               Pricing
             </h1>
             
-            <p className="text-sm lg:text-base text-muted-foreground max-w-xl mx-auto">
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
               Choose the plan that fits your debate training needs. Start free, upgrade when you&apos;re ready.
             </p>
           </div>
@@ -200,11 +214,11 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
       )}
 
       {/* Pricing Cards */}
-      <div className="max-w-6xl mx-auto px-4 lg:px-6 pb-10 lg:pb-14">
-        <PricingCards />
+      <div className="max-w-6xl mx-auto px-4 lg:px-6 pb-8 lg:pb-10">
+        <PricingCards compact={compact} />
 
         {showBottom && (
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <div className="inline-flex items-center gap-2 bg-primary/5 border border-primary/10 rounded-full px-3 py-1.5">
               <Shield className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">
@@ -212,7 +226,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               </span>
             </div>
             
-            <p className="mt-4 text-muted-foreground max-w-sm mx-auto text-sm">
+            <p className="mt-3 text-muted-foreground max-w-sm mx-auto text-sm">
               Need an enterprise solution? 
               <a href="/contact" className="text-primary hover:text-primary/80 ml-1 font-semibold underline underline-offset-4">
                 Contact us
@@ -224,38 +238,38 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
 
       {showBottom && (
         <div className="">
-          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-4 pb-12 ">
-            <h3 className="text-xl lg:text-2xl font-bold text-center mb-8 lg:mb-12">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-6 pb-8 ">
+            <h3 className="text-lg lg:text-xl font-bold text-center mb-6 lg:mb-8">
               Why Upgrade to Premium?
             </h3>
             
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-              <div className="text-center p-5 lg:p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-colors">
-                <div className="w-10 lg:w-12 h-10 lg:h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-5 lg:w-6 h-5 lg:h-6 text-primary" />
+            <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
+              <div className="text-center p-4 lg:p-5 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors">
+                <div className="w-9 lg:w-10 h-9 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="w-4 lg:w-5 h-4 lg:h-5 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Advanced Fallacy Detection</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="text-base font-semibold mb-1.5">Advanced Fallacy Detection</h4>
+                <p className="text-xs text-muted-foreground">
                   Identify 15+ types of logical fallacies including ad hominem, strawman, false dilemma, and slippery slope arguments
                 </p>
               </div>
               
-              <div className="text-center p-5 lg:p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-colors">
-                <div className="w-10 lg:w-12 h-10 lg:h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-5 lg:w-6 h-5 lg:h-6 text-primary" />
+              <div className="text-center p-4 lg:p-5 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors">
+                <div className="w-9 lg:w-10 h-9 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-4 lg:w-5 h-4 lg:h-5 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Reputation Risk Analysis</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="text-base font-semibold mb-1.5">Reputation Risk Analysis</h4>
+                <p className="text-xs text-muted-foreground">
                   Evaluate how your arguments might be perceived publicly with toxicity and hate speech detection
                 </p>
               </div>
               
-              <div className="text-center p-5 lg:p-6 bg-card border border-border rounded-2xl hover:border-primary/30 transition-colors">
-                <div className="w-10 lg:w-12 h-10 lg:h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Award className="w-5 lg:w-6 h-5 lg:h-6 text-primary" />
+              <div className="text-center p-4 lg:p-5 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors">
+                <div className="w-9 lg:w-10 h-9 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Award className="w-4 lg:w-5 h-4 lg:h-5 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2">AI Rewrite Suggestions</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="text-base font-semibold mb-1.5">AI Rewrite Suggestions</h4>
+                <p className="text-xs text-muted-foreground">
                   Get AI-powered suggestions to strengthen and clarify your arguments for maximum impact
                 </p>
               </div>

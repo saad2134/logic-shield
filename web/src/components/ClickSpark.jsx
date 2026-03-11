@@ -151,7 +151,8 @@ const ClickSpark = ({
           position: 'absolute',
           top: 0,
           left: 0,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          zIndex: 9999
         }}
       />
       {children}

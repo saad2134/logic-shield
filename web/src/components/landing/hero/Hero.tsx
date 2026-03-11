@@ -5,11 +5,15 @@ import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Brain, Scale, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import LightRays from './LightRays';
 
 export default function Hero() {
+  const { theme } = useTheme();
+  const brightness = theme === "light" ? 2.5 : 1.0;
+
   return (
-    <section className="relative min-h-[90vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="pt-16 relative min-h-[90vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden">
       {/* Animated Light Rays Background */}
       <div className="absolute inset-0 z-0">
         <LightRays
@@ -18,6 +22,7 @@ export default function Hero() {
           raysSpeed={1}
           lightSpread={0.5}
           rayLength={3}
+          brightness={brightness}
           followMouse={true}
           mouseInfluence={0.1}
           noiseAmount={0}

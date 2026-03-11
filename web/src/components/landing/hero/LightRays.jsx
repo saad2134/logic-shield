@@ -44,6 +44,7 @@ const LightRays = ({
   mouseInfluence = 0.1,
   noiseAmount = 0.0,
   distortion = 0.0,
+  brightness = 1.0,
   className = ''
 }) => {
   const containerRef = useRef(null);
@@ -134,6 +135,7 @@ uniform vec2  mousePos;
 uniform float mouseInfluence;
 uniform float noiseAmount;
 uniform float distortion;
+uniform float brightness;
 
 varying vec2 vUv;
 
@@ -191,10 +193,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     fragColor.rgb *= (1.0 - noiseAmount + noiseAmount * n);
   }
 
-  float brightness = 1.0 - (coord.y / iResolution.y);
-  fragColor.x *= 0.1 + brightness * 0.8;
-  fragColor.y *= 0.3 + brightness * 0.6;
-  fragColor.z *= 0.5 + brightness * 0.5;
+  float brightnessMult = brightness;
+  fragColor.x *= 0.1 * brightnessMult + brightness * 0.8;
+  fragColor.y *= 0.3 * brightnessMult + brightness * 0.6;
+  fragColor.z *= 0.5 * brightnessMult + brightness * 0.5;
 
   if (saturation != 1.0) {
     float gray = dot(fragColor.rgb, vec3(0.299, 0.587, 0.114));
@@ -227,7 +229,8 @@ void main() {
         mousePos: { value: [0.5, 0.5] },
         mouseInfluence: { value: mouseInfluence },
         noiseAmount: { value: noiseAmount },
-        distortion: { value: distortion }
+        distortion: { value: distortion },
+        brightness: { value: brightness }
       };
       uniformsRef.current = uniforms;
 
@@ -339,7 +342,8 @@ void main() {
     followMouse,
     mouseInfluence,
     noiseAmount,
-    distortion
+    distortion,
+    brightness
   ]);
 
   useEffect(() => {
@@ -358,12 +362,7 @@ void main() {
     u.mouseInfluence.value = mouseInfluence;
     u.noiseAmount.value = noiseAmount;
     u.distortion.value = distortion;
-
-    const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current;
-    const dpr = renderer.dpr;
-    const { anchor, dir } = getAnchorAndDir(raysOrigin, wCSS * dpr, hCSS * dpr);
-    u.rayPos.value = anchor;
-    u.rayDir.value = dir;
+    u.brightness.value = brightness;
   }, [
     raysColor,
     raysSpeed,
@@ -375,7 +374,8 @@ void main() {
     saturation,
     mouseInfluence,
     noiseAmount,
-    distortion
+    distortion,
+    brightness
   ]);
 
   useEffect(() => {

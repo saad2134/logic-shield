@@ -26,7 +26,7 @@ export default function Home() {
         <HowItWorksSection />
         <UseCasesSection />
         <DemoPreviewSection />
-        <PricingSection />
+        <PricingSection compact />
         <FAQSection />
         <CTASection />
       </main>

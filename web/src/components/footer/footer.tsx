@@ -144,8 +144,9 @@ export default function FooterSection({
       appName: "Application",
       links: [
         { text: "Home", href: "/" },
+        { text: "Login/Signup", href: "/auth" },
         { text: "Contact", href: "/contact" },
-        { text: "Login", href: "/login" },
+        { text: "Feedback", href: "/feedback" },
       ],
     },
 
@@ -170,10 +171,9 @@ export default function FooterSection({
       links: [
         // { text: "Blog", href: "/blog" },
         { text: "Pricing", href: "/pricing" },
-        { text: "Feedback", href: "/feedback" },
         // { text: "Affiliates", href: "/affiliates" },
         // { text: "Developers", href: "/developers" },
-        { text: "Documentation", href: "https://github.com/saad2134/logic-shield/wiki" },
+        { text: "Documentation 🡲", href: "https://github.com/saad2134/logic-shield/wiki" },
         // { text: "Advertise", href: "/advertise" },
         // { text: "Parental Guidance", href: "/parental-guidance" },
         // { text: "Accessibility Help", href: "/accessibility" },
