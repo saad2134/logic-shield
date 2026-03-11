@@ -4,8 +4,6 @@ import { IconMenu2, IconX } from "@tabler/icons-react";
 import {
   motion,
   AnimatePresence,
-  useScroll,
-  useMotionValueEvent,
 } from "framer-motion";
 
 import React, { useRef, useState } from "react";
@@ -52,35 +50,13 @@ interface MobileNavMenuProps {
 }
 
 export const Navbar = ({ children, className }: NavbarProps) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const [visible, setVisible] = useState<boolean>(false);
-
-  useMotionValueEvent(scrollY, "change", (latest: number) => {
-    if (latest > 100) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  });
-
   return (
     <motion.div
-      ref={ref}
+      ref={useRef<HTMLDivElement>(null)}
       // IMPORTANT: Change this to class of `fixed` if you want the navbar to be fixed
-      className={cn("fixed inset-x-0  z-40 w-full", className)}
+      className={cn("fixed inset-x-0 z-40 w-full", className)}
     >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? React.cloneElement(
-              child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
-            )
-          : child,
-      )}
+      {children}
     </motion.div>
   );
 };
@@ -89,11 +65,11 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
       animate={{
-        border: visible ? "1px solid rgba(100, 100, 100, 0.2)" : "none",
-        backdropFilter: visible ? "blur(10px)" : "none",
+        border: "1px solid rgba(100, 100, 100, 0.2)",
+        backdropFilter: "blur(10px)",
         
-        width: visible ? "80%" : "100%",
-        y: visible ? 20 : 0,
+        width: "80%",
+        y: 20,
       }}
       transition={{
         type: "spring",
@@ -104,8 +80,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         minWidth: "800px",
       }}
       className={cn(
-        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-lg bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-        visible && "bg-brand/10 backdrop-blur-md",
+        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-lg bg-background/80 backdrop-blur-md px-4 py-2 lg:flex dark:bg-background/80",
 
 
         className,
@@ -153,13 +128,13 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
     <motion.div
       animate={{
-        border: visible ? "1px solid rgba(100, 100, 100, 0.2)" : "none",
-        backdropFilter: visible ? "blur(10px)" : "none",
-        width: visible ? "90%" : "100%",
-        paddingRight: visible ? "12px" : "0px",
-        paddingLeft: visible ? "12px" : "0px",
-        borderRadius: visible ? "4px" : "2rem",
-        y: visible ? 20 : 0,
+        border: "1px solid rgba(100, 100, 100, 0.2)",
+        backdropFilter: "blur(10px)",
+        width: "90%",
+        paddingRight: "12px",
+        paddingLeft: "12px",
+        borderRadius: "4px",
+        y: 20,
       }}
       transition={{
         type: "spring",
@@ -167,8 +142,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
         damping: 50,
       }}
       className={cn(
-        "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden",
-        visible && "bg-brand/10 backdrop-blur-md",
+        "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-background/80 backdrop-blur-md px-0 py-2 lg:hidden",
         className,
       )}
     >

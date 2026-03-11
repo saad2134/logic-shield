@@ -144,8 +144,9 @@ export default function FooterSection({
       appName: "Application",
       links: [
         { text: "Home", href: "/" },
+        { text: "Login/Signup", href: "/auth" },
         { text: "Contact", href: "/contact" },
-        { text: "Login", href: "/login" },
+        { text: "Feedback", href: "/feedback" },
       ],
     },
 
@@ -169,10 +170,10 @@ export default function FooterSection({
       appName: "Explore",
       links: [
         // { text: "Blog", href: "/blog" },
-        { text: "Feedback", href: "/ideas" },
+        { text: "Pricing", href: "/pricing" },
         // { text: "Affiliates", href: "/affiliates" },
         // { text: "Developers", href: "/developers" },
-        { text: "Documentation", href: "https://github.com/saad2134/logic-shield/wiki" },
+        { text: "Documentation 🡲", href: "https://github.com/saad2134/logic-shield/wiki" },
         // { text: "Advertise", href: "/advertise" },
         // { text: "Parental Guidance", href: "/parental-guidance" },
         // { text: "Accessibility Help", href: "/accessibility" },
@@ -295,8 +296,16 @@ export default function FooterSection({
 
 
         </Footer>
-        <div className="flex items-center justify-center w-full text-sm text-muted-foreground/75 pb-8">
-          {copyright}
+        <div className="flex flex-col items-center justify-center w-full pb-8 gap-3">
+          <div className="max-w-2xl text-center px-4">
+            <p className="text-xs text-muted-foreground/60">
+              <strong>Disclaimer:</strong> LogicShield provides probabilistic analysis based on NLP models. 
+              It does not guarantee real-world outcomes or predict future controversy with certainty.
+            </p>
+          </div>
+          <div className="text-sm text-muted-foreground/75">
+            {copyright}
+          </div>
         </div>
       </div>
       {/* <div className="xl:h-[20rem] lg:h-[15rem] md:h-[12rem] h-[6rem] flex items-center justify-center">

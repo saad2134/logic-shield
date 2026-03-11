@@ -6,35 +6,35 @@ export interface FAQItem {
 
 export const faqConfig: FAQItem[] = [
   {
-    question: "What is the purpose of this AI-powered learning path generator?",
-    answer: "It helps learners discover personalized vocational training paths aligned to their background, skills, and career goals, dynamically updating as they progress or job market demands change.",
+    question: "What is LogicShield?",
+    answer: "LogicShield is an AI-powered debate training and communication risk analysis platform that strengthens your arguments, detects logical fallacies, and evaluates reputational risk before you publish, pitch, or perform.",
   },
   {
-    question: "How does the system create personalized learning paths?",
-    answer: "Using AI/ML, it analyzes learner profiles including education, skills, social context, and aspirations, then matches requirements with NSQF-aligned courses and industry needs.",
+    question: "How does the AI debate simulation work?",
+    answer: "You choose a topic and stance, then engage in real-time debates with an AI opponent. Select from personas like Logical, Aggressive, Skeptical, or Devil's Advocate for varied challenges.",
   },
   {
-    question: "Who can use this platform?",
-    answer: "Learners seeking career guidance, trainers monitoring learner progress, and policymakers tracking skill demand and training outcomes.",
+    question: "What types of logical fallacies can it detect?",
+    answer: "LogicShield can identify 15+ common fallacies including ad hominem, strawman, false dilemma, slippery slope, circular reasoning, appeal to authority, and more using transformer-based ML models.",
   },
   {
-    question: "Is this platform accessible in multiple languages?",
-    answer: "Yes, it supports several Indian languages with simple, inclusive UI designed for easy mobile use.",
+    question: "Is my debate data private?",
+    answer: "Yes. We respect your privacy. Your arguments and session history are stored securely and are only used to provide our services. We never sell your personal data.",
   },
   {
-    question: "How does the platform ensure alignment with current job market needs?",
-    answer: "It continuously integrates real-time labor market data to adjust course and skill recommendations.",
+    question: "What is reputation risk analysis?",
+    answer: "Our system evaluates how your arguments might be perceived publicly by detecting potentially toxic language, hate speech, and aggressive phrasing using specialized NLP models.",
   },
   {
-    question: "What types of training and credentials are recommended?",
-    answer: "Vocational courses, micro-credentials, certifications, internships, apprenticeships, and on-the-job training opportunities.",
+    question: "Can I use LogicShield for professional purposes?",
+    answer: "Absolutely! Law professionals, executives, public speakers, and content creators use LogicShield to prepare for presentations, pitches, and content creation.",
   },
   {
-    question: "Can trainers and policymakers access learner progress and skill demand data?",
-    answer: "Yes, dedicated dashboards provide progress insights for trainers and demand-supply analytics for policymakers.",
+    question: "Is there a free trial?",
+    answer: "Yes! We offer a 14-day free trial for Premium features. You can also use the free tier to test basic debate simulation and analysis features.",
   },
   {
-    question: "Is this solution scalable to handle millions of learners?",
-    answer: "The system is designed with scalable architecture to manage large user volumes efficiently.",
+    question: "How accurate is the analysis?",
+    answer: "Our ML models are trained on large datasets and provide probabilistic analysis. While we strive for accuracy, results should be used as guidance rather than absolute truth.",
   },
 ];
