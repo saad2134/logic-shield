@@ -3,31 +3,30 @@ import React from 'react';
 import { Check, Sparkles, Zap, Users, TrendingUp, Shield, Award, Rocket } from 'lucide-react';
 
 const freemiumFeatures = [
-  'AI-powered course recommendations',
-  'Basic learning style assessment',
-  'Access to 10,000+ courses across platforms',
-  'Job market salary insights',
-  'Course quality ratings & reviews',
-  'Learning path suggestions',
-  'Community forum access',
-  'Mobile app access'
+  'AI Debate Simulation (3 sessions/day)',
+  'Basic Logical Fallacy Detection',
+  'Argument Strength Analysis',
+  '5 Persona Types (Logical, Aggressive, Skeptical)',
+  'Session History (last 5 debates)',
+  'Basic Reputation Risk Check',
+  'Community Forum Access',
+  'Mobile App Access'
 ];
 
 const premiumFeatures = [
   'Everything in Freemium, plus:',
-  'Advanced AI personalization engine',
-  'Unlimited personalized learning paths',
-  'Career trajectory simulator',
-  'Skill gap analysis & roadmaps',
-  'Progress tracking across all platforms',
-  'Weekly accountability emails',
-  'Course comparison tools',
-  'Downloadable learning reports (PDF)',
-  'Priority support (24-hour response)',
-  '1-on-1 learning path consultation ($199 value)',
-  'Study schedule optimizer',
-  'Certificate of completion tracking',
-  'Ad-free experience'
+  'Unlimited AI Debate Sessions',
+  'Advanced Fallacy Detection (15+ types)',
+  'Full Reputation Risk Analysis',
+  'All 4 Persona Types + Custom',
+  'Unlimited Session History',
+  'Progress Analytics Dashboard',
+  'AI-Powered Rewrite Suggestions',
+  'Priority Support (24-hour response)',
+  'Export Debate Reports (PDF)',
+  'Custom Persona Creation',
+  'Team Collaboration Features',
+  'API Access for Developers'
 ];
 
 interface PricingCardsProps {
@@ -56,7 +55,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
                   <span className="text-4xl lg:text-5xl font-bold">$0</span>
                   <span className="text-muted-foreground text-lg">/forever</span>
                 </div>
-                <p className="text-muted-foreground mt-2 text-sm lg:text-base">Perfect for exploring and getting started</p>
+                <p className="text-muted-foreground mt-2 text-sm lg:text-base">Perfect for testing and getting started with debate training</p>
               </div>
 
               <button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-3 lg:py-4 px-5 lg:px-6 rounded-xl transition-all duration-200 border border-border hover:border-primary/30">
@@ -111,7 +110,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
                   <span className="text-4xl lg:text-5xl font-bold">$15</span>
                   <span className="text-primary text-lg">/month</span>
                 </div>
-                <p className="text-primary/80 mt-2 text-sm lg:text-base">For serious learners ready to transform their career</p>
+                <p className="text-primary/80 mt-2 text-sm lg:text-base">For serious debaters ready to sharpen their argument skills</p>
               </div>
 
               <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 lg:py-4 px-5 lg:px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
@@ -179,44 +178,44 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   showBottom = true 
 }) => {
   return (
-    <div className="w-full">
+    <section id="pricing" className="w-full">
       {showHeader && (
-        <div className="relative overflow-hidden py-12 lg:py-16">
+        <div className="relative overflow-hidden py-12 lg:py-14">
           <div className="absolute inset-0 "></div>
           <div className="relative max-w-4xl mx-auto px-4 lg:px-6 text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 lg:px-6 py-2 mb-4 lg:mb-6">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-3 py-1.5 mb-4">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Transparent Pricing</span>
+              <span className="text-sm font-medium">Simple, Transparent Pricing</span>
             </div>
             
-            <h1 className="text-3xl lg:text-5xl md:text-4xl lg:text-6xl font-bold mb-4 lg:mb-6">
+            <h1 className="text-2xl lg:text-4xl md:text-3xl font-bold mb-3">
               Pricing
             </h1>
             
-            <p className="text-base lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Choose the plan that fits your learning journey. Start free, upgrade when you&apos;re ready to accelerate your career.
+            <p className="text-sm lg:text-base text-muted-foreground max-w-xl mx-auto">
+              Choose the plan that fits your debate training needs. Start free, upgrade when you&apos;re ready.
             </p>
           </div>
         </div>
       )}
 
       {/* Pricing Cards */}
-      <div className="max-w-6xl mx-auto px-4 lg:px-6 pb-12 lg:pb-20">
+      <div className="max-w-6xl mx-auto px-4 lg:px-6 pb-10 lg:pb-14">
         <PricingCards />
 
         {showBottom && (
-          <div className="mt-12 lg:mt-16 text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/5 border border-primary/10 rounded-full px-4 lg:px-6 py-2 lg:py-3">
-              <Shield className="w-4 lg:w-5 h-4 lg:h-5 text-primary" />
-              <span className="text-xs lg:text-sm text-muted-foreground">
-                All plans include 256-bit SSL encryption and GDPR compliance
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/5 border border-primary/10 rounded-full px-3 py-1.5">
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="text-xs text-muted-foreground">
+                All plans include SSL encryption
               </span>
             </div>
             
-            <p className="mt-6 lg:mt-8 text-muted-foreground max-w-xl mx-auto text-sm lg:text-base">
-              Need an enterprise solution for your team? 
-              <a href="/contact" className="text-primary hover:text-primary/80 ml-1 lg:ml-2 font-semibold underline underline-offset-4">
-                Contact us for custom pricing
+            <p className="mt-4 text-muted-foreground max-w-sm mx-auto text-sm">
+              Need an enterprise solution? 
+              <a href="/contact" className="text-primary hover:text-primary/80 ml-1 font-semibold underline underline-offset-4">
+                Contact us
               </a>
             </p>
           </div>
@@ -224,8 +223,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
       </div>
 
       {showBottom && (
-        <div className="border-t border-border">
-          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+        <div className="">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-4 pb-12 ">
             <h3 className="text-xl lg:text-2xl font-bold text-center mb-8 lg:mb-12">
               Why Upgrade to Premium?
             </h3>
@@ -235,9 +234,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 <div className="w-10 lg:w-12 h-10 lg:h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-5 lg:w-6 h-5 lg:h-6 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Advanced AI</h4>
+                <h4 className="text-lg font-semibold mb-2">Advanced Fallacy Detection</h4>
                 <p className="text-sm text-muted-foreground">
-                  Our premium AI learns from your behavior and optimizes recommendations for your exact learning style
+                  Identify 15+ types of logical fallacies including ad hominem, strawman, false dilemma, and slippery slope arguments
                 </p>
               </div>
               
@@ -245,9 +244,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 <div className="w-10 lg:w-12 h-10 lg:h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="w-5 lg:w-6 h-5 lg:h-6 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Career Acceleration</h4>
+                <h4 className="text-lg font-semibold mb-2">Reputation Risk Analysis</h4>
                 <p className="text-sm text-muted-foreground">
-                  Career simulator and skill gap analysis show you exactly what to learn for your dream job
+                  Evaluate how your arguments might be perceived publicly with toxicity and hate speech detection
                 </p>
               </div>
               
@@ -255,16 +254,16 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 <div className="w-10 lg:w-12 h-10 lg:h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Award className="w-5 lg:w-6 h-5 lg:h-6 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Expert Guidance</h4>
+                <h4 className="text-lg font-semibold mb-2">AI Rewrite Suggestions</h4>
                 <p className="text-sm text-muted-foreground">
-                  Included 1-on-1 consultation helps you avoid costly mistakes and wasted time on wrong courses
+                  Get AI-powered suggestions to strengthen and clarify your arguments for maximum impact
                 </p>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

@@ -169,6 +169,7 @@ export default function FooterSection({
       appName: "Explore",
       links: [
         // { text: "Blog", href: "/blog" },
+        { text: "Pricing", href: "/pricing" },
         { text: "Feedback", href: "/feedback" },
         // { text: "Affiliates", href: "/affiliates" },
         // { text: "Developers", href: "/developers" },
