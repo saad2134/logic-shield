@@ -173,7 +173,7 @@ export default function FooterSection({
         { text: "Pricing", href: "/pricing" },
         // { text: "Affiliates", href: "/affiliates" },
         // { text: "Developers", href: "/developers" },
-        { text: "Documentation 🡲", href: "https://github.com/saad2134/logic-shield/wiki" },
+        { text: "Documentation ➜", href: "https://github.com/saad2134/logic-shield/wiki" },
         // { text: "Advertise", href: "/advertise" },
         // { text: "Parental Guidance", href: "/parental-guidance" },
         // { text: "Accessibility Help", href: "/accessibility" },
