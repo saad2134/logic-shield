@@ -169,7 +169,7 @@ export default function FooterSection({
       appName: "Explore",
       links: [
         // { text: "Blog", href: "/blog" },
-        { text: "Feedback", href: "/ideas" },
+        { text: "Feedback", href: "/feedback" },
         // { text: "Affiliates", href: "/affiliates" },
         // { text: "Developers", href: "/developers" },
         { text: "Documentation", href: "https://github.com/saad2134/logic-shield/wiki" },

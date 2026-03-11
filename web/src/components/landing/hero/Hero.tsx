@@ -7,20 +7,7 @@ import { ArrowRight, Shield } from "lucide-react";
 export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <ColorBends
-          colors={["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]}
-          speed={0.15}
-          scale={1.2}
-          frequency={1.5}
-          warpStrength={1.2}
-          mouseInfluence={0.8}
-          parallax={0.4}
-          noise={0.05}
-          transparent={true}
-          className="opacity-90"
-        />
-      </div>
+      
       
       <div className="relative z-10 container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
