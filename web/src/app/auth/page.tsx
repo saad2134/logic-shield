@@ -104,7 +104,7 @@ export default function AuthPage() {
         <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Authentication</h1>
-          <p className="text-muted-foreground">Your personalized career journey starts here!</p>
+          <p className="text-muted-foreground">{siteConfig.tagline}</p>
         </div>
 
         {isLogin ? (
@@ -218,7 +218,7 @@ export default function AuthPage() {
           <Card>
             <CardHeader>
               <CardTitle>Create an Account</CardTitle>
-              <CardDescription>Start your personalized career journey today</CardDescription>
+              <CardDescription>{siteConfig.tagline}</CardDescription>
             </CardHeader>
             <form onSubmit={handleSignup}>
               <CardContent className="space-y-4">
