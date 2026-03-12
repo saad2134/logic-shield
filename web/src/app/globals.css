@@ -116,7 +116,7 @@ html {
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
-  --tracking-normal: var(--tracking-normal);
+  --tracking-normal: 0em;
   --shadow-lg: var(--shadow-lg);
   --shadow: var(--shadow);
   --shadow-sm: var(--shadow-sm);

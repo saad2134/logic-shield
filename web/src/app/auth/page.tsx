@@ -12,6 +12,7 @@ import { siteConfig } from "@/config/site";
 import { motion } from "framer-motion";
 import { Briefcase, ArrowRight, Loader2, Form } from "lucide-react";
 import Silk from "@/components/Silk";
+import Prism from "@/components/Prism";
 import { authService } from "@/lib/auth";
 
 export default function AuthPage() {
@@ -24,13 +25,13 @@ export default function AuthPage() {
   const [googleLoginAvailable, setGoogleLoginAvailable] = useState(false);
 
   useEffect(() => {
-    document.title = `Sign In ✦ ${siteConfig.name}`;
+    document.title = `Login or Signup ✦ ${siteConfig.name}`;
     const storedEmail = authService.getStoredEmail();
     if (storedEmail) {
       setLoginData(prev => ({ ...prev, email: storedEmail, rememberMe: true }));
     }
     if (authService.isAuthenticated()) {
-      router.push("/student/onboarding");
+      router.push("/app/onboarding");
     }
   }, [router]);
 
@@ -43,7 +44,7 @@ export default function AuthPage() {
       const result = await authService.login(loginData);
 
       if (result.success) {
-        router.push("/student/onboarding");
+        router.push("/app/onboarding");
       } else {
         setError(result.message || "Login failed. Please try again.");
       }
@@ -78,7 +79,7 @@ export default function AuthPage() {
       });
 
       if (result.success) {
-        router.push("/student/onboarding");
+        router.push("/app/onboarding");
       } else {
         setError(result.message || "Signup failed. Please try again.");
       }
@@ -95,10 +96,22 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="w-[60%] min-h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
+      <div className="w-[60%] h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10" />
         <div className="absolute inset-0">
-          <Silk color="#ffa811" speed={8} />
+          <Prism 
+            animationType="3drotate"
+            glow={1}
+            hueShift={0}
+            colorFrequency={1}
+            timeScale={0.5}
+            bloom={1}
+            scale={3.6}
+            height={3.5}
+            baseWidth={5.5}
+          />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
       </div>
       <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-4 py-16 lg:p-8">
         <div className="w-full max-w-md">

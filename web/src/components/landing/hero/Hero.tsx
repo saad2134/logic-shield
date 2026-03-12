@@ -10,7 +10,7 @@ import LightRays from './LightRays';
 
 export default function Hero() {
   const { theme } = useTheme();
-  const brightness = theme === "light" ? 2.5 : 1.0;
+  const brightness = theme === "light" ? 2.5 : 0.5;
 
   return (
     <section className="relative pt-32 py-24 flex items-center justify-center overflow-hidden px-8">
