@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { forwardRef, useRef, useMemo, useLayoutEffect } from 'react';
+import { forwardRef, useRef, useMemo, useLayoutEffect, useState } from 'react';
 import { Color } from 'three';
 
 const hexToNormalizedRGB = hex => {
@@ -94,6 +94,7 @@ SilkPlane.displayName = 'SilkPlane';
 
 const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, rotation = 0 }) => {
   const meshRef = useRef();
+  const [ready, setReady] = useState(false);
 
   const uniforms = useMemo(
     () => ({
@@ -108,15 +109,23 @@ const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, r
   );
 
   return (
-    <Canvas
-      dpr={[1, 2]}
-      frameloop="always"
-      onContextMenu={(e) => e.preventDefault()}
-      style={{ userSelect: 'none', pointerEvents: 'auto' }}
-      gl={{ preserveDrawingBuffer: true }}
-    >
-      <SilkPlane ref={meshRef} uniforms={uniforms} />
-    </Canvas>
+    <div className="absolute inset-0 bg-black" style={{ background: 'oklch(0 0 0)' }}>
+      <Canvas
+        dpr={[1, 2]}
+        frameloop="always"
+        onContextMenu={(e) => e.preventDefault()}
+        style={{ 
+          userSelect: 'none', 
+          pointerEvents: 'auto', 
+          opacity: ready ? 1 : 0,
+          transition: 'opacity 0.3s ease-out'
+        }}
+        gl={{ preserveDrawingBuffer: true }}
+        onCreated={() => setReady(true)}
+      >
+        <SilkPlane ref={meshRef} uniforms={uniforms} />
+      </Canvas>
+    </div>
   );
 };
 

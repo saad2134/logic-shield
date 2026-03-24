@@ -108,6 +108,7 @@ const LightRays = ({
         containerRef.current.removeChild(containerRef.current.firstChild);
       }
       containerRef.current.appendChild(gl.canvas);
+      containerRef.current.classList.add('canvas-ready');
 
       const vert = `
 attribute vec2 position;
@@ -298,6 +299,10 @@ void main() {
         }
 
         window.removeEventListener('resize', updatePlacement);
+
+        if (containerRef.current) {
+          containerRef.current.classList.remove('canvas-ready');
+        }
 
         if (renderer) {
           try {
