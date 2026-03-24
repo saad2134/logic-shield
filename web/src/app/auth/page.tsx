@@ -95,13 +95,13 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex ">
       <div className="w-[60%] min-h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
         <div className="absolute inset-0">
           <Silk color="#5188ff" speed={8} />
         </div>
       </div>
-      <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-4 py-16 lg:p-8">
+      <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-6 py-12 lg:py-16">
         <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Authentication</h1>
