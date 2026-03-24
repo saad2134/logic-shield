@@ -233,14 +233,11 @@ export const NavbarButton = ({
   ...props
 }: {
   href?: string;
-  as?: React.ElementType;
+  as?: "a" | "button";
   children: React.ReactNode;
   className?: string;
   variant?: "primary" | "secondary" | "dark" | "gradient";
-} & (
-  | React.ComponentPropsWithoutRef<"a">
-  | React.ComponentPropsWithoutRef<"button">
-)) => {
+} & React.HTMLAttributes<HTMLElement>) => {
   const baseStyles =
     "px-4 py-2 rounded-lg bg-white button bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center";
 

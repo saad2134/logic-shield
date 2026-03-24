@@ -33,7 +33,7 @@ export default function NewDebate() {
 
   const [topic, setTopic] = React.useState("");
   const [userStance, setUserStance] = React.useState<"support" | "oppose" | "neutral">("support");
-  const [opponentPersona, setOpponentPersona] = React.useState(searchParams.get("persona") || "logical");
+  const [opponentPersona, setOpponentPersona] = React.useState<string>(searchParams.get("persona") || "logical");
 
   React.useEffect(() => {
     async function loadPersonas() {
@@ -229,7 +229,7 @@ export default function NewDebate() {
                         color: "text-gray-500",
                         traits: [],
                       };
-                      const Icon = info.icon;
+                      const Icon = info.icon as React.ComponentType<{ className?: string }>;
                       const isSelected = opponentPersona === persona.id;
 
                       return (
