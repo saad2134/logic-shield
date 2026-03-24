@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="overflow-x-hidden ">
       <body className={`${inter.className}  antialiased overflow-x-hidden`}>
         <ClickSpark
-          sparkColor='#c59a1e'
+          sparkColor='#1e5bc5'
           sparkSize={10}
           sparkRadius={15}
           sparkCount={8}

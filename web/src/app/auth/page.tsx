@@ -96,22 +96,10 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="w-[60%] h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10" />
+      <div className="w-[60%] min-h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
         <div className="absolute inset-0">
-          <Prism 
-            animationType="3drotate"
-            glow={1}
-            hueShift={0}
-            colorFrequency={1}
-            timeScale={0.5}
-            bloom={1}
-            scale={3.6}
-            height={3.5}
-            baseWidth={5.5}
-          />
+          <Silk color="#5188ff" speed={8} />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
       </div>
       <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-4 py-16 lg:p-8">
         <div className="w-full max-w-md">
