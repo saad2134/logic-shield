@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemeProvider, useTheme as useNextTheme } from "next-themes";
 import { useEffect, useState, createContext, useContext } from "react";
+import { AuthProvider } from "./auth-context";
 
 interface ThemeContextProps {
   theme: string;
@@ -14,7 +15,9 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>{children}</ThemeProvider>
+      </AuthProvider>
     </SessionProvider>
   );
 }

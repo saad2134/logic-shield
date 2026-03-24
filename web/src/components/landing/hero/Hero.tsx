@@ -10,7 +10,7 @@ import LightRays from './LightRays';
 
 export default function Hero() {
   const { theme } = useTheme();
-  const brightness = theme === "light" ? 2.5 : 1.0;
+  const brightness = theme === "light" ? 75 : 1.0;
 
   return (
     <section className="relative pt-32 py-24 flex items-center justify-center overflow-hidden px-8">
@@ -18,7 +18,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <LightRays
           raysOrigin="top-center"
-          raysColor="#f59e0b"
+          raysColor="#0b0bf5"
           raysSpeed={1}
           lightSpread={0.5}
           rayLength={3}

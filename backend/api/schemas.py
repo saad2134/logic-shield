@@ -81,3 +81,91 @@ class PersonaInfo(BaseModel):
     id: str
     name: str
     description: str
+
+
+class UserCreate(BaseModel):
+    email: str
+    username: str
+    password: str
+    full_name: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: Optional[str]
+    username: Optional[str]
+    full_name: Optional[str]
+    is_active: bool
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
+    occupation: Optional[str] = None
+    interests: Optional[str] = None
+    experience_level: Optional[str] = None
+
+
+class UserProfileResponse(BaseModel):
+    id: int
+    email: Optional[str]
+    username: Optional[str]
+    full_name: Optional[str]
+    bio: Optional[str] = None
+    occupation: Optional[str] = None
+    interests: Optional[str] = None
+    experience_level: Optional[str] = None
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+
+class UserStatsResponse(BaseModel):
+    total_debates: int
+    total_arguments: int
+    avg_argument_strength: float
+    fallacy_count: float
+    current_streak: int
+    win_rate: float
+
+
+class AchievementResponse(BaseModel):
+    id: str
+    title: str
+    description: str
+    icon: str
+    earned: bool
+    earned_at: Optional[str] = None
+
+
+class UserSettingsUpdate(BaseModel):
+    notifications: Optional[bool] = True
+    theme: Optional[str] = "light"
+    language: Optional[str] = "en"
+    analysis_depth: Optional[str] = "standard"
+
+
+class UserSettingsResponse(BaseModel):
+    notifications: bool
+    theme: str
+    language: str
+    analysis_depth: str
+
+
+class OnboardingRequest(BaseModel):
+    name: str
+    experience_level: str
+    goals: List[str]
+    interests: List[str]
+    debate_frequency: str
+    focus_areas: List[str]

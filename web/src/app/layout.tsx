@@ -12,10 +12,27 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="overflow-x-hidden ">
+    <html lang="en" className="overflow-x-hidden " suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var stored = localStorage.getItem('theme');
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (stored === 'dark' || (!stored && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${inter.className}  antialiased overflow-x-hidden`}>
         <ClickSpark
-          sparkColor='#c59a1e'
+          sparkColor='#1e5bc5'
           sparkSize={10}
           sparkRadius={15}
           sparkCount={8}

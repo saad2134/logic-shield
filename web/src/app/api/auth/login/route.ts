@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_SERVICE_CORE_BASE_URL || 'http://localhost:8000';
+const BACKEND_URL = process.env.BACKEND_BASE_URL?.replace(/\/$/, "") + "/api/v1" || 'http://localhost:8000/api/v1';
 
 export async function POST(request: Request) {
   try {
@@ -22,23 +22,17 @@ export async function POST(request: Request) {
         signal: AbortSignal.timeout(10000),
       });
 
-      if (!backendResponse.ok) {
-        return NextResponse.json(
-          { success: false, message: 'Cannot reach backend core service.' },
-          { status: 503 }
-        );
-      }
-
       const userData = await backendResponse.json();
 
-      if (!backendResponse.ok || !userData.success) {
+      if (!backendResponse.ok) {
         return NextResponse.json(
           { success: false, message: userData.detail || 'Invalid credentials' },
-          { status: 401 }
+          { status: backendResponse.status }
         );
       }
 
-      return NextResponse.json(userData);
+      const { access_token, token_type, user } = userData;
+      return NextResponse.json({ success: true, token: access_token, user });
     } catch (dbError) {
       console.error('Backend connection failed:', dbError);
       return NextResponse.json(
