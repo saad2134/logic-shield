@@ -49,7 +49,7 @@ export const FooterLogo = () => {
         width={30}
         height={30}
       />
-      <h1 className="font-bold text-xl text-black dark:text-white pr-2">{siteConfig.name}</h1>
+      <h1 className="font-bold text-xl text-black dark:text-white ">{siteConfig.name}</h1>
 
       <div className="inline-flex items-center rounded-md border border-foreground/30 px-2.5 py-0.5 text-xs font-semibold gap-2 bg-background text-foreground">
         <div className={`w-2 h-2 rounded-full ${loading ? 'bg-muted-foreground' : ''} ${status === 'operational' ? 'bg-green-500' : ''} ${status === 'issues' ? 'bg-yellow-500' : ''} ${status === 'degraded' ? 'bg-red-500' : ''}`} />
