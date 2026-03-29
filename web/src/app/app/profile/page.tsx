@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [error, setError] = React.useState<string | null>(null);
 
   const [editData, setEditData] = React.useState({
-    name: user?.name || "",
+    name: user?.full_name || "",
     bio: user?.bio || "",
     occupation: user?.occupation || "",
     interests: user?.interests || "",
