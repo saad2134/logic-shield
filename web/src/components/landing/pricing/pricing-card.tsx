@@ -102,7 +102,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
         {/* Premium Card */}
         <div className="flex-1 bg-gradient-to-br from-primary/10 via-card to-card rounded-2xl border-2 border-primary/30 overflow-hidden relative hover:shadow-xl hover:border-primary/50 transition-all duration-300">
           {/* Popular Badge */}
-          <div className={`absolute top-0 right-0 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-bold ${badge} rounded-bl-xl lg:rounded-bl-2xl flex items-center gap-1`}>
+          <div className={`absolute top-0 right-0 bg-gradient-to-r from-primary to-primary/50 text-primary-950 font-bold ${badge} rounded-bl-xl lg:rounded-bl-2xl flex items-center gap-1 px-8`}>
             <Award className="w-3 h-3" />
             MOST POPULAR
           </div>
