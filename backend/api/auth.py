@@ -69,32 +69,47 @@ def get_current_user(
 
 @router.post("/auth/register", status_code=status.HTTP_201_CREATED)
 def register(request: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(
-        (User.email == request.email) | (User.username == request.username)
-    ).first()
-    
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User already exists"
+    try:
+        existing_user = db.query(User).filter(
+            (User.email == request.email) | (User.username == request.username)
+        ).first()
+        
+        if existing_user:
+            if existing_user.email == request.email:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="An account with this email already exists"
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="This username is already taken"
+                )
+        
+        hashed_password = get_password_hash(request.password)
+        
+        user = User(
+            email=request.email,
+            username=request.username,
+            full_name=request.full_name,
+            hashed_password=hashed_password,
         )
-    
-    hashed_password = get_password_hash(request.password)
-    
-    user = User(
-        email=request.email,
-        username=request.username,
-        full_name=request.full_name,
-        hashed_password=hashed_password,
-    )
-    
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    
-    analytics = UserAnalytics(user_id=user.id)
-    db.add(analytics)
-    db.commit()
+        
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        analytics = UserAnalytics(user_id=user.id)
+        db.add(analytics)
+        db.commit()
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to create account. Please try again. ({str(e)[:50]})"
+        )
     
     access_token = create_access_token(
         data={"sub": user.id},
@@ -115,9 +130,21 @@ def register(request: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/auth/login")
 def login(request: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == request.email).first()
+    try:
+        user = db.query(User).filter(User.email == request.email).first()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable. Please try again later."
+        )
     
-    if not user or not user.hashed_password:
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No account found with this email. Please sign up first."
+        )
+    
+    if not user.hashed_password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -126,7 +153,7 @@ def login(request: UserLogin, db: Session = Depends(get_db)):
     if not verify_password(request.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail="Incorrect password. Please try again."
         )
     
     access_token = create_access_token(

@@ -6,6 +6,10 @@ from typing import Optional, List, Union
 
 
 def get_database_url() -> str:
+    if os.getenv("VERCEL_ENV"):
+        prisma_url = os.getenv("VERCEL_DB_PRISMA_DATABASE_URL") or os.getenv("VERCEL_DB_PRISMA_POSTGRES_URL")
+        if prisma_url:
+            return prisma_url
     return os.getenv("DATABASE_URL") or "sqlite:///./logicshield.db"
 
 
