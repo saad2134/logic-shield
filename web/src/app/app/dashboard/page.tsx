@@ -156,7 +156,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                Welcome back, {user?.name || "User"}!
+                Welcome back, {user?.full_name || "User"}!
               </h1>
               <p className="text-muted-foreground mt-1">
                 Continue your debate practice journey
