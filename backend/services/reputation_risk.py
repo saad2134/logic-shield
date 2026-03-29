@@ -1,7 +1,13 @@
 from typing import Dict, List, Optional
-import torch
-from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
 import numpy as np
+
+torch = None
+transformers = None
+try:
+    import torch
+    from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
+except ImportError:
+    pass
 
 
 RISK_DESCRIPTIONS = {
