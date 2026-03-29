@@ -8,7 +8,7 @@ pool_config = {}
 
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
-elif settings.DATABASE_URL.startswith("postgres"):
+elif "postgres" in settings.DATABASE_URL:
     pool_config = {
         "pool_size": 5,
         "max_overflow": 10,

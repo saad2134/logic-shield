@@ -9,6 +9,10 @@ def get_database_url() -> str:
     if os.getenv("VERCEL_ENV"):
         prisma_url = os.getenv("VERCEL_DB_PRISMA_DATABASE_URL") or os.getenv("VERCEL_DB_PRISMA_POSTGRES_URL")
         if prisma_url:
+            if prisma_url.startswith("postgres://"):
+                prisma_url = prisma_url.replace("postgres://", "postgresql+psycopg2://", 1)
+            elif prisma_url.startswith("postgresql://"):
+                prisma_url = prisma_url.replace("postgresql://", "postgresql+psycopg2://", 1)
             return prisma_url
     return os.getenv("DATABASE_URL") or "sqlite:///./logicshield.db"
 
