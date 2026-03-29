@@ -98,8 +98,8 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
 
   return (
@@ -160,7 +160,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
                     {initials}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{user.name}</p>
+                    <p className="text-sm font-medium truncate">{user.full_name || user.email}</p>
                     <p className="text-xs text-muted-foreground">Profile</p>
                   </div>
                 </Link>

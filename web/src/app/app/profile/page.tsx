@@ -72,7 +72,7 @@ export default function ProfilePage() {
   React.useEffect(() => {
     if (user) {
       setEditData({
-        name: user.name || "",
+        name: user.full_name || "",
         bio: user.bio || "",
         occupation: user.occupation || "",
         interests: user.interests || "",
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
   const handleEdit = () => {
     setEditData({
-      name: user?.name || "",
+      name: user?.full_name || "",
       bio: user?.bio || "",
       occupation: user?.occupation || "",
       interests: user?.interests || "",
@@ -127,8 +127,8 @@ export default function ProfilePage() {
     { name: "Reputation Management", level: 72, color: "bg-pink-500" },
   ];
 
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
 
   if (isLoading) {
