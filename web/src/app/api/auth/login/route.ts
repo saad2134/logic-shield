@@ -5,6 +5,7 @@ const BACKEND_URL = process.env.BACKEND_BASE_URL?.replace(/\/$/, "") + "/api/v1"
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('Request body:', body);
     const { email, password } = body;
 
     if (!email || !password) {
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     }
 
     try {
+      console.log('Login request:', { email, password });
       const backendResponse = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,20 +25,36 @@ export async function POST(request: Request) {
       });
 
       const userData = await backendResponse.json();
+      console.log('Login response:', backendResponse.status, userData);
 
       if (!backendResponse.ok) {
+        let errorMessage = 'Invalid credentials';
+        if (userData.detail) {
+          if (typeof userData.detail === 'string') {
+            errorMessage = userData.detail;
+          } else if (Array.isArray(userData.detail)) {
+            const firstError = userData.detail[0];
+            if (firstError && typeof firstError === 'object') {
+              errorMessage = firstError.msg || firstError.message || JSON.stringify(firstError);
+            }
+          } else if (typeof userData.detail === 'object') {
+            errorMessage = userData.detail.msg || userData.detail.message || JSON.stringify(userData.detail);
+          }
+        } else if (userData.message) {
+          errorMessage = userData.message;
+        }
         return NextResponse.json(
-          { success: false, message: userData.detail || 'Invalid credentials' },
+          { success: false, message: errorMessage },
           { status: backendResponse.status }
         );
       }
 
       const { access_token, token_type, user } = userData;
-      return NextResponse.json({ success: true, token: access_token, user });
+      return NextResponse.json({ success: true, token: access_token, user: user || {} });
     } catch (dbError) {
       console.error('Backend connection failed:', dbError);
       return NextResponse.json(
-        { success: false, message: 'Cannot reach backend core service.' },
+        { success: false, message: 'Cannot reach backend service.' },
         { status: 503 }
       );
     }

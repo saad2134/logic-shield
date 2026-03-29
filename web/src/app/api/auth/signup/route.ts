@@ -25,15 +25,30 @@ export async function POST(request: Request) {
       const backendResponse = await fetch(`${BACKEND_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email.split('@')[0], email, password, full_name: name }),
+        body: JSON.stringify({ email, password, full_name: name }),
         signal: AbortSignal.timeout(10000),
       });
 
       const userData = await backendResponse.json();
 
       if (!backendResponse.ok) {
+        let errorMessage = 'Registration failed';
+        if (userData.detail) {
+          if (typeof userData.detail === 'string') {
+            errorMessage = userData.detail;
+          } else if (Array.isArray(userData.detail)) {
+            const firstError = userData.detail[0];
+            if (firstError && typeof firstError === 'object') {
+              errorMessage = firstError.msg || firstError.message || JSON.stringify(firstError);
+            }
+          } else if (typeof userData.detail === 'object') {
+            errorMessage = userData.detail.msg || userData.detail.message || JSON.stringify(userData.detail);
+          }
+        } else if (userData.message) {
+          errorMessage = userData.message;
+        }
         return NextResponse.json(
-          { success: false, message: userData.detail || 'Registration failed' },
+          { success: false, message: errorMessage },
           { status: backendResponse.status }
         );
       }
@@ -43,7 +58,7 @@ export async function POST(request: Request) {
     } catch (dbError) {
       console.error('Backend connection failed:', dbError);
       return NextResponse.json(
-        { success: false, message: 'Cannot reach backend core service.' },
+        { success: false, message: 'Cannot reach backend service.' },
         { status: 503 }
       );
     }

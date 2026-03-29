@@ -21,10 +21,14 @@ export interface AuthResponse {
   token?: string;
 }
 
+const BACKEND_URL = (typeof process !== 'undefined' && process.env?.BACKEND_BASE_URL) 
+  ? `${process.env.BACKEND_BASE_URL}/api/v1` 
+  : "http://localhost:8000/api/v1";
+
 export const authService = {
   async login(data: LoginData): Promise<AuthResponse> {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,6 +40,7 @@ export const authService = {
       });
 
       const result = await response.json();
+      console.log('Auth service login result:', response.status, result);
       
       if (response.ok && result.success) {
         if (result.token) {
@@ -62,7 +67,7 @@ export const authService = {
 
   async signup(data: SignupData): Promise<AuthResponse> {
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch(`${BACKEND_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

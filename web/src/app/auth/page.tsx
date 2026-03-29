@@ -14,9 +14,11 @@ import { Briefcase, ArrowRight, Loader2, Form } from "lucide-react";
 import Silk from "@/components/Silk";
 import Prism from "@/components/Prism";
 import { authService } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 
 export default function AuthPage() {
   const router = useRouter();
+  const { login, register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [loginData, setLoginData] = useState({ email: "", password: "", rememberMe: false });
@@ -41,15 +43,11 @@ export default function AuthPage() {
     setError("");
 
     try {
-      const result = await authService.login(loginData);
-
-      if (result.success) {
-        router.push("/app/onboarding");
-      } else {
-        setError(result.message || "Login failed. Please try again.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+      await login(loginData.email, loginData.password);
+      router.push("/app/onboarding");
+    } catch (err: any) {
+      console.log('Login failed:', err);
+      setError(err?.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -72,19 +70,10 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
-      const result = await authService.signup({
-        name: signupData.name,
-        email: signupData.email,
-        password: signupData.password
-      });
-
-      if (result.success) {
-        router.push("/app/onboarding");
-      } else {
-        setError(result.message || "Signup failed. Please try again.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+      await register(signupData.name, signupData.email, signupData.password);
+      router.push("/app/onboarding");
+    } catch (err: any) {
+      setError(err?.message || "Signup failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

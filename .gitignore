@@ -2,3 +2,4 @@ reference/
 temp/
 .snapshots/
 backend/DEPLOYMENT_LOG.txt
+backend/ONBOARDING_LOGS.md
