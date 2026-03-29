@@ -21,6 +21,11 @@ interface StatusResponse {
   checkedAt: string;
 }
 
+export const metadata = {
+  title: `Status ✦ ${siteConfig.name}`,
+  description: "Monitor the status of various LogicShield services.",
+};
+
 export default function StatusPage() {
   const [data, setData] = useState<StatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
