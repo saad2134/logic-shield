@@ -1,8 +1,15 @@
 from typing import Dict, List, Tuple, Optional
-import torch
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoModel
-from sentence_transformers import SentenceTransformer
 import numpy as np
+
+torch = None
+transformers = None
+SentenceTransformer = None
+try:
+    import torch
+    from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoModel
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    pass
 
 
 FALLACY_LABELS = [
