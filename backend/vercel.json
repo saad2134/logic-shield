@@ -1,0 +1,4 @@
+{
+  "buildCommand": "pip install -r requirements-vercel.txt",
+  "installCommand": "pip install -r requirements-vercel.txt"
+}
