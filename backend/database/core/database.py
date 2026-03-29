@@ -4,13 +4,21 @@ from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
 connect_args = {}
+pool_config = {}
+
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+elif "postgres" in settings.DATABASE_URL:
+    pool_config = {
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_pre_ping": True,
+    }
 
 engine = create_engine(
     settings.DATABASE_URL, 
-    pool_pre_ping=True,
-    connect_args=connect_args
+    connect_args=connect_args,
+    **pool_config
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
