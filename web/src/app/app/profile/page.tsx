@@ -99,7 +99,7 @@ export default function ProfilePage() {
     setError(null);
     try {
       await api.updateProfile({
-        name: editData.name,
+        full_name: editData.name,
         bio: editData.bio,
         occupation: editData.occupation,
         interests: editData.interests,
@@ -275,7 +275,7 @@ export default function ProfilePage() {
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-3xl font-bold text-white mb-4">
                         {initials}
                       </div>
-                      <h2 className="text-xl font-bold">{user?.name}</h2>
+                      <h2 className="text-xl font-bold">{user?.full_name || user?.email}</h2>
                       <p className="text-muted-foreground">{user?.email}</p>
                       <p className="text-sm text-muted-foreground mt-2 text-center">{user?.bio || "No bio yet"}</p>
                       
