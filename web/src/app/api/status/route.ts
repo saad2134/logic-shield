@@ -10,7 +10,7 @@ function getServices(): Service[] {
     { name: "Frontend Web (Vercel)", url: "https://vercel.app" },
   ];
 
-  const backendUrl = process.env.BACKEND_SERVICE_CORE_BASE_URL || "http://localhost:8000";
+  const backendUrl = process.env.BACKEND_BASE_URL || "http://localhost:8000";
   services.push({ name: "Backend: Core Services (Auth, Database, Models etc.)", url: backendUrl });
 
   return services;
