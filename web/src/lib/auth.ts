@@ -102,27 +102,33 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('remember_email');
-    localStorage.removeItem('onboarding_completed');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('remember_email');
+      localStorage.removeItem('onboarding_completed');
+    }
   },
 
   getStoredEmail(): string {
+    if (typeof window === 'undefined') return '';
     return localStorage.getItem('remember_email') || '';
   },
 
   isAuthenticated(): boolean {
+    if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('auth_token');
   },
 
   getUser(): { id: number; name: string; email: string } | null {
+    if (typeof window === 'undefined') return null;
     const userData = localStorage.getItem('user_data');
     return userData ? JSON.parse(userData) : null;
   },
 
   getToken(): string | null {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('auth_token');
   }
 };

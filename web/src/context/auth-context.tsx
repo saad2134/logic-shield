@@ -28,15 +28,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error('Failed to refresh user:', err);
-      const storedUser = localStorage.getItem('user_data');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('user_data');
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch {
+            setUser(null);
+          }
+        } else {
           setUser(null);
         }
-      } else {
-        setUser(null);
       }
     } finally {
       setIsLoading(false);
@@ -44,12 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    const storedUser = localStorage.getItem('user_data');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        setUser(null);
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user_data');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          setUser(null);
+        }
       }
     }
     refreshUser();

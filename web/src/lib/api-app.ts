@@ -178,6 +178,7 @@ export const authApi = {
   },
 
   me: async () => {
+    if (typeof window === 'undefined') return null;
     try {
       const token = localStorage.getItem('auth_token');
       console.log('me() - token:', token ? 'present' : 'missing');
@@ -312,7 +313,7 @@ export const api = {
     debate_frequency: string;
     focus_areas: string[];
   }) => {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     console.log('Submitting onboarding - token present:', !!token);
     
     // Use X-Auth-Token header to work around CORS issues
