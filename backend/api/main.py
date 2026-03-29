@@ -16,6 +16,7 @@ from api.schemas import (
 )
 from services.analysis import AnalysisService
 from services.debate_simulator import DebateSimulator
+from app.config import settings
 from datetime import datetime
 
 router = APIRouter()
@@ -26,16 +27,21 @@ debate_simulator = DebateSimulator()
 
 @router.get("/health", response_model=HealthResponse)
 def health_check():
-    return {
+    services_status = {
+        "fallacy_detection": "active" if not settings.DEMO_MODE else "demo",
+        "argument_analysis": "active" if not settings.DEMO_MODE else "demo",
+        "reputation_risk": "active" if not settings.DEMO_MODE else "demo",
+        "debate_simulation": "active" if not settings.DEMO_MODE else "demo"
+    }
+    result = {
         "status": "healthy",
         "version": "1.0.0",
-        "services": {
-            "fallacy_detection": "active",
-            "argument_analysis": "active",
-            "reputation_risk": "active",
-            "debate_simulation": "active"
-        }
+        "services": services_status
     }
+    if settings.DEMO_MODE:
+        result["demo_mode"] = True
+        result["demo_message"] = settings.DEMO_MESSAGE
+    return result
 
 
 @router.get("/personas", response_model=list[PersonaInfo])
