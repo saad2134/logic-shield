@@ -21,10 +21,16 @@ import {
   Loader2,
   LogOut,
   Moon,
-  Sun,
+  Sun
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/providers";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api-app";
 
 interface OnboardingData {
@@ -93,8 +99,10 @@ export default function OnboardingPage() {
   });
 
   React.useEffect(() => {
-    if (user?.name || user?.full_name) {
-      setData(prev => ({ ...prev, name: user.name || user.full_name || '' }));
+    console.log('User in onboarding:', user);
+    const name = user?.full_name || user?.email?.split('@')[0] || '';
+    if (name) {
+      setData(prev => ({ ...prev, name }));
     }
   }, [user]);
 
@@ -146,6 +154,8 @@ export default function OnboardingPage() {
     setIsLoading(true);
     setError(null);
     try {
+      const token = localStorage.getItem('auth_token');
+      console.log('Onboarding submit - token:', token ? 'present' : 'missing', token);
       await api.submitOnboarding({
         name: data.name,
         experience_level: data.experienceLevel,
@@ -157,6 +167,7 @@ export default function OnboardingPage() {
       await refreshUser();
       router.push("/app/dashboard");
     } catch (err) {
+      console.error('Onboarding submit error:', err);
       setError(err instanceof Error ? err.message : "Failed to submit onboarding");
     } finally {
       setIsLoading(false);
@@ -169,12 +180,28 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 py-16">
       <div className="absolute top-4 right-4 flex items-center gap-3">
-        <div className="text-right">
-          <div className="text-sm font-medium">{user?.full_name || user?.name || 'User'}</div>
-          <div className="text-xs text-muted-foreground">{user?.email}</div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="cursor-pointer">
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="z-50">
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              Light
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              Dark
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              System
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button variant="outline" size="icon" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
         </Button>
@@ -184,7 +211,7 @@ export default function OnboardingPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-2xl"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 ">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
             <Sparkles className="h-8 w-8 text-primary" />
           </div>
@@ -224,13 +251,17 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="name">Your name</Label>
-                  <Input
-                    id="name"
-                    value={data.name}
-                    disabled
-                    className="h-12 bg-muted"
-                  />
+                  <Label>Your information</Label>
+                  <div className="p-4 rounded-lg bg-muted space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Full Name</span>
+                      <span className="font-medium">{user?.full_name || user?.email?.split('@')[0] || 'Not provided'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Email</span>
+                      <span className="font-medium">{user?.email || 'Not provided'}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-3">

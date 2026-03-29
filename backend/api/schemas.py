@@ -88,21 +88,19 @@ class PersonaInfo(BaseModel):
 
 
 class UserCreate(BaseModel):
-    email: str
-    username: str
-    password: str
-    full_name: Optional[str] = None
+    email: str = Field(..., min_length=1)
+    password: str = Field(..., min_length=1)
+    full_name: str = Field(..., min_length=1)
 
 
 class UserLogin(BaseModel):
-    email: str
-    password: str
+    email: str = Field(..., min_length=1)
+    password: str = Field(..., min_length=1)
 
 
 class UserResponse(BaseModel):
     id: int
     email: Optional[str]
-    username: Optional[str]
     full_name: Optional[str]
     is_active: bool
     created_at: str
@@ -122,7 +120,6 @@ class UserProfileUpdate(BaseModel):
 class UserProfileResponse(BaseModel):
     id: int
     email: Optional[str]
-    username: Optional[str]
     full_name: Optional[str]
     bio: Optional[str] = None
     occupation: Optional[str] = None

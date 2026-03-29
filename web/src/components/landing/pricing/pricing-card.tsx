@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import { Check, Sparkles, Zap, Users, TrendingUp, Shield, Award, Rocket } from 'lucide-react';
 
 const freemiumFeatures = [
@@ -70,9 +71,9 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
                 <p className="text-muted-foreground mt-1 text-xs lg:text-sm">Perfect for testing and getting started</p>
               </div>
 
-              <button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-2.5 lg:py-3 px-4 rounded-lg transition-all duration-200 border border-border hover:border-primary/30 text-sm">
+              <Link href="/auth" className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-2.5 lg:py-3 px-4 rounded-lg transition-all duration-200 border border-border hover:border-primary/30 text-sm flex items-center justify-center">
                 Get Started Free
-              </button>
+              </Link>
 
               <p className="text-center text-muted-foreground text-[10px] lg:text-xs mt-2">
                 Try It Out • Free Forever
@@ -125,10 +126,10 @@ export const PricingCards: React.FC<PricingCardsProps> = ({ className = "", comp
                 <p className="text-primary/80 mt-1 text-xs lg:text-sm">For serious debaters ready to sharpen skills</p>
               </div>
 
-              <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 lg:py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm">
+              <Link href="/auth" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 lg:py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm">
                 <Zap className="w-4 h-4" />
                 Start Premium Trial
-              </button>
+              </Link>
               
               <p className="text-center text-muted-foreground text-[10px] lg:text-xs mt-2">
                 14-day Free Trial • Cancel Anytime

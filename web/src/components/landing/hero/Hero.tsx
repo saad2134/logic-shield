@@ -7,10 +7,14 @@ import { ArrowRight, Shield, Brain, Scale, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import LightRays from './LightRays';
+import { useAuth } from "@/context/auth-context";
 
 export default function Hero() {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const brightness = theme === "light" ? 75 : 1.0;
+  const getStartedHref = user ? "/app/dashboard" : siteConfig.getStartedUrl;
+  const getStartedLabel = user ? "Go to Dashboard" : "Start Debating Free";
 
   return (
     <section className="relative pt-32 py-24 flex items-center justify-center overflow-hidden px-8">
@@ -59,8 +63,8 @@ export default function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 mb-6">
             <Button asChild size="lg" className="px-6 h-10 text-sm font-semibold">
-              <Link href={siteConfig.getStartedUrl}>
-                Start Debating Free
+              <Link href={getStartedHref}>
+                {getStartedLabel}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>

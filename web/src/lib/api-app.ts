@@ -1,11 +1,13 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const BACKEND_URL = (typeof process !== 'undefined' && process.env?.BACKEND_BASE_URL) 
+  ? `${process.env.BACKEND_BASE_URL}/api/v1` 
+  : "http://localhost:8000/api/v1";
+console.log('BACKEND_URL initialized:', BACKEND_URL);
+const API_BASE = "";
 
 export interface User {
   id: number;
   email: string;
-  name?: string;
   full_name?: string;
-  username?: string;
   bio?: string;
   occupation?: string;
   interests?: string;
@@ -88,14 +90,18 @@ class ApiError extends Error {
 
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  const fullUrl = url.startsWith('http') ? url : BACKEND_URL + url;
+  console.log(`fetchApi URL: ${fullUrl}, token: ${token ? 'present' : 'NONE'}`);
   
-  const response = await fetch(url, {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    ...options?.headers,
+  };
+  
+  const response = await fetch(fullUrl, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
+    headers,
     credentials: "include",
   });
 
@@ -107,57 +113,57 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   return response.json();
 }
 
-const AUTH_BASE = "/api/auth";
-
 export const authApi = {
   login: async (email: string, password: string) => {
-    const response = await fetch(`${AUTH_BASE}/login`, {
+    const response = await fetch(`${BACKEND_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
-      credentials: "include",
     });
 
     const result = await response.json();
+    console.log('Login API result:', result);
     
-    if (!response.ok || !result.success) {
-      throw new ApiError(response.status, result.message || "Login failed");
+    if (!response.ok || (!result.access_token && !result.success)) {
+      throw new ApiError(response.status, result.detail || result.message || "Login failed");
     }
 
-    if (result.token) {
-      localStorage.setItem('auth_token', result.token);
+    const token = result.access_token || result.token;
+    if (token) {
+      console.log('Storing token:', token.substring(0, 20) + '...');
+      localStorage.setItem('auth_token', token);
       localStorage.setItem('user_data', JSON.stringify(result.user));
       if (result.user?.id) {
         localStorage.setItem('user_id', result.user.id.toString());
       }
     }
 
-    return result;
+    return { success: true, token, user: result.user };
   },
 
   register: async (name: string, email: string, password: string) => {
-    const response = await fetch(`${AUTH_BASE}/signup`, {
+    const response = await fetch(`${BACKEND_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
-      credentials: "include",
     });
 
     const result = await response.json();
     
-    if (!response.ok || !result.success) {
-      throw new ApiError(response.status, result.message || "Registration failed");
+    if (!response.ok || (!result.access_token && !result.success)) {
+      throw new ApiError(response.status, result.detail || result.message || "Registration failed");
     }
 
-    if (result.token) {
-      localStorage.setItem('auth_token', result.token);
+    const token = result.access_token || result.token;
+    if (token) {
+      localStorage.setItem('auth_token', token);
       localStorage.setItem('user_data', JSON.stringify(result.user));
       if (result.user?.id) {
         localStorage.setItem('user_id', result.user.id.toString());
       }
     }
 
-    return result;
+    return { success: true, token, user: result.user };
   },
 
   logout: async () => {
@@ -165,36 +171,64 @@ export const authApi = {
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_id');
     localStorage.removeItem('remember_email');
-    await fetch(`${API_BASE}/auth/logout`, {
+    await fetch(`/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
   },
 
   me: async () => {
+    if (typeof window === 'undefined') return null;
     try {
-      return await fetchApi<User>(`${API_BASE}/auth/me`);
-    } catch {
+      const token = localStorage.getItem('auth_token');
+      console.log('me() - token:', token ? 'present' : 'missing');
+      
+      // Use X-Auth-Token header to work around CORS issues
+      const response = await fetch(`${BACKEND_URL}/auth/me`, {
+        method: 'GET',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Auth-Token': token || ''
+        },
+      });
+
+      if (!response.ok) {
+        // Fallback: return user from localStorage if available
+        const storedUser = localStorage.getItem('user_data');
+        if (storedUser) {
+          return JSON.parse(storedUser);
+        }
+        return null;
+      }
+
+      const user = await response.json();
+      return user;
+    } catch (err) {
+      // Fallback: return user from localStorage if available
+      const storedUser = localStorage.getItem('user_data');
+      if (storedUser) {
+        return JSON.parse(storedUser);
+      }
       return null;
     }
   },
 };
 
 export const api = {
-  health: () => fetchApi<HealthResponse>(`${API_BASE}/health`),
+  health: () => fetchApi<HealthResponse>(`/health`),
 
-  getPersonas: () => fetchApi<PersonaInfo[]>(`${API_BASE}/personas`),
+  getPersonas: () => fetchApi<PersonaInfo[]>(`/personas`),
 
-  getFallacyTypes: () => fetchApi<string[]>(`${API_BASE}/fallacy-types`),
+  getFallacyTypes: () => fetchApi<string[]>(`/fallacy-types`),
 
   analyze: (text: string, context: string = "") =>
-    fetchApi<AnalysisResult>(`${API_BASE}/analyze`, {
+    fetchApi<AnalysisResult>(`/analyze`, {
       method: "POST",
       body: JSON.stringify({ text, context }),
     }),
 
   startDebate: (topic: string, userStance: string, opponentPersona: string) =>
-    fetchApi<DebateSession>(`${API_BASE}/debate/start`, {
+    fetchApi<DebateSession>(`/debate/start`, {
       method: "POST",
       body: JSON.stringify({
         topic,
@@ -204,7 +238,7 @@ export const api = {
     }),
 
   addArgument: (sessionId: number, content: string) =>
-    fetchApi<Argument>(`${API_BASE}/debate/argument`, {
+    fetchApi<Argument>(`/debate/argument`, {
       method: "POST",
       body: JSON.stringify({
         session_id: sessionId,
@@ -221,7 +255,7 @@ export const api = {
     persona: string
   ) =>
     fetchApi<{ counter_argument: string; session_id: number }>(
-      `${API_BASE}/debate/counter`,
+      `/debate/counter`,
       {
         method: "POST",
         body: JSON.stringify({
@@ -239,11 +273,11 @@ export const api = {
       session: DebateSession;
       arguments: Argument[];
       analysis: AnalysisResult[];
-    }>(`${API_BASE}/debate/${sessionId}/history`),
+    }>(`/debate/${sessionId}/history`),
 
   endDebate: (sessionId: number) =>
     fetchApi<{ message: string; session_id: number }>(
-      `${API_BASE}/debate/${sessionId}/end`,
+      `/debate/${sessionId}/end`,
       {
         method: "POST",
       }
@@ -253,34 +287,51 @@ export const api = {
     fetchApi<{
       debates: DebateSession[];
       total: number;
-    }>(`${API_BASE}/user/debates?limit=${limit}&offset=${offset}`),
+    }>(`/user/debates?limit=${limit}&offset=${offset}`),
 
-  getUserStats: () => fetchApi<UserStats>(`${API_BASE}/user/stats`),
+  getUserStats: () => fetchApi<UserStats>(`/user/stats`),
 
-  getUserAchievements: () => fetchApi<Achievement[]>(`${API_BASE}/user/achievements`),
+  getUserAchievements: () => fetchApi<Achievement[]>(`/user/achievements`),
 
   updateProfile: (data: Partial<User>) =>
-    fetchApi<User>(`${API_BASE}/user/profile`, {
+    fetchApi<User>(`/user/profile`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   updateSettings: (settings: Record<string, unknown>) =>
-    fetchApi<{ message: string }>(`${API_BASE}/user/settings`, {
+    fetchApi<{ message: string }>(`/user/settings`, {
       method: "PATCH",
       body: JSON.stringify(settings),
     }),
 
-  submitOnboarding: (data: {
+  submitOnboarding: async (data: {
     name: string;
     experience_level: string;
     goals: string[];
     interests: string[];
     debate_frequency: string;
     focus_areas: string[];
-  }) =>
-    fetchApi<{ message: string }>(`${API_BASE}/user/onboarding`, {
-      method: "POST",
+  }) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    console.log('Submitting onboarding - token present:', !!token);
+    
+    // Use X-Auth-Token header to work around CORS issues
+    const response = await fetch(`${BACKEND_URL}/user/onboarding`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-Auth-Token': token || ''
+      },
       body: JSON.stringify(data),
-    }),
+    });
+
+    console.log('Submitting onboarding - response:', response.status);
+
+    if (!response.ok) {
+      throw new Error('Onboarding failed');
+    }
+
+    return response.json();
+  },
 };

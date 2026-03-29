@@ -21,10 +21,14 @@ export interface AuthResponse {
   token?: string;
 }
 
+const BACKEND_URL = (typeof process !== 'undefined' && process.env?.BACKEND_BASE_URL) 
+  ? `${process.env.BACKEND_BASE_URL}/api/v1` 
+  : "http://localhost:8000/api/v1";
+
 export const authService = {
   async login(data: LoginData): Promise<AuthResponse> {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,6 +40,7 @@ export const authService = {
       });
 
       const result = await response.json();
+      console.log('Auth service login result:', response.status, result);
       
       if (response.ok && result.success) {
         if (result.token) {
@@ -62,7 +67,7 @@ export const authService = {
 
   async signup(data: SignupData): Promise<AuthResponse> {
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch(`${BACKEND_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,27 +102,33 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('remember_email');
-    localStorage.removeItem('onboarding_completed');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('remember_email');
+      localStorage.removeItem('onboarding_completed');
+    }
   },
 
   getStoredEmail(): string {
+    if (typeof window === 'undefined') return '';
     return localStorage.getItem('remember_email') || '';
   },
 
   isAuthenticated(): boolean {
+    if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('auth_token');
   },
 
   getUser(): { id: number; name: string; email: string } | null {
+    if (typeof window === 'undefined') return null;
     const userData = localStorage.getItem('user_data');
     return userData ? JSON.parse(userData) : null;
   },
 
   getToken(): string | null {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('auth_token');
   }
 };

@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [error, setError] = React.useState<string | null>(null);
 
   const [editData, setEditData] = React.useState({
-    name: user?.name || "",
+    name: user?.full_name || "",
     bio: user?.bio || "",
     occupation: user?.occupation || "",
     interests: user?.interests || "",
@@ -72,7 +72,7 @@ export default function ProfilePage() {
   React.useEffect(() => {
     if (user) {
       setEditData({
-        name: user.name || "",
+        name: user.full_name || "",
         bio: user.bio || "",
         occupation: user.occupation || "",
         interests: user.interests || "",
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
   const handleEdit = () => {
     setEditData({
-      name: user?.name || "",
+      name: user?.full_name || "",
       bio: user?.bio || "",
       occupation: user?.occupation || "",
       interests: user?.interests || "",
@@ -99,7 +99,7 @@ export default function ProfilePage() {
     setError(null);
     try {
       await api.updateProfile({
-        name: editData.name,
+        full_name: editData.name,
         bio: editData.bio,
         occupation: editData.occupation,
         interests: editData.interests,
@@ -127,8 +127,8 @@ export default function ProfilePage() {
     { name: "Reputation Management", level: 72, color: "bg-pink-500" },
   ];
 
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
 
   if (isLoading) {
@@ -275,7 +275,7 @@ export default function ProfilePage() {
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-3xl font-bold text-white mb-4">
                         {initials}
                       </div>
-                      <h2 className="text-xl font-bold">{user?.name}</h2>
+                      <h2 className="text-xl font-bold">{user?.full_name || user?.email}</h2>
                       <p className="text-muted-foreground">{user?.email}</p>
                       <p className="text-sm text-muted-foreground mt-2 text-center">{user?.bio || "No bio yet"}</p>
                       

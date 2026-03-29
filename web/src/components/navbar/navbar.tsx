@@ -12,6 +12,7 @@ import {
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
+import { useAuth } from "@/context/auth-context";
 
 // For Theme Switching
 import { useTheme } from "next-themes";
@@ -53,6 +54,10 @@ export default function NavbarComponent({
 }: NavbarComponentProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { setTheme } = useTheme();
+  const { user, isLoading } = useAuth();
+
+  const getStartedHref = user ? "/app/dashboard" : siteConfig.getStartedUrl;
+  const getStartedLabel = user ? "Dashboard" : "Get Started";
 
   return (
     <div className="relative w-full">
@@ -62,7 +67,7 @@ export default function NavbarComponent({
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton href={siteConfig.getStartedUrl} variant="primary">Get Started</NavbarButton>
+            <NavbarButton href={getStartedHref} variant="primary">{getStartedLabel}</NavbarButton>
             {showModeToggle && (
               <div className="pointer-events-auto relative z-50"> {/* Added z-50 and pointer-events-auto */}
                 <DropdownMenu>
@@ -119,9 +124,9 @@ export default function NavbarComponent({
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
-                href={siteConfig.getStartedUrl}
+                href={getStartedHref}
               >
-                Get Started
+                {getStartedLabel}
               </NavbarButton>
               {showModeToggle && (
                 <div className="flex justify-center "> {/* Add theme toggle to mobile menu */}

@@ -31,7 +31,7 @@ import { api, PersonaInfo, UserStats, DebateSession } from "@/lib/api-app";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [healthStatus, setHealthStatus] = React.useState<Record<string, string> | null>(null);
   const [personas, setPersonas] = React.useState<PersonaInfo[]>([]);
   const [stats, setStats] = React.useState<UserStats | null>(null);
@@ -40,6 +40,16 @@ export default function Dashboard() {
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth");
+    } else if (!authLoading && user && !user.experience_level) {
+      router.push("/app/onboarding");
+    }
+  }, [user, authLoading, router]);
+
+  React.useEffect(() => {
+    if (!user || authLoading) return;
+
     async function loadData() {
       try {
         const [healthData, personasData, statsData, debatesData] = await Promise.all([
@@ -61,7 +71,7 @@ export default function Dashboard() {
       }
     }
     loadData();
-  }, []);
+  }, [user, authLoading]);
 
   const services = [
     {
@@ -146,7 +156,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                Welcome back, {user?.name || "User"}!
+                Welcome back, {user?.full_name || "User"}!
               </h1>
               <p className="text-muted-foreground mt-1">
                 Continue your debate practice journey
