@@ -1,6 +1,8 @@
 import os
+import json
 from pydantic_settings import BaseSettings
-from typing import Optional, List
+from pydantic import model_validator
+from typing import Optional, List, Union
 
 
 def get_database_url() -> str:
@@ -24,6 +26,12 @@ def get_optional_env(key: str, default: str = "") -> str:
 def parse_cors_origins() -> List[str]:
     cors_env = os.getenv("CORS_ORIGINS")
     if cors_env and cors_env.strip():
+        if cors_env.startswith("["):
+            import json
+            try:
+                return json.loads(cors_env)
+            except:
+                pass
         origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()]
         if origins:
             return origins
@@ -75,7 +83,20 @@ class Settings(BaseSettings):
     
     DEMO_MESSAGE: str = "Running in demo mode due to deployment constraints. This is simulated data for demonstration purposes."
     
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    CORS_ORIGINS: str = '["http://localhost:3000","http://127.0.0.1:3000"]'
+    
+    @model_validator(mode='after')
+    def parse_cors(self):
+        import json
+        cors_env = self.CORS_ORIGINS
+        if cors_env.startswith("["):
+            try:
+                self.CORS_ORIGINS = json.loads(cors_env)
+            except:
+                self.CORS_ORIGINS = [c.strip() for c in cors_env.split(",") if c.strip()]
+        else:
+            self.CORS_ORIGINS = [c.strip() for c in cors_env.split(",") if c.strip()]
+        return self
     
     model_config = {"case_sensitive": True, "extra": "ignore"}
 
@@ -89,6 +110,5 @@ settings = Settings(
     PORT=parse_int(os.getenv("PORT"), 8000),
     HOST=get_optional_env("HOST", "0.0.0.0"),
     LOG_LEVEL=get_optional_env("LOG_LEVEL", "INFO").upper(),
-    CORS_ORIGINS=parse_cors_origins(),
     DEMO_MODE=is_demo_mode(),
 )

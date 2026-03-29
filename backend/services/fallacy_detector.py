@@ -4,12 +4,23 @@ import numpy as np
 torch = None
 transformers = None
 SentenceTransformer = None
-try:
-    import torch
-    from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoModel
-    from sentence_transformers import SentenceTransformer
-except ImportError:
-    pass
+_auto_tokenizer = None
+_auto_model = None
+_sentence_model = None
+_sentiment_analyzer = None
+
+def _lazy_imports():
+    global torch, transformers, SentenceTransformer, _auto_tokenizer, _auto_model, _sentence_model, _sentiment_analyzer
+    if torch is None:
+        try:
+            import torch
+            from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoModel
+            from sentence_transformers import SentenceTransformer
+            transformers = True
+            return True
+        except ImportError:
+            return False
+    return transformers is not None
 
 
 FALLACY_LABELS = [
@@ -35,10 +46,12 @@ class FallacyDetector:
         self.classifier = None
         self.tokenizer = None
         self.model = None
-        self._load_model()
+        if _lazy_imports():
+            self._load_model()
     
     def _load_model(self):
         try:
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
             self.tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-mnli")
             self.model = AutoModelForSequenceClassification.from_pretrained("facebook/bart-large-mnli")
             self.model.eval()
@@ -156,15 +169,18 @@ class ArgumentStrengthScorer:
     def __init__(self):
         self.sentence_model = None
         self.sentiment_analyzer = None
-        self._load_models()
+        if _lazy_imports():
+            self._load_models()
     
     def _load_models(self):
         try:
+            from sentence_transformers import SentenceTransformer
             self.sentence_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
         except Exception as e:
             print(f"Warning: Could not load sentence transformer: {e}")
         
         try:
+            from transformers import pipeline
             self.sentiment_analyzer = pipeline(
                 "sentiment-analysis",
                 model="distilbert-base-uncased-finetuned-sst-2-english"
@@ -207,7 +223,13 @@ class ArgumentStrengthScorer:
         }
     
     def _calculate_coherence(self, text: str, context: str) -> float:
-        if not context or self.sentence_model is None:
+        if self.sentence_model is None:
+            sentences = text.split('.')
+            if len(sentences) > 1:
+                return 0.6
+            return 0.5
+        
+        if not context:
             sentences = text.split('.')
             if len(sentences) > 1:
                 embeddings = self.sentence_model.encode(sentences)
