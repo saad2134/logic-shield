@@ -1,7 +1,16 @@
-const BACKEND_URL = (typeof process !== 'undefined' && process.env?.BACKEND_BASE_URL) 
-  ? `${process.env.BACKEND_BASE_URL}/api/v1` 
+const isServer = typeof window === 'undefined';
+const BACKEND_URL = (!isServer && typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BACKEND_BASE_URL) 
+  ? process.env.NEXT_PUBLIC_BACKEND_BASE_URL 
   : "http://localhost:8000/api/v1";
-console.log('BACKEND_URL initialized:', BACKEND_URL);
+const USE_API_PROXY = BACKEND_URL.startsWith('https://');
+console.log('BACKEND_URL initialized:', BACKEND_URL, 'USE_API_PROXY:', USE_API_PROXY);
+
+function getApiUrl(path: string): string {
+  if (USE_API_PROXY) {
+    return `/api${path}`;
+  }
+  return `${BACKEND_URL}${path}`;
+}
 const API_BASE = "";
 
 export interface User {
@@ -90,7 +99,7 @@ class ApiError extends Error {
 
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-  const fullUrl = url.startsWith('http') ? url : BACKEND_URL + url;
+  const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
   console.log(`fetchApi URL: ${fullUrl}, token: ${token ? 'present' : 'NONE'}`);
   
   const headers = {
@@ -115,7 +124,7 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
 
 export const authApi = {
   login: async (email: string, password: string) => {
-    const response = await fetch(`${BACKEND_URL}/auth/login`, {
+    const response = await fetch(getApiUrl('/auth/login'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -142,7 +151,7 @@ export const authApi = {
   },
 
   register: async (name: string, email: string, password: string) => {
-    const response = await fetch(`${BACKEND_URL}/auth/register`, {
+    const response = await fetch(getApiUrl('/auth/register'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
@@ -171,7 +180,7 @@ export const authApi = {
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_id');
     localStorage.removeItem('remember_email');
-    await fetch(`/auth/logout`, {
+    await fetch(getApiUrl('/auth/logout'), {
       method: "POST",
       credentials: "include",
     });
@@ -181,14 +190,14 @@ export const authApi = {
     if (typeof window === 'undefined') return null;
     try {
       const token = localStorage.getItem('auth_token');
-      console.log('me() - token:', token ? 'present' : 'missing');
+      console.log('me() - token:', token ? 'present' : 'missing', 'USE_API_PROXY:', USE_API_PROXY);
       
       // Use X-Auth-Token header to work around CORS issues
-      const response = await fetch(`${BACKEND_URL}/auth/me`, {
+      const response = await fetch(getApiUrl('/auth/me'), {
         method: 'GET',
         headers: { 
           'Content-Type': 'application/json',
-          'X-Auth-Token': token || ''
+          ...(token ? { 'X-Auth-Token': token } : {})
         },
       });
 

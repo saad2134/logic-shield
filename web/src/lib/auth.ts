@@ -21,8 +21,9 @@ export interface AuthResponse {
   token?: string;
 }
 
-const BACKEND_URL = (typeof process !== 'undefined' && process.env?.BACKEND_BASE_URL) 
-  ? `${process.env.BACKEND_BASE_URL}/api/v1` 
+const isServer = typeof window === 'undefined';
+const BACKEND_URL = (!isServer && typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BACKEND_BASE_URL) 
+  ? process.env.NEXT_PUBLIC_BACKEND_BASE_URL 
   : "http://localhost:8000/api/v1";
 
 export const authService = {
