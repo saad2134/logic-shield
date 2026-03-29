@@ -45,6 +45,12 @@ def parse_int(value: Optional[str], default: int = 8000) -> int:
         return default
 
 
+def is_demo_mode() -> bool:
+    demo_env = os.getenv("DEMO_MODE", "")
+    vercel_env = os.getenv("VERCEL_ENV")
+    return demo_env.lower() in ("true", "1", "yes") or vercel_env is not None
+
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "LogicShield"
     VERSION: str = "1.0.0"
@@ -65,6 +71,10 @@ class Settings(BaseSettings):
     
     LOG_LEVEL: str = "INFO"
     
+    DEMO_MODE: bool = False
+    
+    DEMO_MESSAGE: str = "Running in demo mode due to deployment constraints. This is simulated data for demonstration purposes."
+    
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     
     model_config = {"case_sensitive": True, "extra": "ignore"}
@@ -80,4 +90,5 @@ settings = Settings(
     HOST=get_optional_env("HOST", "0.0.0.0"),
     LOG_LEVEL=get_optional_env("LOG_LEVEL", "INFO").upper(),
     CORS_ORIGINS=parse_cors_origins(),
+    DEMO_MODE=is_demo_mode(),
 )

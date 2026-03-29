@@ -67,14 +67,18 @@ class AnalysisResponse(BaseModel):
     logical_score: float
     reputation_risk_level: str
     reputation_risk_score: float
-    risk_factors: List[dict]
+    risk_factors: List[str]
     timestamp: str
+    demo_mode: Optional[bool] = None
+    demo_message: Optional[str] = None
 
 
 class HealthResponse(BaseModel):
     status: str
     version: str
     services: dict
+    demo_mode: Optional[bool] = None
+    demo_message: Optional[str] = None
 
 
 class PersonaInfo(BaseModel):
