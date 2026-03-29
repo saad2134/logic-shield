@@ -127,7 +127,7 @@ export default function DemoPreviewSection() {
               </div>
             </CardHeader>
 
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="p-4 space-y-4 lg:min-h-[450px] min-h-[550px]">
               {/* Topic Selection */}
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
