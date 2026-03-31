@@ -126,57 +126,48 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
               </SidebarMenu>
             </SidebarGroup>
           ))}
-          
-          <SidebarGroup className="mt-auto">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/" className="flex items-center gap-3">
-                    <LogOut size={18} />
-                    <span>Go to Home</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/auth" className="flex items-center gap-3">
-                    <LogOut size={18} />
-                    <span>Get Started (Signup)</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
         </SidebarContent>
         
         <SidebarFooter className="p-3 border-t">
-          <div className="flex gap-2">
-            <Link 
-              href="/demo/profile" 
-              className={`flex-1 flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                pathname === "/demo/profile" 
-                  ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary" 
-                  : "bg-muted/50 hover:bg-muted"
-              }`}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Link 
+                href="/demo/profile" 
+                className={`flex-1 flex items-center border border-foreground/10 gap-3 p-2 rounded-lg transition-colors ${
+                  pathname === "/demo/profile" 
+                    ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary" 
+                    : "bg-muted/50 hover:bg-muted"
+                }`}
+              >
+                <div className="w-9 h-9 rounded-full bg-primary/50 dark:bg-primary/50 flex items-center justify-center font-semibold text-sm shrink-0">
+                  DU
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">Demo User</p>
+                  <p className="text-xs text-muted-foreground">Profile</p>
+                </div>
+              </Link>
+              <Link 
+                href="/demo/settings" 
+                className={`w-[60px] flex items-center border border-foreground/10 justify-center p-2 rounded-lg transition-colors ${
+                  pathname === "/demo/settings" 
+                    ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary" 
+                    : "bg-muted/50 hover:bg-muted"
+                }`}
+              >
+                <Settings className="h-4 w-4 text-muted-foreground" />
+              </Link>
+            </div>
+            <Button
+              variant="ghost"
+              className="w-full justify-start border border-foreground/10 text-muted-foreground"
+              asChild
             >
-              <div className="w-9 h-9 rounded-full bg-primary/50 dark:bg-primary/50 flex items-center justify-center font-semibold text-sm shrink-0">
-                DU
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Demo User</p>
-                <p className="text-xs text-muted-foreground">Profile</p>
-              </div>
-            </Link>
-            <Link 
-              href="/demo/settings" 
-              className={`w-[60px] flex items-center justify-center p-2 rounded-lg transition-colors ${
-                pathname === "/demo/settings" 
-                  ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary" 
-                  : "bg-muted/50 hover:bg-muted"
-              }`}
-            >
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </Link>
+              <Link href="/">
+                <LogOut className="mr-2 h-4 w-4" />
+                Exit Demo
+              </Link>
+            </Button>
           </div>
         </SidebarFooter>
       </Sidebar>
