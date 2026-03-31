@@ -231,9 +231,11 @@ def get_user_debates(
     query = db.query(DebateSession).filter(DebateSession.user_id == user.id)
     
     if user_stance:
-        query = query.filter(DebateSession.user_stance == user_stance)
+        stance_values = [s.strip() for s in user_stance.split(",")]
+        query = query.filter(DebateSession.user_stance.in_(stance_values))
     if opponent_persona:
-        query = query.filter(DebateSession.opponent_persona == opponent_persona)
+        persona_values = [p.strip() for p in opponent_persona.split(",")]
+        query = query.filter(DebateSession.opponent_persona.in_(persona_values))
     
     if sort_by == "oldest":
         query = query.order_by(DebateSession.created_at.asc())
@@ -244,9 +246,11 @@ def get_user_debates(
     
     total = db.query(DebateSession).filter(DebateSession.user_id == user.id)
     if user_stance:
-        total = total.filter(DebateSession.user_stance == user_stance)
+        stance_values = [s.strip() for s in user_stance.split(",")]
+        total = total.filter(DebateSession.user_stance.in_(stance_values))
     if opponent_persona:
-        total = total.filter(DebateSession.opponent_persona == opponent_persona)
+        persona_values = [p.strip() for p in opponent_persona.split(",")]
+        total = total.filter(DebateSession.opponent_persona.in_(persona_values))
     total = total.count()
     
     return {

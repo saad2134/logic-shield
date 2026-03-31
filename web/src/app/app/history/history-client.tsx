@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -20,6 +21,7 @@ import {
   Trash2,
   MoreVertical,
   Filter,
+  X,
   ArrowUpDown
 } from "lucide-react";
 import { api, DebateSession } from "@/lib/api-app";
@@ -38,8 +40,8 @@ export default function HistoryClient() {
   const [hasMore, setHasMore] = React.useState(true);
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<"latest" | "oldest">("latest");
-  const [filterStance, setFilterStance] = React.useState<string>("");
-  const [filterPersona, setFilterPersona] = React.useState<string>("");
+  const [filterStances, setFilterStances] = React.useState<string[]>([]);
+  const [filterPersonas, setFilterPersonas] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (!authLoading && !user) {
@@ -47,7 +49,7 @@ export default function HistoryClient() {
     }
   }, [user, authLoading, router]);
 
-  const loadDebates = async (currentOffset: number, append: boolean = false, newSortBy?: string, newStance?: string, newPersona?: string) => {
+  const loadDebates = async (currentOffset: number, append: boolean = false, newSortBy?: string, newStance?: string[], newPersona?: string[]) => {
     try {
       if (append) {
         setIsLoadingMore(true);
@@ -58,8 +60,8 @@ export default function HistoryClient() {
         ITEMS_PER_PAGE, 
         currentOffset, 
         newSortBy || sortBy, 
-        newStance || filterStance || undefined, 
-        newPersona || filterPersona || undefined
+        newStance ? newStance.join(",") : (filterStances.length > 0 ? filterStances.join(",") : undefined), 
+        newPersona ? newPersona.join(",") : (filterPersonas.length > 0 ? filterPersonas.join(",") : undefined)
       );
       if (append) {
         setSessions(prev => [...prev, ...data.debates]);
@@ -79,27 +81,54 @@ export default function HistoryClient() {
 
   React.useEffect(() => {
     if (!user || authLoading) return;
-    loadDebates(0, false, sortBy, filterStance, filterPersona);
+    loadDebates(0, false, sortBy, filterStances, filterPersonas);
   }, [user, authLoading]);
 
   const handleSortChange = (newSortBy: "latest" | "oldest") => {
     setSortBy(newSortBy);
     setSessions([]);
     setOffset(0);
-    loadDebates(0, false, newSortBy, filterStance, filterPersona);
+    loadDebates(0, false, newSortBy, filterStances, filterPersonas);
   };
 
-  const handleFilterChange = (newStance?: string, newPersona?: string) => {
-    setFilterStance(newStance || "");
-    setFilterPersona(newPersona || "");
+  const handleStanceFilter = (stance: string, checked: boolean) => {
+    let newStances: string[];
+    if (checked) {
+      newStances = [...filterStances, stance];
+    } else {
+      newStances = filterStances.filter(s => s !== stance);
+    }
+    setFilterStances(newStances);
     setSessions([]);
     setOffset(0);
-    loadDebates(0, false, sortBy, newStance, newPersona);
+    loadDebates(0, false, sortBy, newStances, filterPersonas);
+  };
+
+  const handlePersonaFilter = (persona: string, checked: boolean) => {
+    let newPersonas: string[];
+    if (checked) {
+      newPersonas = [...filterPersonas, persona];
+    } else {
+      newPersonas = filterPersonas.filter(p => p !== persona);
+    }
+    setFilterPersonas(newPersonas);
+    setSessions([]);
+    setOffset(0);
+    loadDebates(0, false, sortBy, filterStances, newPersonas);
+  };
+
+  const handleClearFilters = () => {
+    setFilterStances([]);
+    setFilterPersonas([]);
+    setSortBy("latest");
+    setSessions([]);
+    setOffset(0);
+    loadDebates(0, false, "latest", [], []);
   };
 
   const handleLoadMore = () => {
     if (hasMore && !isLoadingMore) {
-      loadDebates(offset + ITEMS_PER_PAGE, true, sortBy, filterStance, filterPersona);
+      loadDebates(offset + ITEMS_PER_PAGE, true, sortBy, filterStances, filterPersonas);
     }
   };
 
@@ -177,7 +206,7 @@ export default function HistoryClient() {
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-4">
             <Select value={sortBy} onValueChange={(v) => handleSortChange(v as "latest" | "oldest")}>
-              <SelectTrigger>
+              <SelectTrigger className={sortBy !== "latest" ? "border-primary" : ""}>
                 <ArrowUpDown className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
@@ -186,31 +215,76 @@ export default function HistoryClient() {
                 <SelectItem value="oldest">Oldest First</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterStance || "all"} onValueChange={(v) => handleFilterChange(v === "all" ? undefined : v, filterPersona || undefined)}>
-              <SelectTrigger>
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Stance" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Stances</SelectItem>
-                <SelectItem value="support">Support</SelectItem>
-                <SelectItem value="oppose">Oppose</SelectItem>
-                <SelectItem value="neutral">Neutral</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterPersona || "all"} onValueChange={(v) => handleFilterChange(filterStance || undefined, v === "all" ? undefined : v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Persona" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Personas</SelectItem>
-                <SelectItem value="logical">Logical</SelectItem>
-                <SelectItem value="aggressive">Aggressive</SelectItem>
-                <SelectItem value="skeptical">Skeptical</SelectItem>
-                <SelectItem value="devil_advocate">Devil Adv.</SelectItem>
-              </SelectContent>
-            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className={filterStances.length > 0 || filterPersonas.length > 0 ? "border-primary" : ""}>
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                  {(filterStances.length > 0 || filterPersonas.length > 0) && (
+                    <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-72">
+                <div className="p-2">
+                  <div className="text-sm font-medium mb-2">Your Stance</div>
+                  <div className="space-y-2 mb-4">
+                    {["support", "oppose", "neutral"].map((stance) => (
+                      <div key={stance} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`stance-${stance}`}
+                          checked={filterStances.includes(stance)}
+                          onCheckedChange={(checked) => handleStanceFilter(stance, checked as boolean)}
+                        />
+                        <label htmlFor={`stance-${stance}`} className="text-sm capitalize cursor-pointer">
+                          {stance}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-sm font-medium mb-2">Opponent Persona</div>
+                  <div className="space-y-2">
+                    {[
+                      { value: "logical", label: "Logical" },
+                      { value: "aggressive", label: "Aggressive" },
+                      { value: "skeptical", label: "Skeptical" },
+                      { value: "devil_advocate", label: "Devil Advocate" }
+                    ].map((persona) => (
+                      <div key={persona.value} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`persona-${persona.value}`}
+                          checked={filterPersonas.includes(persona.value)}
+                          onCheckedChange={(checked) => handlePersonaFilter(persona.value, checked as boolean)}
+                        />
+                        <label htmlFor={`persona-${persona.value}`} className="text-sm cursor-pointer">
+                          {persona.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {(filterStances.length > 0 || filterPersonas.length > 0) && (
+              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                Clear filters
+              </Button>
+            )}
           </div>
+          {(filterStances.length > 0 || filterPersonas.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {filterStances.map((stance) => (
+                <Badge key={stance} variant="secondary" className="cursor-pointer" onClick={() => handleStanceFilter(stance, false)}>
+                  {stance} <X className="ml-1 h-3 w-3" />
+                </Badge>
+              ))}
+              {filterPersonas.map((persona) => (
+                <Badge key={persona} variant="secondary" className="cursor-pointer" onClick={() => handlePersonaFilter(persona, false)}>
+                  {persona.replace("_", " ")} <X className="ml-1 h-3 w-3" />
+                </Badge>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {error && (
