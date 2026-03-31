@@ -161,55 +161,55 @@ export default function HistoryClient() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Debate History</h1>
               <p className="text-muted-foreground mt-1">
                 {total > 0 ? `View and review your ${total} past debate sessions` : "View and review your past debate sessions"}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Select value={sortBy} onValueChange={(v) => handleSortChange(v as "latest" | "oldest")}>
-                <SelectTrigger className="w-[140px]">
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="latest">Latest First</SelectItem>
-                  <SelectItem value="oldest">Oldest First</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={filterStance || "all"} onValueChange={(v) => handleFilterChange(v === "all" ? undefined : v, filterPersona || undefined)}>
-                <SelectTrigger className="w-[130px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Stance" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stances</SelectItem>
-                  <SelectItem value="support">Support</SelectItem>
-                  <SelectItem value="oppose">Oppose</SelectItem>
-                  <SelectItem value="neutral">Neutral</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={filterPersona || "all"} onValueChange={(v) => handleFilterChange(filterStance || undefined, v === "all" ? undefined : v)}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Persona" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Personas</SelectItem>
-                  <SelectItem value="logical">Logical</SelectItem>
-                  <SelectItem value="aggressive">Aggressive</SelectItem>
-                  <SelectItem value="skeptical">Skeptical</SelectItem>
-                  <SelectItem value="devil_advocate">Devil Advocate</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button asChild>
-                <Link href="/app/debate">
-                  <Zap className="mr-2 h-4 w-4" />
-                  New Debate
-                </Link>
-              </Button>
-            </div>
+            <Button asChild>
+              <Link href="/app/debate">
+                <Zap className="mr-2 h-4 w-4" />
+                New Debate
+              </Link>
+            </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            <Select value={sortBy} onValueChange={(v) => handleSortChange(v as "latest" | "oldest")}>
+              <SelectTrigger>
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="latest">Latest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStance || "all"} onValueChange={(v) => handleFilterChange(v === "all" ? undefined : v, filterPersona || undefined)}>
+              <SelectTrigger>
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Stance" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stances</SelectItem>
+                <SelectItem value="support">Support</SelectItem>
+                <SelectItem value="oppose">Oppose</SelectItem>
+                <SelectItem value="neutral">Neutral</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterPersona || "all"} onValueChange={(v) => handleFilterChange(filterStance || undefined, v === "all" ? undefined : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Persona" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Personas</SelectItem>
+                <SelectItem value="logical">Logical</SelectItem>
+                <SelectItem value="aggressive">Aggressive</SelectItem>
+                <SelectItem value="skeptical">Skeptical</SelectItem>
+                <SelectItem value="devil_advocate">Devil Adv.</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </motion.div>
 
