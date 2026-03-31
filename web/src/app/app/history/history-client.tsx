@@ -4,13 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   History,
   Calendar,
@@ -205,16 +204,23 @@ export default function HistoryClient() {
             </Button>
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-4">
-            <Select value={sortBy} onValueChange={(v) => handleSortChange(v as "latest" | "oldest")}>
-              <SelectTrigger className={sortBy !== "latest" ? "border-primary" : ""}>
-                <ArrowUpDown className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="latest">Latest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className={sortBy !== "latest" ? "border-primary" : ""}>
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  Sort
+                  <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => handleSortChange("latest")}>
+                  Latest First
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSortChange("oldest")}>
+                  Oldest First
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className={filterStances.length > 0 || filterPersonas.length > 0 ? "border-primary" : ""}>
@@ -325,7 +331,9 @@ export default function HistoryClient() {
                           )}
                         </div>
                         <h3 className="font-semibold text-lg line-clamp-2 mb-2">
-                          {session.topic}
+                          <Link href={`/app/debate/${session.id}`} className="hover:underline">
+                            {session.topic}
+                          </Link>
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">

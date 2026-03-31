@@ -4,13 +4,12 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Settings,
   Palette,
-  Bell,
   Shield,
   Moon,
   Sun,
@@ -138,7 +137,7 @@ export default function SettingsClient() {
                       <SelectItem value="logical">Logical - Facts-driven</SelectItem>
                       <SelectItem value="aggressive">Aggressive - Challenging</SelectItem>
                       <SelectItem value="skeptical">Skeptical - Questioning</SelectItem>
-                      <SelectItem value="devil_advocate">Devil's Advocate - Contrarian</SelectItem>
+                      <SelectItem value="devil_advocate">Devil&apos;s Advocate - Contrarian</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -148,12 +147,11 @@ export default function SettingsClient() {
                     <Label htmlFor="auto-save">Auto-save Debates</Label>
                     <p className="text-sm text-muted-foreground">Automatically save ongoing debates</p>
                   </div>
-                  <Toggle
-                    pressed={settings.autoSaveDebates}
-                    onPressedChange={() => toggleSetting("autoSaveDebates")}
-                  >
-                    {settings.autoSaveDebates ? <CheckCircle2 className="h-4 w-4" /> : null}
-                  </Toggle>
+                  <Switch
+                    id="auto-save"
+                    checked={settings.autoSaveDebates}
+                    onCheckedChange={() => toggleSetting("autoSaveDebates")}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between py-2">
@@ -161,12 +159,11 @@ export default function SettingsClient() {
                     <Label htmlFor="typing-indicator">Show Typing Indicator</Label>
                     <p className="text-sm text-muted-foreground">Show when AI is generating response</p>
                   </div>
-                  <Toggle
-                    pressed={settings.showTypingIndicator}
-                    onPressedChange={() => toggleSetting("showTypingIndicator")}
-                  >
-                    {settings.showTypingIndicator ? <CheckCircle2 className="h-4 w-4" /> : null}
-                  </Toggle>
+                  <Switch
+                    id="typing-indicator"
+                    checked={settings.showTypingIndicator}
+                    onCheckedChange={() => toggleSetting("showTypingIndicator")}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between py-2">
@@ -174,12 +171,11 @@ export default function SettingsClient() {
                     <Label htmlFor="sound-effects">Sound Effects</Label>
                     <p className="text-sm text-muted-foreground">Play sounds for notifications</p>
                   </div>
-                  <Toggle
-                    pressed={settings.soundEffects}
-                    onPressedChange={() => toggleSetting("soundEffects")}
-                  >
-                    {settings.soundEffects ? <CheckCircle2 className="h-4 w-4" /> : null}
-                  </Toggle>
+                  <Switch
+                    id="sound-effects"
+                    checked={settings.soundEffects}
+                    onCheckedChange={() => toggleSetting("soundEffects")}
+                  />
                 </div>
               </CardContent>
             </Card>

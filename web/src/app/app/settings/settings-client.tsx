@@ -4,14 +4,13 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Settings,
   Palette,
-  Bell,
   Shield,
   Moon,
   Sun,
@@ -39,12 +38,39 @@ export default function SettingsClient() {
   });
 
   React.useEffect(() => {
-    setIsLoading(false);
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await api.getSettings() as Record<string, unknown>;
+        setSettings(prev => ({
+          ...prev,
+          autoSaveDebates: savedSettings.auto_save_debates as boolean ?? prev.autoSaveDebates,
+          showTypingIndicator: savedSettings.show_typing_indicator as boolean ?? prev.showTypingIndicator,
+          soundEffects: savedSettings.sound_effects as boolean ?? prev.soundEffects,
+          defaultPersona: savedSettings.default_persona as string ?? prev.defaultPersona,
+        }));
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSettings();
   }, []);
 
-  const toggleSetting = (key: keyof typeof settings) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleSetting = async (key: keyof typeof settings) => {
+    const newValue = !settings[key];
+    setSettings(prev => ({ ...prev, [key]: newValue }));
+    try {
+      await api.updateSettings({ [key === 'defaultPersona' ? 'default_persona' : camelToSnake(key)]: newValue });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
+      setSettings(prev => ({ ...prev, [key]: !newValue }));
+    }
   };
+
+  const camelToSnake = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -60,14 +86,27 @@ export default function SettingsClient() {
     }
   };
 
-  const handleReset = () => {
-    setSettings({
+  const handleReset = async () => {
+    const defaultSettings = {
       autoSaveDebates: true,
       showTypingIndicator: true,
       soundEffects: false,
       defaultPersona: "logical",
-    });
+    };
+    setSettings(defaultSettings);
     setTheme("system");
+    try {
+      await api.updateSettings({
+        auto_save_debates: true,
+        show_typing_indicator: true,
+        sound_effects: false,
+        default_persona: "logical",
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reset settings");
+    }
   };
 
   if (isLoading) {
@@ -85,17 +124,25 @@ export default function SettingsClient() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">App Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Customize your LogicShield experience
-          </p>
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">App Settings</h1>
+                <p className="text-muted-foreground mt-1">
+                  Customize your LogicShield experience
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleReset}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset to Defaults
+              </Button>
+            </div>
+          </motion.div>
 
         {saved && (
           <motion.div
@@ -176,20 +223,29 @@ export default function SettingsClient() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
                   <Label htmlFor="default-persona">Default Debate Persona</Label>
                   <Select
                     value={settings.defaultPersona}
-                    onValueChange={(value) => setSettings(s => ({ ...s, defaultPersona: value }))}
+                    onValueChange={async (value) => {
+                      setSettings(s => ({ ...s, defaultPersona: value }));
+                      try {
+                        await api.updateSettings({ default_persona: value });
+                        setSaved(true);
+                        setTimeout(() => setSaved(false), 2000);
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : "Failed to save settings");
+                      }
+                    }}
                   >
-                    <SelectTrigger id="default-persona">
-                      <SelectValue placeholder="Select persona" />
+                    <SelectTrigger id="default-persona" className="w-[180px]">
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="logical">Logical - Facts-driven</SelectItem>
-                      <SelectItem value="aggressive">Aggressive - Challenging</SelectItem>
-                      <SelectItem value="skeptical">Skeptical - Questioning</SelectItem>
-                      <SelectItem value="devil_advocate">Devil's Advocate - Contrarian</SelectItem>
+                      <SelectItem value="logical">Logical</SelectItem>
+                      <SelectItem value="aggressive">Aggressive</SelectItem>
+                      <SelectItem value="skeptical">Skeptical</SelectItem>
+                      <SelectItem value="devil_advocate">Devil&apos;s Advocate</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -199,12 +255,11 @@ export default function SettingsClient() {
                     <Label htmlFor="auto-save">Auto-save Debates</Label>
                     <p className="text-sm text-muted-foreground">Automatically save ongoing debates</p>
                   </div>
-                  <Toggle
-                    pressed={settings.autoSaveDebates}
-                    onPressedChange={() => toggleSetting("autoSaveDebates")}
-                  >
-                    {settings.autoSaveDebates ? <CheckCircle className="h-4 w-4" /> : null}
-                  </Toggle>
+                  <Switch
+                    id="auto-save"
+                    checked={settings.autoSaveDebates}
+                    onCheckedChange={() => toggleSetting("autoSaveDebates")}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between py-2">
@@ -212,12 +267,11 @@ export default function SettingsClient() {
                     <Label htmlFor="typing-indicator">Show Typing Indicator</Label>
                     <p className="text-sm text-muted-foreground">Show when AI is generating response</p>
                   </div>
-                  <Toggle
-                    pressed={settings.showTypingIndicator}
-                    onPressedChange={() => toggleSetting("showTypingIndicator")}
-                  >
-                    {settings.showTypingIndicator ? <CheckCircle className="h-4 w-4" /> : null}
-                  </Toggle>
+                  <Switch
+                    id="typing-indicator"
+                    checked={settings.showTypingIndicator}
+                    onCheckedChange={() => toggleSetting("showTypingIndicator")}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between py-2">
@@ -225,12 +279,11 @@ export default function SettingsClient() {
                     <Label htmlFor="sound-effects">Sound Effects</Label>
                     <p className="text-sm text-muted-foreground">Play sounds for notifications</p>
                   </div>
-                  <Toggle
-                    pressed={settings.soundEffects}
-                    onPressedChange={() => toggleSetting("soundEffects")}
-                  >
-                    {settings.soundEffects ? <CheckCircle className="h-4 w-4" /> : null}
-                  </Toggle>
+                  <Switch
+                    id="sound-effects"
+                    checked={settings.soundEffects}
+                    onCheckedChange={() => toggleSetting("soundEffects")}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -272,31 +325,6 @@ export default function SettingsClient() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex items-center justify-between"
-          >
-            <Button variant="outline" onClick={handleReset}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset to Defaults
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
           </motion.div>
         </div>
       </div>

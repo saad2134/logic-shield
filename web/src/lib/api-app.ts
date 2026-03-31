@@ -7,7 +7,7 @@ console.log('BACKEND_URL initialized:', BACKEND_URL, 'USE_API_PROXY:', USE_API_P
 
 function getApiUrl(path: string): string {
   if (USE_API_PROXY) {
-    return `/api${path}`;
+    return `/api/v1${path}`;
   }
   return `${BACKEND_URL}${path}`;
 }
@@ -324,6 +324,8 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(settings),
     }),
+
+  getSettings: () => fetchApi<Record<string, unknown>>(`/user/settings`),
 
   submitOnboarding: async (data: {
     name: string;

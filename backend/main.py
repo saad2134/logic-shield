@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from api.main import router as api_router
 from api.auth import router as auth_router
+from api.settings import router as settings_router
 from database.core.database import init_db
 import time
 
@@ -52,6 +53,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(settings_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
