@@ -334,21 +334,7 @@ export default function AnalysisClient() {
                                 transition={{ delay: idx * 0.1 }}
                                 className="p-3 rounded-lg border"
                               >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="font-medium">{risk.factor}</span>
-                                  <Badge
-                                    variant={
-                                      risk.severity === "high"
-                                        ? "destructive"
-                                        : risk.severity === "medium"
-                                        ? "outline"
-                                        : "secondary"
-                                    }
-                                  >
-                                    {risk.severity}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{risk.description}</p>
+                                <p className="text-sm text-foreground">{risk}</p>
                               </motion.div>
                             ))}
                           </div>

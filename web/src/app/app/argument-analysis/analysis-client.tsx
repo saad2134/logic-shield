@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import {
 import { api, AnalysisResult } from "@/lib/api-app";
 
 export default function AnalysisClient() {
+  const searchParams = useSearchParams();
   const [text, setText] = React.useState("");
   const [context, setContext] = React.useState("");
   const [analysis, setAnalysis] = React.useState<AnalysisResult | null>(null);
@@ -33,8 +35,17 @@ export default function AnalysisClient() {
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<"overview" | "fallacies" | "risks">("overview");
 
-  const handleAnalyze = async () => {
-    if (!text.trim()) {
+  React.useEffect(() => {
+    const textParam = searchParams.get("text");
+    if (textParam) {
+      setText(textParam);
+      setTimeout(() => handleAnalyze(textParam), 100);
+    }
+  }, [searchParams]);
+
+  const handleAnalyze = async (textToAnalyze?: string) => {
+    const textToUse = textToAnalyze || text;
+    if (!textToUse.trim()) {
       setError("Please enter text to analyze");
       return;
     }
@@ -44,7 +55,7 @@ export default function AnalysisClient() {
     setAnalysis(null);
 
     try {
-      const result = await api.analyze(text, context);
+      const result = await api.analyze(textToUse, context);
       setAnalysis(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to analyze text");
@@ -167,7 +178,7 @@ export default function AnalysisClient() {
 
                 <Button
                   className="w-full"
-                  onClick={handleAnalyze}
+                  onClick={() => handleAnalyze()}
                   disabled={isLoading || !text.trim()}
                 >
                   {isLoading ? (
@@ -334,21 +345,7 @@ export default function AnalysisClient() {
                                 transition={{ delay: idx * 0.1 }}
                                 className="p-3 rounded-lg border"
                               >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="font-medium">{risk.factor}</span>
-                                  <Badge
-                                    variant={
-                                      risk.severity === "high"
-                                        ? "destructive"
-                                        : risk.severity === "medium"
-                                        ? "outline"
-                                        : "secondary"
-                                    }
-                                  >
-                                    {risk.severity}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{risk.description}</p>
+                                <p className="text-sm text-foreground">{risk}</p>
                               </motion.div>
                             ))}
                           </div>

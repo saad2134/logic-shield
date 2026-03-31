@@ -34,11 +34,7 @@ export interface AnalysisResult {
   logical_score: number;
   reputation_risk_level: string;
   reputation_risk_score: number;
-  risk_factors: Array<{
-    factor: string;
-    severity: string;
-    description: string;
-  }>;
+  risk_factors: string[];
   timestamp: string;
 }
 
@@ -150,7 +146,7 @@ function generateMockAnalysis(text: string): AnalysisResult {
                           riskLevel === "medium" ? 0.3 + Math.random() * 0.2 :
                           riskLevel === "high" ? 0.5 + Math.random() * 0.3 : 0.7 + Math.random() * 0.3,
     risk_factors: riskLevel !== "low" ? [
-      { factor: "Tone Analysis", severity: riskLevel, description: "The argument contains language that may be perceived as confrontational" },
+      "The argument contains language that may be perceived as confrontational",
     ] : [],
     timestamp: new Date().toISOString(),
   };

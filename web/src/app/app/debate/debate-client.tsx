@@ -317,6 +317,47 @@ export default function NewDebateClient() {
             </CardContent>
           </Card>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-6"
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="text-primary" size={20} />
+                Tips for Better Debates
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg border">
+                  <Scale className="h-6 w-6 text-primary mb-2" />
+                  <h4 className="font-medium mb-1">Stay Logical</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Use evidence and reasoning to support your points
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg border">
+                  <Shield className="h-6 w-6 text-primary mb-2" />
+                  <h4 className="font-medium mb-1">Avoid Fallacies</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Watch out for common logical fallacies in your arguments
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg border">
+                  <MessageSquare className="h-6 w-6 text-primary mb-2" />
+                  <h4 className="font-medium mb-1">Be Clear</h4>
+                  <p className="text-sm text-muted-foreground">
+                    State your arguments clearly and concisely
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

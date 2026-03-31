@@ -8,41 +8,112 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   History,
-  MessageSquare,
   Calendar,
   ChevronRight,
   Loader2,
   AlertCircle,
-  Brain,
-  Shield,
   Zap,
-  Scale
+  Trash2,
+  MoreVertical,
+  Filter,
+  ArrowUpDown
 } from "lucide-react";
 import { api, DebateSession } from "@/lib/api-app";
+import { useAuth } from "@/context/auth-context";
+
+const ITEMS_PER_PAGE = 5;
 
 export default function HistoryClient() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [sessions, setSessions] = React.useState<DebateSession[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [total, setTotal] = React.useState(0);
+  const [offset, setOffset] = React.useState(0);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+  const [sortBy, setSortBy] = React.useState<"latest" | "oldest">("latest");
+  const [filterStance, setFilterStance] = React.useState<string>("");
+  const [filterPersona, setFilterPersona] = React.useState<string>("");
 
   React.useEffect(() => {
-    async function loadHistory() {
-      try {
-        const data = await api.getUserDebates(20, 0);
-        setSessions(data.debates);
-        setTotal(data.total);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load history");
-      } finally {
-        setIsLoading(false);
-      }
+    if (!authLoading && !user) {
+      router.push("/auth");
     }
-    loadHistory();
-  }, []);
+  }, [user, authLoading, router]);
+
+  const loadDebates = async (currentOffset: number, append: boolean = false, newSortBy?: string, newStance?: string, newPersona?: string) => {
+    try {
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
+      const data = await api.getUserDebates(
+        ITEMS_PER_PAGE, 
+        currentOffset, 
+        newSortBy || sortBy, 
+        newStance || filterStance || undefined, 
+        newPersona || filterPersona || undefined
+      );
+      if (append) {
+        setSessions(prev => [...prev, ...data.debates]);
+      } else {
+        setSessions(data.debates);
+      }
+      setTotal(data.total);
+      setHasMore(currentOffset + ITEMS_PER_PAGE < data.total);
+      setOffset(currentOffset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load history");
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!user || authLoading) return;
+    loadDebates(0, false, sortBy, filterStance, filterPersona);
+  }, [user, authLoading]);
+
+  const handleSortChange = (newSortBy: "latest" | "oldest") => {
+    setSortBy(newSortBy);
+    setSessions([]);
+    setOffset(0);
+    loadDebates(0, false, newSortBy, filterStance, filterPersona);
+  };
+
+  const handleFilterChange = (newStance?: string, newPersona?: string) => {
+    setFilterStance(newStance || "");
+    setFilterPersona(newPersona || "");
+    setSessions([]);
+    setOffset(0);
+    loadDebates(0, false, sortBy, newStance, newPersona);
+  };
+
+  const handleLoadMore = () => {
+    if (hasMore && !isLoadingMore) {
+      loadDebates(offset + ITEMS_PER_PAGE, true, sortBy, filterStance, filterPersona);
+    }
+  };
+
+  const handleDelete = async (sessionId: number) => {
+    if (!confirm("Are you sure you want to delete this debate session?")) return;
+    
+    try {
+      await api.deleteDebate(sessionId);
+      setSessions(prev => prev.filter(s => s.id !== sessionId));
+      setTotal(prev => prev - 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete debate");
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -97,12 +168,48 @@ export default function HistoryClient() {
                 {total > 0 ? `View and review your ${total} past debate sessions` : "View and review your past debate sessions"}
               </p>
             </div>
-            <Button asChild>
-              <Link href="/app/debate">
-                <Zap className="mr-2 h-4 w-4" />
-                New Debate
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={sortBy} onValueChange={(v) => handleSortChange(v as "latest" | "oldest")}>
+                <SelectTrigger className="w-[140px]">
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest">Latest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterStance || "all"} onValueChange={(v) => handleFilterChange(v === "all" ? undefined : v, filterPersona || undefined)}>
+                <SelectTrigger className="w-[130px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Stance" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stances</SelectItem>
+                  <SelectItem value="support">Support</SelectItem>
+                  <SelectItem value="oppose">Oppose</SelectItem>
+                  <SelectItem value="neutral">Neutral</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterPersona || "all"} onValueChange={(v) => handleFilterChange(filterStance || undefined, v === "all" ? undefined : v)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Persona" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Personas</SelectItem>
+                  <SelectItem value="logical">Logical</SelectItem>
+                  <SelectItem value="aggressive">Aggressive</SelectItem>
+                  <SelectItem value="skeptical">Skeptical</SelectItem>
+                  <SelectItem value="devil_advocate">Devil Advocate</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button asChild>
+                <Link href="/app/debate">
+                  <Zap className="mr-2 h-4 w-4" />
+                  New Debate
+                </Link>
+              </Button>
+            </div>
           </div>
         </motion.div>
 
@@ -153,16 +260,52 @@ export default function HistoryClient() {
                           </div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/app/debate/${session.id}`}>
-                          <ChevronRight className="h-5 w-5" />
-                        </Link>
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              className="text-red-600 focus:text-red-600"
+                              onClick={() => handleDelete(session.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/app/debate/${session.id}`}>
+                            <ChevronRight className="h-5 w-5" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
+            {hasMore && (
+              <div className="flex justify-center mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Load More"
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <Card>
@@ -181,47 +324,6 @@ export default function HistoryClient() {
             </CardContent>
           </Card>
         )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-8"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="text-primary" size={20} />
-                Tips for Better Debates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg border">
-                  <Scale className="h-6 w-6 text-primary mb-2" />
-                  <h4 className="font-medium mb-1">Stay Logical</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Use evidence and reasoning to support your points
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg border">
-                  <Shield className="h-6 w-6 text-primary mb-2" />
-                  <h4 className="font-medium mb-1">Avoid Fallacies</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Watch out for common logical fallacies in your arguments
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg border">
-                  <MessageSquare className="h-6 w-6 text-primary mb-2" />
-                  <h4 className="font-medium mb-1">Be Clear</h4>
-                  <p className="text-sm text-muted-foreground">
-                    State your arguments clearly and concisely
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
       </div>
     </div>
   );

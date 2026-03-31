@@ -189,7 +189,7 @@ export default function DebateSessionClient() {
         >
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => router.push("/app")}>
+              <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>

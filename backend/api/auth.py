@@ -15,7 +15,7 @@ from api.schemas import (
     UserSettingsResponse,
     OnboardingRequest,
 )
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.config import settings
 
@@ -215,8 +215,11 @@ def logout():
 def get_user_debates(
     limit: int = 10,
     offset: int = 0,
+    sort_by: str = "latest",
+    user_stance: str = None,
+    opponent_persona: str = None,
     db: Session = Depends(get_db),
-    authorization: str = None
+    authorization: str = Header(None)
 ):
     user = get_current_user(db, authorization)
     if not user:
@@ -225,11 +228,26 @@ def get_user_debates(
             detail="Not authenticated"
         )
     
-    debates = db.query(DebateSession).filter(
-        DebateSession.user_id == user.id
-    ).order_by(DebateSession.created_at.desc()).offset(offset).limit(limit).all()
+    query = db.query(DebateSession).filter(DebateSession.user_id == user.id)
     
-    total = db.query(DebateSession).filter(DebateSession.user_id == user.id).count()
+    if user_stance:
+        query = query.filter(DebateSession.user_stance == user_stance)
+    if opponent_persona:
+        query = query.filter(DebateSession.opponent_persona == opponent_persona)
+    
+    if sort_by == "oldest":
+        query = query.order_by(DebateSession.created_at.asc())
+    else:
+        query = query.order_by(DebateSession.created_at.desc())
+    
+    debates = query.offset(offset).limit(limit).all()
+    
+    total = db.query(DebateSession).filter(DebateSession.user_id == user.id)
+    if user_stance:
+        total = total.filter(DebateSession.user_stance == user_stance)
+    if opponent_persona:
+        total = total.filter(DebateSession.opponent_persona == opponent_persona)
+    total = total.count()
     
     return {
         "debates": [
@@ -238,8 +256,8 @@ def get_user_debates(
                 "topic": d.topic,
                 "user_stance": d.user_stance,
                 "opponent_persona": d.opponent_persona,
-                "created_at": d.created_at.isoformat() if d.created_at else "",
-                "ended_at": d.ended_at.isoformat() if d.ended_at else None
+                "created_at": d.created_at.replace(tzinfo=timezone.utc).isoformat() if d.created_at else "",
+                "ended_at": d.ended_at.replace(tzinfo=timezone.utc).isoformat() if d.ended_at else None
             }
             for d in debates
         ],
@@ -250,7 +268,7 @@ def get_user_debates(
 @router.get("/user/stats")
 def get_user_stats(
     db: Session = Depends(get_db),
-    authorization: str = None
+    authorization: str = Header(None)
 ):
     user = get_current_user(db, authorization)
     if not user:

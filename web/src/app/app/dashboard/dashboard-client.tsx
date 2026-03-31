@@ -38,6 +38,13 @@ export default function DashboardClient() {
   const [recentDebates, setRecentDebates] = React.useState<DebateSession[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [quickAnalysisText, setQuickAnalysisText] = React.useState("");
+
+  const handleQuickAnalysis = () => {
+    if (quickAnalysisText.trim()) {
+      router.push(`/app/argument-analysis?text=${encodeURIComponent(quickAnalysisText)}`);
+    }
+  };
 
   React.useEffect(() => {
     if (!authLoading && !user) {
@@ -364,13 +371,13 @@ export default function DashboardClient() {
                     <textarea
                       placeholder="Enter your argument to analyze..."
                       className="w-full min-h-[100px] p-3 rounded-lg border bg-background resize-none"
+                      value={quickAnalysisText}
+                      onChange={(e) => setQuickAnalysisText(e.target.value)}
                     />
                     <div className="flex justify-end">
-                      <Button asChild>
-                        <Link href="/app/argument-analysis">
-                          <Zap className="mr-2 h-4 w-4" />
-                          Analyze Now
-                        </Link>
+                      <Button onClick={handleQuickAnalysis} disabled={!quickAnalysisText.trim()}>
+                        <Zap className="mr-2 h-4 w-4" />
+                        Analyze Now
                       </Button>
                     </div>
                   </div>
