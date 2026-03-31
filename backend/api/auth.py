@@ -65,10 +65,13 @@ def get_current_user(
         token = x_auth_token
     
     if not token:
+        print("DEBUG: No token provided")
         return None
     
     try:
+        print(f"DEBUG: Decoding token: {token[:30]}...")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"DEBUG: Payload: {payload}")
         user_id = payload.get("sub")
         if user_id is None:
             return None
@@ -377,27 +380,6 @@ def update_profile(
         "interests": getattr(user, 'interests', None),
         "experience_level": getattr(user, 'experience_level', None),
         "created_at": user.created_at.isoformat() if user.created_at else ""
-    }
-
-
-@router.patch("/user/settings")
-def update_settings(
-    request: UserSettingsUpdate,
-    db: Session = Depends(get_db),
-    authorization: str = None
-):
-    user = get_current_user(db, authorization)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-    
-    return {
-        "notifications": request.notifications,
-        "theme": request.theme,
-        "language": request.language,
-        "analysis_depth": request.analysis_depth
     }
 
 

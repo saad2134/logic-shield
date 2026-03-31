@@ -20,11 +20,21 @@ import {
   CheckCircle,
   Loader2
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { api } from "@/lib/api-app";
+import { useAuth } from "@/context/auth-context";
 
 export default function SettingsClient() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { user, isLoading: authLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth");
+    }
+  }, [user, authLoading, router]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -38,8 +48,11 @@ export default function SettingsClient() {
   });
 
   React.useEffect(() => {
+    if (!user || authLoading) return;
+    
     const loadSettings = async () => {
       try {
+        console.log("Loading settings, user:", user?.email);
         const savedSettings = await api.getSettings() as Record<string, unknown>;
         setSettings(prev => ({
           ...prev,
@@ -55,7 +68,7 @@ export default function SettingsClient() {
       }
     };
     loadSettings();
-  }, []);
+  }, [user, authLoading]);
 
   const toggleSetting = async (key: keyof typeof settings) => {
     const newValue = !settings[key];
@@ -307,19 +320,40 @@ export default function SettingsClient() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
                   <div className="space-y-1">
-                    <p className="font-medium">Export Your Data</p>
-                    <p className="text-sm text-muted-foreground">Download all your debate history and analysis</p>
+                    <p className="font-medium">Export Your Data as .csv</p>
+                    <p className="text-sm text-muted-foreground">Download all your debate history and analysis in the form of a .csv file</p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={async () => {
+                    try {
+                      const data = await api.exportData();
+                      const blob = new Blob([data as string], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'logic-shield-data.csv';
+                      a.click();
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Failed to export data");
+                    }
+                  }}>
                     Export
                   </Button>
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-lg border border-red-200 dark:border-red-800">
                   <div className="space-y-1">
-                    <p className="font-medium text-red-600">Delete All Data</p>
-                    <p className="text-sm text-muted-foreground">Permanently delete all your data</p>
+                    <p className="font-medium text-red-600">Delete All Data & Account</p>
+                    <p className="text-sm text-muted-foreground">Permanently delete all your data and your account</p>
                   </div>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" onClick={async () => {
+                    if (!confirm("Are you sure you want to delete your account and all data? This cannot be undone.")) return;
+                    try {
+                      await api.deleteAccount();
+                      localStorage.clear();
+                      window.location.href = '/';
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Failed to delete account");
+                    }
+                  }}>
                     Delete
                   </Button>
                 </div>

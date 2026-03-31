@@ -96,7 +96,7 @@ class ApiError extends Error {
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
-  console.log(`fetchApi URL: ${fullUrl}, token: ${token ? 'present' : 'NONE'}`);
+  console.log(`fetchApi URL: ${fullUrl}, USE_API_PROXY: ${USE_API_PROXY}, token: ${token ? 'present' : 'NONE'}`);
   
   const headers = {
     "Content-Type": "application/json",
@@ -356,4 +356,10 @@ export const api = {
 
     return response.json();
   },
+
+  exportData: () => fetchApi<string>(`/user/export`),
+
+  deleteAccount: () => fetchApi<{ message: string }>(`/user/account`, {
+    method: "DELETE",
+  }),
 };
