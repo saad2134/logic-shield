@@ -92,39 +92,74 @@ def export_user_data(
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    sessions = db.query(DebateSession).filter(DebateSession.user_id == user.id).all()
-    
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['Session ID', 'Topic', 'User Stance', 'Opponent Persona', 'Created At', 'Ended At', 'Argument ID', 'Argument Content', 'Is From User', 'Argument Created At'])
+    
+    writer.writerow(['=== USER PROFILE ==='])
+    writer.writerow(['Field', 'Value'])
+    writer.writerow(['Email', user.email])
+    writer.writerow(['Full Name', user.full_name])
+    writer.writerow(['Experience Level', user.experience_level or ''])
+    writer.writerow(['Interests', user.interests or ''])
+    writer.writerow(['Occupation', user.occupation or ''])
+    writer.writerow(['Bio', user.bio or ''])
+    writer.writerow(['Created At', user.created_at.isoformat() if user.created_at else ''])
+    writer.writerow(['Settings', str(user.settings) if user.settings else '{}'])
+    writer.writerow([])
+    
+    writer.writerow(['=== DEBATE SESSIONS ==='])
+    writer.writerow(['Session ID', 'Topic', 'User Stance', 'Opponent Persona', 'Created At', 'Ended At'])
+    
+    sessions = db.query(DebateSession).filter(DebateSession.user_id == user.id).order_by(DebateSession.created_at.desc()).all()
+    
+    for session in sessions:
+        writer.writerow([
+            session.id,
+            session.topic,
+            session.user_stance,
+            session.opponent_persona,
+            session.created_at.isoformat() if session.created_at else '',
+            session.ended_at.isoformat() if session.ended_at else ''
+        ])
+    
+    writer.writerow([])
+    writer.writerow(['=== ARGUMENTS ==='])
+    writer.writerow(['Argument ID', 'Session ID', 'Content', 'Is From User', 'Created At'])
     
     for session in sessions:
         arguments = db.query(Argument).filter(Argument.session_id == session.id).order_by(Argument.created_at).all()
-        
-        if arguments:
-            for arg in arguments:
-                writer.writerow([
-                    session.id,
-                    session.topic,
-                    session.user_stance,
-                    session.opponent_persona,
-                    session.created_at.isoformat() if session.created_at else '',
-                    session.ended_at.isoformat() if session.ended_at else '',
-                    arg.id,
-                    arg.content,
-                    'Yes' if arg.is_from_user else 'No',
-                    arg.created_at.isoformat() if arg.created_at else ''
-                ])
-        else:
+        for arg in arguments:
             writer.writerow([
-                session.id,
-                session.topic,
-                session.user_stance,
-                session.opponent_persona,
-                session.created_at.isoformat() if session.created_at else '',
-                session.ended_at.isoformat() if session.ended_at else '',
-                '', '', '', ''
+                arg.id,
+                arg.session_id,
+                arg.content.replace('\n', ' ').replace('\r', ''),
+                'Yes' if arg.is_from_user else 'No',
+                arg.created_at.isoformat() if arg.created_at else ''
             ])
+    
+    writer.writerow([])
+    writer.writerow(['=== ANALYSIS RESULTS ==='])
+    writer.writerow(['Analysis ID', 'Argument ID', 'Fallacies Detected', 'Argument Strength', 'Coherence Score', 'Evidence Score', 'Sentiment Score', 'Extremity Score', 'Reputation Risk', 'Risk Score', 'Risk Factors', 'Timestamp'])
+    
+    for session in sessions:
+        arguments = db.query(Argument).filter(Argument.session_id == session.id).all()
+        for arg in arguments:
+            analysis = db.query(AnalysisResult).filter(AnalysisResult.argument_id == arg.id).first()
+            if analysis:
+                writer.writerow([
+                    analysis.id,
+                    arg.id,
+                    ', '.join(analysis.fallacy_detected) if analysis.fallacy_detected else '',
+                    analysis.argument_strength or '',
+                    analysis.coherence_score or '',
+                    analysis.evidence_score or '',
+                    analysis.sentiment_score or '',
+                    analysis.extremity_score or '',
+                    analysis.reputation_risk_level or '',
+                    analysis.reputation_risk_score or '',
+                    ', '.join(analysis.risk_factors) if analysis.risk_factors else '',
+                    analysis.created_at.isoformat() if analysis.created_at else ''
+                ])
     
     return output.getvalue()
 

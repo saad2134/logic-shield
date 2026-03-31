@@ -7,7 +7,7 @@ interface Service {
 
 function getServices(): Service[] {
   const services: Service[] = [
-    { name: "Frontend Web (Vercel)", url: "https://vercel.app" },
+    { name: "Frontend: Web", url: "https://vercel.app" },
   ];
 
   const backendUrl = process.env.BACKEND_BASE_URL || "http://localhost:8000";
