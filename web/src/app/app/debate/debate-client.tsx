@@ -97,17 +97,7 @@ export default function NewDebateClient() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Start a Debate</h1>
-          <p className="text-muted-foreground mt-1">
-            Challenge yourself against an AI opponent and improve your argumentation skills
-          </p>
-        </motion.div>
+    
 
         {error && (
           <motion.div
@@ -127,8 +117,9 @@ export default function NewDebateClient() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex"
           >
-            <Card>
+            <Card className="flex-1">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="text-primary" size={20} />
@@ -138,7 +129,7 @@ export default function NewDebateClient() {
                   Define your debate topic and position
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 flex-1">
                 <div className="space-y-2">
                   <Label htmlFor="topic">Debate Topic</Label>
                   <Textarea
@@ -176,7 +167,7 @@ export default function NewDebateClient() {
                 </div>
 
                 <Button
-                  className="w-full"
+                  className="w-full mt-auto"
                   size="lg"
                   onClick={handleStartDebate}
                   disabled={isStarting || isLoading || !topic.trim()}
@@ -202,8 +193,9 @@ export default function NewDebateClient() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex"
           >
-            <Card>
+            <Card className="flex-1">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="text-primary" size={20} />
@@ -213,7 +205,7 @@ export default function NewDebateClient() {
                   Select your AI debate partner persona
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1">
                 {isLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3, 4].map((i) => (

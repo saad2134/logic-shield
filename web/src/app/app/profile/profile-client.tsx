@@ -151,29 +151,6 @@ export default function ProfileClient() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Profile</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage your account and track your debate performance
-              </p>
-            </div>
-            {!isEditing && (
-              <Button variant="outline" asChild>
-                <Link href="/app/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </Button>
-            )}
-          </div>
-        </motion.div>
 
         {saved && (
           <motion.div

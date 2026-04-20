@@ -143,13 +143,7 @@ export default function SettingsClient() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">App Settings</h1>
-                <p className="text-muted-foreground mt-1">
-                  Customize your LogicShield experience
-                </p>
-              </div>
+            <div className="flex items-start justify-end gap-4">
               <Button variant="outline" size="sm" onClick={handleReset}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset to Defaults

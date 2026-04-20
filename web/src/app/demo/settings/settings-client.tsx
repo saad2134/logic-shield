@@ -60,10 +60,6 @@ export default function SettingsClient() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">App Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Customize your LogicShield experience
-          </p>
         </motion.div>
 
         <div className="space-y-6">

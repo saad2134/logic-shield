@@ -62,6 +62,21 @@ export interface AnalysisResult {
   timestamp: string;
 }
 
+export interface QuickAnalysisResult {
+  issues: {
+    type: string;
+    name: string;
+    confidence?: number;
+    risk_level?: string;
+    severity: string;
+  }[];
+  overall_score: number;
+  suggestions: string[];
+  risk_level: string;
+  is_healthy: boolean;
+  timestamp: string;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;
@@ -230,6 +245,12 @@ export const api = {
     fetchApi<AnalysisResult>(`/analyze`, {
       method: "POST",
       body: JSON.stringify({ text, context }),
+    }),
+
+  quickAnalyze: (text: string, context: string = "", difficulty: string = "intermediate") =>
+    fetchApi<QuickAnalysisResult>(`/analyze/quick`, {
+      method: "POST",
+      body: JSON.stringify({ text, context, difficulty }),
     }),
 
   startDebate: (topic: string, userStance: string, opponentPersona: string) => {

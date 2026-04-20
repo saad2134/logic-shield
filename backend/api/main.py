@@ -12,7 +12,9 @@ from api.schemas import (
     AnalysisRequest,
     AnalysisResponse,
     HealthResponse,
-    PersonaInfo
+    PersonaInfo,
+    QuickAnalysisRequest,
+    QuickAnalysisResponse,
 )
 from services.analysis import AnalysisService
 from services.debate_simulator import DebateSimulator
@@ -31,13 +33,9 @@ def health_check():
         "fallacy_detection": "active" if not settings.DEMO_MODE else "demo",
         "argument_analysis": "active" if not settings.DEMO_MODE else "demo",
         "reputation_risk": "active" if not settings.DEMO_MODE else "demo",
-        "debate_simulation": "active" if not settings.DEMO_MODE else "demo"
+        "debate_simulation": "active" if not settings.DEMO_MODE else "demo",
     }
-    result = {
-        "status": "healthy",
-        "version": "1.0.0",
-        "services": services_status
-    }
+    result = {"status": "healthy", "version": "1.0.0", "services": services_status}
     if settings.DEMO_MODE:
         result["demo_mode"] = True
         result["demo_message"] = settings.DEMO_MESSAGE
@@ -61,50 +59,54 @@ def analyze_argument(request: AnalysisRequest):
     return result
 
 
+@router.post("/analyze/quick", response_model=QuickAnalysisResponse)
+def quick_analyze(request: QuickAnalysisRequest):
+    result = analysis_service.quick_analyze(
+        request.text, request.context or "", request.difficulty
+    )
+    return result
+
+
 @router.post("/debate/start", response_model=DebateSessionResponse)
-def start_debate_session(
-    request: DebateSessionCreate,
-    db: Session = Depends(get_db)
-):
+def start_debate_session(request: DebateSessionCreate, db: Session = Depends(get_db)):
     session = DebateSession(
         topic=request.topic,
         user_stance=request.user_stance,
         opponent_persona=request.opponent_persona,
-        user_id=request.user_id
+        user_id=request.user_id,
     )
     db.add(session)
     db.commit()
     db.refresh(session)
-    
+
     return DebateSessionResponse(
         id=int(session.id),
         topic=str(session.topic),
         user_stance=str(session.user_stance),
         opponent_persona=str(session.opponent_persona),
-        created_at=session.created_at.replace(tzinfo=timezone.utc).isoformat()
+        created_at=session.created_at.replace(tzinfo=timezone.utc).isoformat(),
     )
 
 
 @router.post("/debate/argument", response_model=ArgumentResponse)
-def add_argument(
-    request: ArgumentCreate,
-    db: Session = Depends(get_db)
-):
-    session = db.query(DebateSession).filter(DebateSession.id == request.session_id).first()
+def add_argument(request: ArgumentCreate, db: Session = Depends(get_db)):
+    session = (
+        db.query(DebateSession).filter(DebateSession.id == request.session_id).first()
+    )
     if not session:
         raise HTTPException(status_code=404, detail="Debate session not found")
-    
+
     argument = Argument(
         session_id=request.session_id,
         content=request.content,
-        is_from_user=request.is_from_user
+        is_from_user=request.is_from_user,
     )
     db.add(argument)
     db.commit()
     db.refresh(argument)
-    
+
     analysis = analysis_service.analyze_argument(request.content)
-    
+
     analysis_result = AnalysisResult(
         session_id=request.session_id,
         argument_id=argument.id,
@@ -117,88 +119,89 @@ def add_argument(
         extremity_score=analysis.get("logical_score", 0),
         reputation_risk_level=analysis["reputation_risk_level"],
         reputation_risk_score=analysis["reputation_risk_score"],
-        risk_factors=analysis["risk_factors"]
+        risk_factors=analysis["risk_factors"],
     )
     db.add(analysis_result)
     db.commit()
-    
+
     return ArgumentResponse(
         id=int(argument.id),
         session_id=int(argument.session_id),
         content=str(argument.content),
         is_from_user=bool(argument.is_from_user),
-        created_at=argument.created_at.replace(tzinfo=timezone.utc).isoformat()
+        created_at=argument.created_at.replace(tzinfo=timezone.utc).isoformat(),
     )
 
 
 @router.post("/debate/counter", response_model=CounterArgumentResponse)
 def get_counter_argument(
-    request: CounterArgumentRequest,
-    db: Session = Depends(get_db)
+    request: CounterArgumentRequest, db: Session = Depends(get_db)
 ):
-    session = db.query(DebateSession).filter(DebateSession.id == request.session_id).first()
+    session = (
+        db.query(DebateSession).filter(DebateSession.id == request.session_id).first()
+    )
     if not session:
         raise HTTPException(status_code=404, detail="Debate session not found")
-    
-    previous_args = db.query(Argument).filter(
-        Argument.session_id == request.session_id
-    ).order_by(Argument.created_at.desc()).all()
-    
+
+    previous_args = (
+        db.query(Argument)
+        .filter(Argument.session_id == request.session_id)
+        .order_by(Argument.created_at.desc())
+        .all()
+    )
+
     context = " ".join([str(a.content) for a in previous_args[:3]])
-    
+
     counter = debate_simulator.generate_counter_argument(
         topic=request.topic,
         user_argument=request.user_argument,
         user_stance=request.user_stance,
         persona=request.persona,
-        context=context
+        context=context,
     )
-    
+
     argument = Argument(
-        session_id=request.session_id,
-        content=counter,
-        is_from_user=False
+        session_id=request.session_id, content=counter, is_from_user=False
     )
     db.add(argument)
     db.commit()
-    
+
     return CounterArgumentResponse(
-        counter_argument=counter,
-        session_id=request.session_id
+        counter_argument=counter, session_id=request.session_id
     )
 
 
 @router.get("/debate/{session_id}/history")
-def get_debate_history(
-    session_id: int,
-    db: Session = Depends(get_db)
-):
+def get_debate_history(session_id: int, db: Session = Depends(get_db)):
     session = db.query(DebateSession).filter(DebateSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Debate session not found")
-    
-    arguments = db.query(Argument).filter(
-        Argument.session_id == session_id
-    ).order_by(Argument.created_at.asc()).all()
-    
-    analysis_results = db.query(AnalysisResult).filter(
-        AnalysisResult.session_id == session_id
-    ).all()
-    
+
+    arguments = (
+        db.query(Argument)
+        .filter(Argument.session_id == session_id)
+        .order_by(Argument.created_at.asc())
+        .all()
+    )
+
+    analysis_results = (
+        db.query(AnalysisResult).filter(AnalysisResult.session_id == session_id).all()
+    )
+
     return {
         "session": {
             "id": session.id,
             "topic": session.topic,
             "user_stance": session.user_stance,
             "opponent_persona": session.opponent_persona,
-            "created_at": session.created_at.replace(tzinfo=timezone.utc).isoformat()
+            "created_at": session.created_at.replace(tzinfo=timezone.utc).isoformat(),
         },
         "arguments": [
             {
                 "id": a.id,
                 "content": a.content,
                 "is_from_user": a.is_from_user,
-                "created_at": a.created_at.replace(tzinfo=timezone.utc).isoformat()
+                "created_at": a.created_at.replace(tzinfo=timezone.utc).isoformat(),
             }
             for a in arguments
         ],
@@ -207,50 +210,46 @@ def get_debate_history(
                 "argument_id": r.argument_id,
                 "fallacy_detected": r.fallacy_detected,
                 "argument_strength": r.argument_strength,
-                "reputation_risk_level": r.reputation_risk_level
+                "reputation_risk_level": r.reputation_risk_level,
             }
             for r in analysis_results
-        ]
+        ],
     }
 
 
 @router.post("/debate/{session_id}/end")
-def end_debate_session(
-    session_id: int,
-    db: Session = Depends(get_db)
-):
+def end_debate_session(session_id: int, db: Session = Depends(get_db)):
     session = db.query(DebateSession).filter(DebateSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Debate session not found")
-    
+
     session.ended_at = datetime.utcnow()
     db.commit()
-    
+
     return {"message": "Debate session ended", "session_id": session_id}
 
 
 @router.delete("/debate/{session_id}")
 def delete_debate_session(
-    session_id: int,
-    db: Session = Depends(get_db),
-    authorization: str = Header(None)
+    session_id: int, db: Session = Depends(get_db), authorization: str = Header(None)
 ):
     from api.auth import get_current_user
-    
+
     user = get_current_user(db, authorization)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    session = db.query(DebateSession).filter(
-        DebateSession.id == session_id,
-        DebateSession.user_id == user.id
-    ).first()
+
+    session = (
+        db.query(DebateSession)
+        .filter(DebateSession.id == session_id, DebateSession.user_id == user.id)
+        .first()
+    )
     if not session:
         raise HTTPException(status_code=404, detail="Debate session not found")
-    
+
     db.query(AnalysisResult).filter(AnalysisResult.session_id == session_id).delete()
     db.query(Argument).filter(Argument.session_id == session_id).delete()
     db.delete(session)
     db.commit()
-    
+
     return {"message": "Debate session deleted", "session_id": session_id}

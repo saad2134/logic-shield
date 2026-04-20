@@ -182,7 +182,7 @@ export default function HistoryClient() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
+<div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,11 +190,79 @@ export default function HistoryClient() {
           className="mb-8"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Debate History</h1>
-              <p className="text-muted-foreground mt-1">
-                {total > 0 ? `View and review your ${total} past debate sessions` : "View and review your past debate sessions"}
-              </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className={sortBy !== "latest" ? "border-primary" : ""}>
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
+                    Sort
+                    <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => handleSortChange("latest")}>
+                    Latest First
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSortChange("oldest")}>
+                    Oldest First
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className={filterStances.length > 0 || filterPersonas.length > 0 ? "border-primary" : ""}>
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filter
+                    {(filterStances.length > 0 || filterPersonas.length > 0) && (
+                      <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-72">
+                  <div className="p-2">
+                    <div className="text-sm font-medium mb-2">Your Stance</div>
+                    <div className="space-y-2 mb-4">
+                      {["support", "oppose", "neutral"].map((stance) => (
+                        <div key={stance} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={`stance-${stance}`}
+                            checked={filterStances.includes(stance)}
+                            onCheckedChange={(checked) => handleStanceFilter(stance, checked as boolean)}
+                          />
+                          <label htmlFor={`stance-${stance}`} className="text-sm capitalize cursor-pointer">
+                            {stance}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-sm font-medium mb-2">Opponent Persona</div>
+                    <div className="space-y-2">
+                      {[
+                        { value: "logical", label: "Logical" },
+                        { value: "aggressive", label: "Aggressive" },
+                        { value: "skeptical", label: "Skeptical" },
+                        { value: "devil_advocate", label: "Devil Advocate" }
+                      ].map((persona) => (
+                        <div key={persona.value} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={`persona-${persona.value}`}
+                            checked={filterPersonas.includes(persona.value)}
+                            onCheckedChange={(checked) => handlePersonaFilter(persona.value, checked as boolean)}
+                          />
+                          <label htmlFor={`persona-${persona.value}`} className="text-sm cursor-pointer">
+                            {persona.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {(filterStances.length > 0 || filterPersonas.length > 0) && (
+                <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                  Clear filters
+                </Button>
+              )}
             </div>
             <Button asChild>
               <Link href="/app/debate">
@@ -203,94 +271,6 @@ export default function HistoryClient() {
               </Link>
             </Button>
           </div>
-          <div className="flex flex-wrap items-center gap-2 mt-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className={sortBy !== "latest" ? "border-primary" : ""}>
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
-                  Sort
-                  <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => handleSortChange("latest")}>
-                  Latest First
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSortChange("oldest")}>
-                  Oldest First
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className={filterStances.length > 0 || filterPersonas.length > 0 ? "border-primary" : ""}>
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                  {(filterStances.length > 0 || filterPersonas.length > 0) && (
-                    <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72">
-                <div className="p-2">
-                  <div className="text-sm font-medium mb-2">Your Stance</div>
-                  <div className="space-y-2 mb-4">
-                    {["support", "oppose", "neutral"].map((stance) => (
-                      <div key={stance} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`stance-${stance}`}
-                          checked={filterStances.includes(stance)}
-                          onCheckedChange={(checked) => handleStanceFilter(stance, checked as boolean)}
-                        />
-                        <label htmlFor={`stance-${stance}`} className="text-sm capitalize cursor-pointer">
-                          {stance}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-sm font-medium mb-2">Opponent Persona</div>
-                  <div className="space-y-2">
-                    {[
-                      { value: "logical", label: "Logical" },
-                      { value: "aggressive", label: "Aggressive" },
-                      { value: "skeptical", label: "Skeptical" },
-                      { value: "devil_advocate", label: "Devil Advocate" }
-                    ].map((persona) => (
-                      <div key={persona.value} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`persona-${persona.value}`}
-                          checked={filterPersonas.includes(persona.value)}
-                          onCheckedChange={(checked) => handlePersonaFilter(persona.value, checked as boolean)}
-                        />
-                        <label htmlFor={`persona-${persona.value}`} className="text-sm cursor-pointer">
-                          {persona.label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {(filterStances.length > 0 || filterPersonas.length > 0) && (
-              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                Clear filters
-              </Button>
-            )}
-          </div>
-          {(filterStances.length > 0 || filterPersonas.length > 0) && (
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              {filterStances.map((stance) => (
-                <Badge key={stance} variant="secondary" className="cursor-pointer" onClick={() => handleStanceFilter(stance, false)}>
-                  {stance} <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-              {filterPersonas.map((persona) => (
-                <Badge key={persona} variant="secondary" className="cursor-pointer" onClick={() => handlePersonaFilter(persona, false)}>
-                  {persona.replace("_", " ")} <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-            </div>
-          )}
         </motion.div>
 
         {error && (

@@ -114,17 +114,6 @@ export default function AnalysisClient() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Argument Analysis</h1>
-          <p className="text-muted-foreground mt-1">
-            Analyze any argument for logical fallacies, strength, and reputational risks
-          </p>
-        </motion.div>
 
         {error && (
           <motion.div

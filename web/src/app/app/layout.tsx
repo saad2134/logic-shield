@@ -113,7 +113,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true} className="h-screen">
-      <Sidebar collapsible="offcanvas" className="border-r border-foreground/10 z-200">
+      <Sidebar collapsible="offcanvas" className="border-r border-foreground/10 z-50">
         <SidebarHeader className="py-4">
           <div className="flex items-center gap-3 px-2">
             <AppUI className="w-10 h-10 select-none" draggable={false} />
@@ -221,9 +221,9 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               {pathname === '/app/dashboard' && 'Your personal debate dashboard'}
-              {pathname === '/app/debate' && 'Start a new debate session'}
+              {pathname === '/app/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
               {pathname === '/app/history' && 'View your past debates'}
-              {pathname === '/app/argument-analysis' && 'Analyze arguments with AI'}
+              {pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
               {pathname === '/app/profile' && 'Manage your account details'}
               {pathname === '/app/settings' && 'Configure your preferences'}
             </p>
