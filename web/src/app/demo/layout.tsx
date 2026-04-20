@@ -177,8 +177,18 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
           <SidebarTrigger />
           <div className="flex-1">
             <h1 className="text-lg font-semibold">
-              {demoNavItems.flatMap(cat => cat.items || []).find(item => item.url === pathname)?.title || "Demo"}
+              {pathname === '/demo/profile' ? 'Profile' : 
+               pathname === '/demo/settings' ? 'Settings' : 
+               demoNavItems.flatMap(cat => cat.items || []).find(item => item.url === pathname)?.title || "Demo"}
             </h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {pathname === '/demo/dashboard' && 'Your personal debate dashboard'}
+              {pathname === '/demo/debate' && 'Start a new debate session'}
+              {pathname === '/demo/history' && 'View your past debates'}
+              {pathname === '/demo/argument-analysis' && 'Analyze arguments with AI'}
+              {pathname === '/demo/profile' && 'Manage your account details'}
+              {pathname === '/demo/settings' && 'Configure your preferences'}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Sheet>

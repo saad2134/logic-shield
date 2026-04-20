@@ -212,10 +212,20 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
           <SidebarTrigger />
           <div className="flex-1">
             <h1 className="text-lg font-semibold">
-              {appNavItems
+              {pathname === '/app/profile' ? 'Profile' : 
+               pathname === '/app/settings' ? 'Settings' : 
+               appNavItems
                 .flatMap((cat) => cat.items || [])
                 .find((item) => item.url === pathname)?.title || "LogicShield"}
             </h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {pathname === '/app/dashboard' && 'Your personal debate dashboard'}
+              {pathname === '/app/debate' && 'Start a new debate session'}
+              {pathname === '/app/history' && 'View your past debates'}
+              {pathname === '/app/argument-analysis' && 'Analyze arguments with AI'}
+              {pathname === '/app/profile' && 'Manage your account details'}
+              {pathname === '/app/settings' && 'Configure your preferences'}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Sheet>
