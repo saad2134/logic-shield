@@ -54,7 +54,6 @@ import { siteConfig } from "@/config/site";
 
 const demoNavItems = [
   {
-    title: "Main",
     items: [
       { title: "Dashboard", url: "/demo/dashboard", icon: LayoutDashboard },
     ],
@@ -104,11 +103,13 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
         </SidebarHeader>
         
         <SidebarContent>
-          {demoNavItems.map((category) => (
-            <SidebarGroup key={category.title}>
-              <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
-                {category.title}
-              </SidebarGroupLabel>
+          {demoNavItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx}>
+              {category.title && (
+                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                  {category.title}
+                </SidebarGroupLabel>
+              )}
               <SidebarMenu>
                 {category.items?.map((item) => {
                   const isActive = pathname === item.url;

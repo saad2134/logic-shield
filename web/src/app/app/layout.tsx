@@ -55,7 +55,6 @@ import { useAuth } from "@/context/auth-context";
 
 const appNavItems = [
   {
-    title: "Main",
     items: [
       { title: "Dashboard", url: "/app/dashboard", icon: LayoutDashboard },
     ],
@@ -126,11 +125,13 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
         </SidebarHeader>
 
         <SidebarContent>
-          {appNavItems.map((category) => (
-            <SidebarGroup key={category.title}>
-              <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
-                {category.title}
-              </SidebarGroupLabel>
+          {appNavItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx}>
+              {category.title && (
+                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                  {category.title}
+                </SidebarGroupLabel>
+              )}
               <SidebarMenu>
                 {category.items?.map((item) => {
                   const isActive = pathname === item.url;
