@@ -7,7 +7,7 @@ console.log('BACKEND_URL initialized:', BACKEND_URL, 'USE_API_PROXY:', USE_API_P
 
 function getApiUrl(path: string): string {
   if (USE_API_PROXY) {
-    return `/api${path}`;
+    return `/api/v1${path}`;
   }
   return `${BACKEND_URL}${path}`;
 }
@@ -58,11 +58,7 @@ export interface AnalysisResult {
   logical_score: number;
   reputation_risk_level: string;
   reputation_risk_score: number;
-  risk_factors: Array<{
-    factor: string;
-    severity: string;
-    description: string;
-  }>;
+  risk_factors: string[];
   timestamp: string;
 }
 
@@ -100,7 +96,7 @@ class ApiError extends Error {
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
-  console.log(`fetchApi URL: ${fullUrl}, token: ${token ? 'present' : 'NONE'}`);
+  console.log(`fetchApi URL: ${fullUrl}, USE_API_PROXY: ${USE_API_PROXY}, token: ${token ? 'present' : 'NONE'}`);
   
   const headers = {
     "Content-Type": "application/json",
@@ -154,7 +150,7 @@ export const authApi = {
     const response = await fetch(getApiUrl('/auth/register'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ full_name: name, email, password }),
     });
 
     const result = await response.json();
@@ -236,15 +232,18 @@ export const api = {
       body: JSON.stringify({ text, context }),
     }),
 
-  startDebate: (topic: string, userStance: string, opponentPersona: string) =>
-    fetchApi<DebateSession>(`/debate/start`, {
+  startDebate: (topic: string, userStance: string, opponentPersona: string) => {
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
+    return fetchApi<DebateSession>(`/debate/start`, {
       method: "POST",
       body: JSON.stringify({
         topic,
         user_stance: userStance,
         opponent_persona: opponentPersona,
+        user_id: userId ? parseInt(userId) : null,
       }),
-    }),
+    });
+  },
 
   addArgument: (sessionId: number, content: string) =>
     fetchApi<Argument>(`/debate/argument`, {
@@ -292,11 +291,23 @@ export const api = {
       }
     ),
 
-  getUserDebates: (limit: number = 10, offset: number = 0) =>
-    fetchApi<{
+  deleteDebate: (sessionId: number) =>
+    fetchApi<{ message: string; session_id: number }>(
+      `/debate/${sessionId}`,
+      {
+        method: "DELETE",
+      }
+    ),
+
+  getUserDebates: (limit: number = 10, offset: number = 0, sortBy: string = "latest", userStance?: string, opponentPersona?: string) => {
+    let url = `/user/debates?limit=${limit}&offset=${offset}&sort_by=${sortBy}`;
+    if (userStance) url += `&user_stance=${userStance}`;
+    if (opponentPersona) url += `&opponent_persona=${opponentPersona}`;
+    return fetchApi<{
       debates: DebateSession[];
       total: number;
-    }>(`/user/debates?limit=${limit}&offset=${offset}`),
+    }>(url);
+  },
 
   getUserStats: () => fetchApi<UserStats>(`/user/stats`),
 
@@ -313,6 +324,8 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(settings),
     }),
+
+  getSettings: () => fetchApi<Record<string, unknown>>(`/user/settings`),
 
   submitOnboarding: async (data: {
     name: string;
@@ -343,4 +356,10 @@ export const api = {
 
     return response.json();
   },
+
+  exportData: () => fetchApi<string>(`/user/export`),
+
+  deleteAccount: () => fetchApi<{ message: string }>(`/user/account`, {
+    method: "DELETE",
+  }),
 };

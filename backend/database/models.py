@@ -18,6 +18,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_active = Column(Boolean, default=True)
+    settings = Column(JSON, default=dict)
 
     debate_sessions = relationship("DebateSession", back_populates="user")
     analytics = relationship("UserAnalytics", back_populates="user", uselist=False)

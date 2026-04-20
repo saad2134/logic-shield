@@ -15,7 +15,7 @@ from api.schemas import (
     UserSettingsResponse,
     OnboardingRequest,
 )
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.config import settings
 
@@ -65,10 +65,13 @@ def get_current_user(
         token = x_auth_token
     
     if not token:
+        print("DEBUG: No token provided")
         return None
     
     try:
+        print(f"DEBUG: Decoding token: {token[:30]}...")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"DEBUG: Payload: {payload}")
         user_id = payload.get("sub")
         if user_id is None:
             return None
@@ -215,8 +218,11 @@ def logout():
 def get_user_debates(
     limit: int = 10,
     offset: int = 0,
+    sort_by: str = "latest",
+    user_stance: str = None,
+    opponent_persona: str = None,
     db: Session = Depends(get_db),
-    authorization: str = None
+    authorization: str = Header(None)
 ):
     user = get_current_user(db, authorization)
     if not user:
@@ -225,11 +231,30 @@ def get_user_debates(
             detail="Not authenticated"
         )
     
-    debates = db.query(DebateSession).filter(
-        DebateSession.user_id == user.id
-    ).order_by(DebateSession.created_at.desc()).offset(offset).limit(limit).all()
+    query = db.query(DebateSession).filter(DebateSession.user_id == user.id)
     
-    total = db.query(DebateSession).filter(DebateSession.user_id == user.id).count()
+    if user_stance:
+        stance_values = [s.strip() for s in user_stance.split(",")]
+        query = query.filter(DebateSession.user_stance.in_(stance_values))
+    if opponent_persona:
+        persona_values = [p.strip() for p in opponent_persona.split(",")]
+        query = query.filter(DebateSession.opponent_persona.in_(persona_values))
+    
+    if sort_by == "oldest":
+        query = query.order_by(DebateSession.created_at.asc())
+    else:
+        query = query.order_by(DebateSession.created_at.desc())
+    
+    debates = query.offset(offset).limit(limit).all()
+    
+    total = db.query(DebateSession).filter(DebateSession.user_id == user.id)
+    if user_stance:
+        stance_values = [s.strip() for s in user_stance.split(",")]
+        total = total.filter(DebateSession.user_stance.in_(stance_values))
+    if opponent_persona:
+        persona_values = [p.strip() for p in opponent_persona.split(",")]
+        total = total.filter(DebateSession.opponent_persona.in_(persona_values))
+    total = total.count()
     
     return {
         "debates": [
@@ -238,8 +263,8 @@ def get_user_debates(
                 "topic": d.topic,
                 "user_stance": d.user_stance,
                 "opponent_persona": d.opponent_persona,
-                "created_at": d.created_at.isoformat() if d.created_at else "",
-                "ended_at": d.ended_at.isoformat() if d.ended_at else None
+                "created_at": d.created_at.replace(tzinfo=timezone.utc).isoformat() if d.created_at else "",
+                "ended_at": d.ended_at.replace(tzinfo=timezone.utc).isoformat() if d.ended_at else None
             }
             for d in debates
         ],
@@ -250,7 +275,7 @@ def get_user_debates(
 @router.get("/user/stats")
 def get_user_stats(
     db: Session = Depends(get_db),
-    authorization: str = None
+    authorization: str = Header(None)
 ):
     user = get_current_user(db, authorization)
     if not user:
@@ -355,27 +380,6 @@ def update_profile(
         "interests": getattr(user, 'interests', None),
         "experience_level": getattr(user, 'experience_level', None),
         "created_at": user.created_at.isoformat() if user.created_at else ""
-    }
-
-
-@router.patch("/user/settings")
-def update_settings(
-    request: UserSettingsUpdate,
-    db: Session = Depends(get_db),
-    authorization: str = None
-):
-    user = get_current_user(db, authorization)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-    
-    return {
-        "notifications": request.notifications,
-        "theme": request.theme,
-        "language": request.language,
-        "analysis_depth": request.analysis_depth
     }
 
 

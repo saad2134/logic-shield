@@ -61,51 +61,31 @@ class ReputationRiskEstimator:
         if toxicity_score > 0:
             category_scores["inflammatory"] = toxicity_score
             if toxicity_score >= 0.5:
-                risk_factors.append({
-                    "category": "inflammatory",
-                    "score": round(toxicity_score, 3),
-                    "description": RISK_DESCRIPTIONS["inflammatory"]
-                })
+                risk_factors.append(RISK_DESCRIPTIONS["inflammatory"])
         
         hate_score = self._calculate_hate_speech(text)
         if hate_score > 0:
             category_scores["identity_sensitive"] = hate_score
             if hate_score >= 0.4:
-                risk_factors.append({
-                    "category": "identity_sensitive",
-                    "score": round(hate_score, 3),
-                    "description": RISK_DESCRIPTIONS["identity_sensitive"]
-                })
+                risk_factors.append(RISK_DESCRIPTIONS["identity_sensitive"])
         
         absolutist_score = self._calculate_absolutist(text)
         if absolutist_score > 0:
             category_scores["absolutist_phrasing"] = absolutist_score
             if absolutist_score >= 0.5:
-                risk_factors.append({
-                    "category": "absolutist_phrasing",
-                    "score": round(absolutist_score, 3),
-                    "description": RISK_DESCRIPTIONS["absolutist_phrasing"]
-                })
+                risk_factors.append(RISK_DESCRIPTIONS["absolutist_phrasing"])
         
         moral_score = self._calculate_moral_polarity(text)
         if moral_score > 0:
             category_scores["moral_polarity"] = moral_score
             if moral_score >= 0.5:
-                risk_factors.append({
-                    "category": "moral_polarity",
-                    "score": round(moral_score, 3),
-                    "description": RISK_DESCRIPTIONS["moral_polarity"]
-                })
+                risk_factors.append(RISK_DESCRIPTIONS["moral_polarity"])
         
         defensive_score = self._calculate_defensive(text)
         if defensive_score > 0:
             category_scores["defensive"] = defensive_score
             if defensive_score >= 0.5:
-                risk_factors.append({
-                    "category": "defensive",
-                    "score": round(defensive_score, 3),
-                    "description": RISK_DESCRIPTIONS["defensive"]
-                })
+                risk_factors.append(RISK_DESCRIPTIONS["defensive"])
         
         if not category_scores:
             category_scores["baseline"] = 0.1
