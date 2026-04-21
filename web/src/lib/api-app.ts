@@ -62,6 +62,21 @@ export interface AnalysisResult {
   timestamp: string;
 }
 
+export interface QuickAnalysisResult {
+  issues: {
+    type: string;
+    name: string;
+    confidence?: number;
+    risk_level?: string;
+    severity: string;
+  }[];
+  overall_score: number;
+  suggestions: string[];
+  risk_level: string;
+  is_healthy: boolean;
+  timestamp: string;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;
@@ -86,6 +101,29 @@ export interface Achievement {
   earned_at?: string;
 }
 
+export interface ArgumentNode {
+  id: string;
+  text: string;
+  text_full?: string;
+  type: string;
+  strength: number;
+  issues: string[];
+}
+
+export interface ArgumentEdge {
+  source: string;
+  target: string;
+  label: string;
+}
+
+export interface ArgumentVisualization {
+  nodes: ArgumentNode[];
+  edges: ArgumentEdge[];
+  summary: string;
+  overall_strength: number;
+  weak_links: string[];
+}
+
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -95,15 +133,16 @@ class ApiError extends Error {
 
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
   const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
-  console.log(`fetchApi URL: ${fullUrl}, USE_API_PROXY: ${USE_API_PROXY}, token: ${token ? 'present' : 'NONE'}`);
   
-  const headers = {
+const headers = {
     "Content-Type": "application/json",
     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    ...(userId ? { "X-User-ID": userId } : {}),
     ...options?.headers,
   };
-  
+
   const response = await fetch(fullUrl, {
     ...options,
     headers,
@@ -127,7 +166,6 @@ export const authApi = {
     });
 
     const result = await response.json();
-    console.log('Login API result:', result);
     
     if (!response.ok || (!result.access_token && !result.success)) {
       throw new ApiError(response.status, result.detail || result.message || "Login failed");
@@ -135,7 +173,6 @@ export const authApi = {
 
     const token = result.access_token || result.token;
     if (token) {
-      console.log('Storing token:', token.substring(0, 20) + '...');
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user_data', JSON.stringify(result.user));
       if (result.user?.id) {
@@ -185,20 +222,16 @@ export const authApi = {
   me: async () => {
     if (typeof window === 'undefined') return null;
     try {
-      const token = localStorage.getItem('auth_token');
-      console.log('me() - token:', token ? 'present' : 'missing', 'USE_API_PROXY:', USE_API_PROXY);
-      
-      // Use X-Auth-Token header to work around CORS issues
+      const userId = localStorage.getItem('user_id');
       const response = await fetch(getApiUrl('/auth/me'), {
         method: 'GET',
         headers: { 
           'Content-Type': 'application/json',
-          ...(token ? { 'X-Auth-Token': token } : {})
+          ...(userId ? { 'X-User-ID': userId } : {})
         },
       });
 
       if (!response.ok) {
-        // Fallback: return user from localStorage if available
         const storedUser = localStorage.getItem('user_data');
         if (storedUser) {
           return JSON.parse(storedUser);
@@ -206,10 +239,10 @@ export const authApi = {
         return null;
       }
 
-      const user = await response.json();
-      return user;
+      const userData = await response.json();
+      localStorage.setItem('user_data', JSON.stringify(userData));
+      return userData;
     } catch (err) {
-      // Fallback: return user from localStorage if available
       const storedUser = localStorage.getItem('user_data');
       if (storedUser) {
         return JSON.parse(storedUser);
@@ -228,6 +261,18 @@ export const api = {
 
   analyze: (text: string, context: string = "") =>
     fetchApi<AnalysisResult>(`/analyze`, {
+      method: "POST",
+      body: JSON.stringify({ text, context }),
+    }),
+
+  quickAnalyze: (text: string, context: string = "", difficulty: string = "intermediate") =>
+    fetchApi<QuickAnalysisResult>(`/analyze/quick`, {
+      method: "POST",
+      body: JSON.stringify({ text, context, difficulty }),
+    }),
+
+  visualizeArgument: (text: string, context: string = "") =>
+    fetchApi<ArgumentVisualization>(`/visualize/argument`, {
       method: "POST",
       body: JSON.stringify({ text, context }),
     }),

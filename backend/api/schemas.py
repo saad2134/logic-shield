@@ -5,7 +5,9 @@ from pydantic import BaseModel, Field
 class DebateSessionCreate(BaseModel):
     topic: str = Field(..., min_length=1, max_length=500)
     user_stance: str = Field(..., pattern="^(support|oppose|neutral)$")
-    opponent_persona: str = Field(default="logical", pattern="^(logical|aggressive|skeptical|devil_advocate)$")
+    opponent_persona: str = Field(
+        default="logical", pattern="^(logical|aggressive|skeptical|devil_advocate)$"
+    )
     user_id: Optional[int] = None
 
 
@@ -15,7 +17,7 @@ class DebateSessionResponse(BaseModel):
     user_stance: str
     opponent_persona: str
     created_at: str
-    
+
     class Config:
         from_attributes = True
 
@@ -32,7 +34,7 @@ class ArgumentResponse(BaseModel):
     content: str
     is_from_user: bool
     created_at: str
-    
+
     class Config:
         from_attributes = True
 
@@ -42,7 +44,9 @@ class CounterArgumentRequest(BaseModel):
     user_argument: str
     topic: str
     user_stance: str
-    persona: str = Field(default="logical", pattern="^(logical|aggressive|skeptical|devil_advocate)$")
+    persona: str = Field(
+        default="logical", pattern="^(logical|aggressive|skeptical|devil_advocate)$"
+    )
     context: Optional[str] = ""
 
 
@@ -170,3 +174,51 @@ class OnboardingRequest(BaseModel):
     interests: List[str]
     debate_frequency: str
     focus_areas: List[str]
+
+
+class QuickAnalysisRequest(BaseModel):
+    text: str = Field(..., min_length=1)
+    context: Optional[str] = ""
+    difficulty: Optional[str] = Field(
+        default="intermediate", pattern="^(basic|intermediate|advanced)$"
+    )
+
+
+class QuickAnalysisResponse(BaseModel):
+    issues: List[dict]
+    overall_score: float
+    suggestions: List[str]
+    risk_level: Optional[str] = "low"
+    is_healthy: bool
+    should_proceed: Optional[bool] = True
+    recommendation: Optional[str] = "ready"
+    word_count: Optional[int] = 0
+    has_coherence: Optional[bool] = False
+    timestamp: str
+
+
+class ArgumentVisualizeRequest(BaseModel):
+    text: str
+    context: Optional[str] = ""
+
+
+class ArgumentNode(BaseModel):
+    id: str
+    text: str
+    type: str  # "claim", "premise", "evidence", "conclusion"
+    strength: float = 1.0
+    issues: list[str] = []
+
+
+class ArgumentEdge(BaseModel):
+    source: str
+    target: str
+    label: str = "supports"
+
+
+class ArgumentVisualizeResponse(BaseModel):
+    nodes: list[ArgumentNode]
+    edges: list[ArgumentEdge]
+    summary: str
+    overall_strength: float
+    weak_links: list[str] = []

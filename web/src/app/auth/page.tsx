@@ -10,15 +10,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { siteConfig } from "@/config/site";
 import { motion } from "framer-motion";
-import { Briefcase, ArrowRight, Loader2, Form } from "lucide-react";
+import { Briefcase, ArrowRight, Loader2, Form, Sun, Moon } from "lucide-react";
 import Silk from "@/components/Silk";
 import Prism from "@/components/Prism";
 import { authService } from "@/lib/auth";
 import { useAuth } from "@/context/auth-context";
+import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function AuthPage() {
   const router = useRouter();
   const { login, register } = useAuth();
+  const { setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [loginData, setLoginData] = useState({ email: "", password: "", rememberMe: false });
@@ -83,15 +91,23 @@ export default function AuthPage() {
     setError("Google Login is not configured. Please sign up with email.");
   };
 
+  const handleQuickFill = () => {
+    if (isLogin) {
+      setLoginData({ email: "demo@example.com", password: "demo123", rememberMe: true });
+    } else {
+      setSignupData({ name: "Demo User", email: "demo@example.com", password: "demo123", confirmPassword: "demo123" });
+    }
+  };
+
   return (
-    <div className="min-h-screen flex ">
+    <div className="min-h-screen flex relative">
       <div className="w-[60%] min-h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
         <div className="absolute inset-0">
           <Silk color="#5188ff" speed={8} />
         </div>
       </div>
-      <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-6 py-12 lg:py-16">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-4 py-8 lg:py-10">
+        <div className="w-full max-w-md scale-100 transform ">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Authentication</h1>
           <p className="text-muted-foreground">{siteConfig.tagline}</p>
@@ -162,7 +178,7 @@ export default function AuthPage() {
                     "Sign In"
                   )}
                 </Button>
-                <div className="relative w-full">
+                {/* <div className="relative w-full">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
                   </div>
@@ -173,7 +189,7 @@ export default function AuthPage() {
                 <Button variant="outline" className="w-full" type="button" onClick={handleGoogleAuth} disabled={isLoading}>
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      d="H22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
                     />
                     <path
@@ -190,7 +206,7 @@ export default function AuthPage() {
                     />
                   </svg>
                   Google
-                </Button>
+                </Button> */}
                 <p className="text-center text-sm text-muted-foreground">
                   Don't have an account?{" "}
                   <button
@@ -298,6 +314,35 @@ export default function AuthPage() {
             </form>
           </Card>
         )}
+
+        <div className="mt-6 flex items-center justify-center gap-4">
+          <Button
+            onClick={handleQuickFill}
+            variant="outline"
+          >
+            Quick Fill
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                System
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -52,10 +52,10 @@ import {
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
 import { useAuth } from "@/context/auth-context";
+import { Network } from "lucide-react";
 
 const appNavItems = [
   {
-    title: "Main",
     items: [
       { title: "Dashboard", url: "/app/dashboard", icon: LayoutDashboard },
     ],
@@ -71,6 +71,7 @@ const appNavItems = [
     title: "Tools",
     items: [
       { title: "Argument Analysis", url: "/app/argument-analysis", icon: Target },
+      { title: "Argument Mapper", url: "/app/argument-mapper", icon: Network },
     ],
   },
 ];
@@ -114,8 +115,8 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true} className="h-screen">
-      <Sidebar collapsible="offcanvas" className="border-r z-200">
-        <SidebarHeader className="py-4 border-b">
+      <Sidebar collapsible="offcanvas" className="border-r border-foreground/10 z-50">
+        <SidebarHeader className="py-4">
           <div className="flex items-center gap-3 px-2">
             <AppUI className="w-10 h-10 select-none" draggable={false} />
             <div className="flex flex-col">
@@ -126,11 +127,13 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
         </SidebarHeader>
 
         <SidebarContent>
-          {appNavItems.map((category) => (
-            <SidebarGroup key={category.title}>
-              <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
-                {category.title}
-              </SidebarGroupLabel>
+          {appNavItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx}>
+              {category.title && (
+                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                  {category.title}
+                </SidebarGroupLabel>
+              )}
               <SidebarMenu>
                 {category.items?.map((item) => {
                   const isActive = pathname === item.url;
@@ -208,19 +211,29 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="flex flex-col flex-1 h-full overflow-auto">
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 z-50 bg-background/80 backdrop-blur-md">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-foreground/10 px-4 sticky top-0 z-50 bg-background/80 backdrop-blur-md">
           <SidebarTrigger />
           <div className="flex-1">
             <h1 className="text-lg font-semibold">
-              {appNavItems
+              {pathname === '/app/profile' ? 'Profile' : 
+               pathname === '/app/settings' ? 'Settings' : 
+               appNavItems
                 .flatMap((cat) => cat.items || [])
                 .find((item) => item.url === pathname)?.title || "LogicShield"}
             </h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {pathname === '/app/dashboard' && 'Your personal debate dashboard'}
+              {pathname === '/app/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
+              {pathname === '/app/history' && 'View your past debates'}
+              {pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
+              {pathname === '/app/profile' && 'Manage your account details'}
+              {pathname === '/app/settings' && 'Configure your preferences'}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="border border-foreground/10">
                   <Bell size={18} />
                 </Button>
               </SheetTrigger>
@@ -229,7 +242,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
                   <SheetTitle>Notifications</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 mt-4">
-                  <div className="flex gap-3 p-3 rounded-lg border">
+                  <div className="flex gap-3 p-3 rounded-lg border border-foreground/10">
                     <div className="w-10 h-10 rounded-full bg-primary/25 flex items-center justify-center">
                       <Shield className="w-5 h-5 text-primary" />
                     </div>
@@ -239,7 +252,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
                       <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
                     </div>
                   </div>
-                  <div className="flex gap-3 p-3 rounded-lg border">
+                  <div className="flex gap-3 p-3 rounded-lg border border-foreground/10">
                     <div className="w-10 h-10 rounded-full bg-primary/25 flex items-center justify-center">
                       <Brain className="w-5 h-5 text-primary" />
                     </div>
@@ -254,13 +267,13 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
             </Sheet>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="relative border border-foreground/10">
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                   <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                   <span className="sr-only">Toggle theme</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="border border-foreground/10">
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                   Light
                 </DropdownMenuItem>
