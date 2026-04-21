@@ -225,9 +225,10 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               {pathname === '/app/dashboard' && 'Your personal debate dashboard'}
               {pathname === '/app/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
               {pathname === '/app/history' && 'View your past debates'}
-              {pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
-              {pathname === '/app/profile' && 'Manage your account details'}
-              {pathname === '/app/settings' && 'Configure your preferences'}
+{pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
+               {pathname === '/app/argument-mapper' && 'Visualize your argument structure as a mind map'}
+               {pathname === '/app/profile' && 'Manage your account details'}
+               {pathname === '/app/settings' && 'Configure your preferences'}
             </p>
           </div>
           <div className="flex items-center gap-2">
