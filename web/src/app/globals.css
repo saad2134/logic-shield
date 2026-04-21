@@ -377,3 +377,11 @@ html {
 @utility line-dashed {
   @apply border-dashed;
 }
+
+input::placeholder {
+  color: #9ca3af !important;
+}
+
+textarea::placeholder {
+  color: #9ca3af !important;
+}

@@ -85,13 +85,7 @@ export default function HistoryClient() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Debate History</h1>
-              <p className="text-muted-foreground mt-1">
-                View and review your past debate sessions
-              </p>
-            </div>
+          <div className="flex items-center justify-end gap-4 flex-wrap">
             <Button asChild>
               <Link href="/demo/debate">
                 <Zap className="mr-2 h-4 w-4" />

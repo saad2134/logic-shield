@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import {
   MessageSquare,
@@ -27,6 +34,8 @@ import {
   ChevronUp
 } from "lucide-react";
 import { api, AnalysisResult, DebateSession } from "@/lib/api";
+import { RealTimeCoach } from "@/components/coach";
+import { MessageActions } from "@/components/chat/message-actions";
 
 interface Message {
   id: number;
@@ -47,6 +56,7 @@ export default function DebateSessionClient() {
   const [isSending, setIsSending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = React.useState<number | null>(null);
+  const [difficulty, setDifficulty] = React.useState<"basic" | "intermediate" | "advanced">("intermediate");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -111,6 +121,32 @@ export default function DebateSessionClient() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send message");
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleRegenerate = async (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message || message.isFromUser || !session) return;
+
+    setIsSending(true);
+    try {
+      const counter = await api.getCounterArgument(
+        sessionId,
+        message.content,
+        session.topic,
+        session.user_stance,
+        session.opponent_persona
+      );
+
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, content: counter.counter_argument }
+          : m
+      ));
+    } catch (err) {
+      setError("Failed to regenerate response");
     } finally {
       setIsSending(false);
     }
@@ -327,6 +363,12 @@ export default function DebateSessionClient() {
                             )}
                           </button>
                         )}
+                        
+                        <MessageActions 
+                          content={message.content} 
+                          isFromUser={message.isFromUser}
+                          onRegenerate={!message.isFromUser ? () => handleRegenerate(message.id) : undefined}
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -362,8 +404,15 @@ export default function DebateSessionClient() {
             </div>
           </div>
 
-          <div className="p-4 border-t shrink-0">
-            <div className="flex gap-2">
+          <div className="p-4 border-t shrink-0 space-y-3">
+            <RealTimeCoach
+              text={input}
+              difficulty={difficulty}
+              context={session?.topic || ""}
+              disabled={isSending}
+              quickAnalyzeFn={(text, ctx, diff) => api.quickAnalyze(text, ctx, diff)}
+            />
+            <div className="flex items-center gap-2">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -384,9 +433,27 @@ export default function DebateSessionClient() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Press Enter to send, Shift+Enter for new line
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Press Enter to send, Shift+Enter for new line
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Coach Level:</span>
+                <Select
+                  value={difficulty}
+                  onValueChange={(value) => setDifficulty(value as "basic" | "intermediate" | "advanced")}
+                >
+                  <SelectTrigger className="w-[130px] h-8 text-xs">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </Card>
       </div>
