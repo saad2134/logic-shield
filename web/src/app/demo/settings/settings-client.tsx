@@ -24,8 +24,8 @@ export default function SettingsClient() {
   const { theme, setTheme } = useTheme();
   
   const [settings, setSettings] = React.useState({
-    autoSaveDebates: true,
-    showTypingIndicator: true,
+    autoReadAloud: true,
+    liveCoach: true,
     soundEffects: false,
     defaultPersona: "logical",
   });
@@ -39,8 +39,8 @@ export default function SettingsClient() {
 
   const handleReset = () => {
     setSettings({
-      autoSaveDebates: true,
-      showTypingIndicator: true,
+      autoReadAloud: true,
+      liveCoach: true,
       soundEffects: false,
       defaultPersona: "logical",
     });
@@ -140,25 +140,25 @@ export default function SettingsClient() {
 
                 <div className="flex items-center justify-between py-2">
                   <div className="space-y-1">
-                    <Label htmlFor="auto-save">Auto-save Debates</Label>
-                    <p className="text-sm text-muted-foreground">Automatically save ongoing debates</p>
+                    <Label htmlFor="auto-read">Automatically Read Aloud</Label>
+                    <p className="text-sm text-muted-foreground">Automatically read AI responses aloud</p>
                   </div>
                   <Switch
-                    id="auto-save"
-                    checked={settings.autoSaveDebates}
-                    onCheckedChange={() => toggleSetting("autoSaveDebates")}
+                    id="auto-read"
+                    checked={settings.autoReadAloud}
+                    onCheckedChange={() => toggleSetting("autoReadAloud")}
                   />
                 </div>
 
                 <div className="flex items-center justify-between py-2">
                   <div className="space-y-1">
-                    <Label htmlFor="typing-indicator">Show Typing Indicator</Label>
-                    <p className="text-sm text-muted-foreground">Show when AI is generating response</p>
+                    <Label htmlFor="live-coach">Live Coach</Label>
+                    <p className="text-sm text-muted-foreground">Show real-time argument feedback</p>
                   </div>
                   <Switch
-                    id="typing-indicator"
-                    checked={settings.showTypingIndicator}
-                    onCheckedChange={() => toggleSetting("showTypingIndicator")}
+                    id="live-coach"
+                    checked={settings.liveCoach}
+                    onCheckedChange={() => toggleSetting("liveCoach")}
                   />
                 </div>
 

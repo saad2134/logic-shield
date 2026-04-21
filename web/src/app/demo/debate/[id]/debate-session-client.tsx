@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { api, AnalysisResult, DebateSession } from "@/lib/api";
 import { RealTimeCoach } from "@/components/coach";
+import { MessageActions } from "@/components/chat/message-actions";
 
 interface Message {
   id: number;
@@ -120,6 +121,32 @@ export default function DebateSessionClient() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send message");
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleRegenerate = async (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message || message.isFromUser || !session) return;
+
+    setIsSending(true);
+    try {
+      const counter = await api.getCounterArgument(
+        sessionId,
+        message.content,
+        session.topic,
+        session.user_stance,
+        session.opponent_persona
+      );
+
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, content: counter.counter_argument }
+          : m
+      ));
+    } catch (err) {
+      setError("Failed to regenerate response");
     } finally {
       setIsSending(false);
     }
@@ -336,6 +363,12 @@ export default function DebateSessionClient() {
                             )}
                           </button>
                         )}
+                        
+                        <MessageActions 
+                          content={message.content} 
+                          isFromUser={message.isFromUser}
+                          onRegenerate={!message.isFromUser ? () => handleRegenerate(message.id) : undefined}
+                        />
                       </div>
                     </div>
                   </motion.div>

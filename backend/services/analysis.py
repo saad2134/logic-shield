@@ -1,8 +1,12 @@
 from typing import Dict, Optional
+import logging
 from services.fallacy_detector import FallacyDetector, ArgumentStrengthScorer
 from services.reputation_risk import ReputationRiskEstimator
+from services.ollama_analyzer import ollama_analyzer
 from app.config import settings
 import random
+
+logger = logging.getLogger(__name__)
 
 
 DEMO_ANALYSIS_RESULTS = [
@@ -125,6 +129,148 @@ class AnalysisService:
     def quick_analyze(
         self, text: str, context: str = "", difficulty: str = "intermediate"
     ) -> Dict:
+        # ALWAYS check offensive words FIRST (safety check)
+        text_lower = text.lower()
+        offensive_keywords = [
+            "stupid",
+            "fool",
+            "idiot",
+            "dumb",
+            "ignorant",
+            "moron",
+            "shit",
+            "fuck",
+            "ass",
+            "bitch",
+            "bastard",
+            "crap",
+            "hell",
+            "suck",
+            "retard",
+            "loser",
+            "pathetic",
+            "disgusting",
+            "garbage",
+            "trash",
+        ]
+        if any(word in text_lower for word in offensive_keywords):
+            return {
+                "issues": [
+                    {
+                        "type": "fallacy",
+                        "name": "ad_hominem",
+                        "confidence": 0.95,
+                        "severity": "high",
+                    }
+                ],
+                "overall_score": 0.1,
+                "suggestions": ["⚠️ DO NOT SEND - Contains offensive language"],
+                "risk_level": "medium",
+                "is_healthy": False,
+                "should_proceed": False,
+                "recommendation": "not_ready",
+                "word_count": len(text.split()),
+                "has_coherence": False,
+                "timestamp": self._get_timestamp(),
+                "llm_powered": False,
+            }
+
+        # Try Ollama first (priority: Ollama > HF > Smart > Keyword)
+        ollama_result = None
+        if ollama_analyzer.check_available():
+            try:
+                result = ollama_analyzer.analyze_argument(text, context, difficulty)
+                # Accept any valid result - let model quality be the differentiator
+                if result and result.get("overall_score", 0) > 0:
+                    ollama_result = result
+            except Exception as e:
+                logger.warning(f"Ollama failed: {e}")
+
+        # Try HuggingFace second
+        hf_result = None
+        try:
+            from services.llm_generator import llm_generator
+
+            result = llm_generator.quick_analyze(text, context, difficulty)
+            if result and result.get("overall_score", 0) > 0:
+                hf_result = result
+        except Exception as e:
+            logger.warning(f"HF failed: {e}")
+
+        # Use best available: Ollama > HF > Smart > Keyword
+        if ollama_result:
+            result = ollama_result
+            result["llm_powered"] = True
+            result["timestamp"] = self._get_timestamp()
+            return result
+        elif hf_result:
+            result = hf_result
+            result["llm_powered"] = True
+            result["timestamp"] = self._get_timestamp()
+            return result
+        else:
+            # Try Smart Templates third
+            try:
+                from services.smart_debate import smart_debate_simulator
+
+                result = smart_debate_simulator.analyze_argument(
+                    text, context, difficulty
+                )
+                if result and result.get("overall_score", 0) > 0:
+                    result["llm_powered"] = False
+                    result["timestamp"] = self._get_timestamp()
+                    return result
+            except Exception as e:
+                logger.warning(f"Smart failed: {e}")
+
+        # Keyword detection as LAST RESORT
+        text_lower = text.lower()
+
+        # Check offensive words first
+        offensive_keywords = [
+            "stupid",
+            "fool",
+            "idiot",
+            "dumb",
+            "ignorant",
+            "moron",
+            "shit",
+            "fuck",
+            "ass",
+            "bitch",
+            "bastard",
+            "crap",
+            "hell",
+            "suck",
+            "retard",
+            "loser",
+            "pathetic",
+            "disgusting",
+            "garbage",
+            "trash",
+        ]
+        if any(word in text_lower for word in offensive_keywords):
+            return {
+                "issues": [
+                    {
+                        "type": "fallacy",
+                        "name": "ad_hominem",
+                        "confidence": 0.95,
+                        "severity": "high",
+                    }
+                ],
+                "overall_score": 0.1,
+                "suggestions": ["⚠️ DO NOT SEND - Contains offensive language"],
+                "risk_level": "medium",
+                "is_healthy": False,
+                "should_proceed": False,
+                "recommendation": "not_ready",
+                "word_count": len(text.split()),
+                "has_coherence": False,
+                "timestamp": self._get_timestamp(),
+                "llm_powered": False,
+            }
+
         full_analysis = self.analyze_argument(text, context)
 
         issues = []

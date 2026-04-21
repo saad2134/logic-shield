@@ -41,8 +41,8 @@ export default function SettingsClient() {
   const [error, setError] = React.useState<string | null>(null);
   
   const [settings, setSettings] = React.useState({
-    autoSaveDebates: true,
-    showTypingIndicator: true,
+    autoReadAloud: true,
+    liveCoach: true,
     soundEffects: false,
     defaultPersona: "logical",
   });
@@ -52,12 +52,11 @@ export default function SettingsClient() {
     
     const loadSettings = async () => {
       try {
-        console.log("Loading settings, user:", user?.email);
         const savedSettings = await api.getSettings() as Record<string, unknown>;
         setSettings(prev => ({
           ...prev,
-          autoSaveDebates: savedSettings.auto_save_debates as boolean ?? prev.autoSaveDebates,
-          showTypingIndicator: savedSettings.show_typing_indicator as boolean ?? prev.showTypingIndicator,
+          autoReadAloud: savedSettings.auto_read_aloud as boolean ?? prev.autoReadAloud,
+          liveCoach: savedSettings.live_coach as boolean ?? prev.liveCoach,
           soundEffects: savedSettings.sound_effects as boolean ?? prev.soundEffects,
           defaultPersona: savedSettings.default_persona as string ?? prev.defaultPersona,
         }));
@@ -74,7 +73,13 @@ export default function SettingsClient() {
     const newValue = !settings[key];
     setSettings(prev => ({ ...prev, [key]: newValue }));
     try {
-      await api.updateSettings({ [key === 'defaultPersona' ? 'default_persona' : camelToSnake(key)]: newValue });
+      const keyMap: Record<string, string> = {
+        autoReadAloud: "auto_read_aloud",
+        liveCoach: "live_coach",
+        soundEffects: "sound_effects",
+        defaultPersona: "default_persona"
+      };
+      await api.updateSettings({ [keyMap[key] || key]: newValue });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -83,13 +88,16 @@ export default function SettingsClient() {
     }
   };
 
-  const camelToSnake = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
     try {
-      await api.updateSettings(settings);
+      await api.updateSettings({
+        auto_read_aloud: settings.autoReadAloud,
+        live_coach: settings.liveCoach,
+        sound_effects: settings.soundEffects,
+        default_persona: settings.defaultPersona,
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -101,8 +109,8 @@ export default function SettingsClient() {
 
   const handleReset = async () => {
     const defaultSettings = {
-      autoSaveDebates: true,
-      showTypingIndicator: true,
+      autoReadAloud: true,
+      liveCoach: true,
       soundEffects: false,
       defaultPersona: "logical",
     };
@@ -110,8 +118,8 @@ export default function SettingsClient() {
     setTheme("system");
     try {
       await api.updateSettings({
-        auto_save_debates: true,
-        show_typing_indicator: true,
+        auto_read_aloud: true,
+        live_coach: true,
         sound_effects: false,
         default_persona: "logical",
       });
@@ -235,12 +243,17 @@ export default function SettingsClient() {
                   <Select
                     value={settings.defaultPersona}
                     onValueChange={async (value) => {
-                      setSettings(s => ({ ...s, defaultPersona: value }));
+                      console.log("Select onValueChange:", value);
+                      const newPersona = value;
+                      setSettings(s => ({ ...s, defaultPersona: newPersona }));
+                      console.log("Calling API with default_persona:", newPersona);
                       try {
-                        await api.updateSettings({ default_persona: value });
+                        const result = await api.updateSettings({ default_persona: newPersona });
+                        console.log("API result:", result);
                         setSaved(true);
                         setTimeout(() => setSaved(false), 2000);
                       } catch (err) {
+                        console.error("API error:", err);
                         setError(err instanceof Error ? err.message : "Failed to save settings");
                       }
                     }}
@@ -259,25 +272,25 @@ export default function SettingsClient() {
 
                 <div className="flex items-center justify-between py-2">
                   <div className="space-y-1">
-                    <Label htmlFor="auto-save">Auto-save Debates</Label>
-                    <p className="text-sm text-muted-foreground">Automatically save ongoing debates</p>
+                    <Label htmlFor="auto-read">Automatically Read Aloud</Label>
+                    <p className="text-sm text-muted-foreground">Automatically read AI responses aloud</p>
                   </div>
                   <Switch
-                    id="auto-save"
-                    checked={settings.autoSaveDebates}
-                    onCheckedChange={() => toggleSetting("autoSaveDebates")}
+                    id="auto-read"
+                    checked={settings.autoReadAloud}
+                    onCheckedChange={() => toggleSetting("autoReadAloud")}
                   />
                 </div>
 
                 <div className="flex items-center justify-between py-2">
                   <div className="space-y-1">
-                    <Label htmlFor="typing-indicator">Show Typing Indicator</Label>
-                    <p className="text-sm text-muted-foreground">Show when AI is generating response</p>
+                    <Label htmlFor="live-coach">Live Coach</Label>
+                    <p className="text-sm text-muted-foreground">Show real-time argument feedback</p>
                   </div>
                   <Switch
-                    id="typing-indicator"
-                    checked={settings.showTypingIndicator}
-                    onCheckedChange={() => toggleSetting("showTypingIndicator")}
+                    id="live-coach"
+                    checked={settings.liveCoach}
+                    onCheckedChange={() => toggleSetting("liveCoach")}
                   />
                 </div>
 

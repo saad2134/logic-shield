@@ -110,15 +110,16 @@ class ApiError extends Error {
 
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
   const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
-  console.log(`fetchApi URL: ${fullUrl}, USE_API_PROXY: ${USE_API_PROXY}, token: ${token ? 'present' : 'NONE'}`);
   
-  const headers = {
+const headers = {
     "Content-Type": "application/json",
     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    ...(userId ? { "X-User-ID": userId } : {}),
     ...options?.headers,
   };
-  
+
   const response = await fetch(fullUrl, {
     ...options,
     headers,
@@ -142,7 +143,6 @@ export const authApi = {
     });
 
     const result = await response.json();
-    console.log('Login API result:', result);
     
     if (!response.ok || (!result.access_token && !result.success)) {
       throw new ApiError(response.status, result.detail || result.message || "Login failed");
@@ -150,7 +150,6 @@ export const authApi = {
 
     const token = result.access_token || result.token;
     if (token) {
-      console.log('Storing token:', token.substring(0, 20) + '...');
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user_data', JSON.stringify(result.user));
       if (result.user?.id) {
@@ -200,20 +199,16 @@ export const authApi = {
   me: async () => {
     if (typeof window === 'undefined') return null;
     try {
-      const token = localStorage.getItem('auth_token');
-      console.log('me() - token:', token ? 'present' : 'missing', 'USE_API_PROXY:', USE_API_PROXY);
-      
-      // Use X-Auth-Token header to work around CORS issues
+      const userId = localStorage.getItem('user_id');
       const response = await fetch(getApiUrl('/auth/me'), {
         method: 'GET',
         headers: { 
           'Content-Type': 'application/json',
-          ...(token ? { 'X-Auth-Token': token } : {})
+          ...(userId ? { 'X-User-ID': userId } : {})
         },
       });
 
       if (!response.ok) {
-        // Fallback: return user from localStorage if available
         const storedUser = localStorage.getItem('user_data');
         if (storedUser) {
           return JSON.parse(storedUser);
@@ -221,10 +216,10 @@ export const authApi = {
         return null;
       }
 
-      const user = await response.json();
-      return user;
+      const userData = await response.json();
+      localStorage.setItem('user_data', JSON.stringify(userData));
+      return userData;
     } catch (err) {
-      // Fallback: return user from localStorage if available
       const storedUser = localStorage.getItem('user_data');
       if (storedUser) {
         return JSON.parse(storedUser);

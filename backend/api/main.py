@@ -231,11 +231,19 @@ def end_debate_session(session_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/debate/{session_id}")
 def delete_debate_session(
-    session_id: int, db: Session = Depends(get_db), authorization: str = Header(None)
+    session_id: int,
+    db: Session = Depends(get_db),
+    x_user_id: str = Header(None, alias="X-User-ID"),
 ):
-    from api.auth import get_current_user
+    if not x_user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
-    user = get_current_user(db, authorization)
+    try:
+        user_id = int(x_user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 

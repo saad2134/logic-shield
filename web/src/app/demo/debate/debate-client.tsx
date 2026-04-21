@@ -33,7 +33,7 @@ export default function NewDebateClient() {
 
   const [topic, setTopic] = React.useState("");
   const [userStance, setUserStance] = React.useState<"support" | "oppose" | "neutral">("support");
-  const [opponentPersona, setOpponentPersona] = React.useState<string>(searchParams.get("persona") || "logical");
+  const [opponentPersona, setOpponentPersona] = React.useState<string>("logical");
 
   React.useEffect(() => {
     async function loadPersonas() {
@@ -51,6 +51,7 @@ export default function NewDebateClient() {
       }
     }
     loadPersonas();
+    // Note: Demo mode doesn't have settings, so use default
   }, [searchParams]);
 
   const handleStartDebate = async () => {

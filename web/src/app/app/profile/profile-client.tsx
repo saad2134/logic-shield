@@ -52,6 +52,15 @@ export default function ProfileClient() {
   });
 
   React.useEffect(() => {
+    setEditData({
+      name: user?.full_name || "",
+      bio: user?.bio || "",
+      occupation: user?.occupation || "",
+      interests: user?.interests || "",
+    });
+  }, [user]);
+
+  React.useEffect(() => {
     async function loadData() {
       try {
         const [statsData, achievementsData] = await Promise.all([

@@ -84,7 +84,25 @@ class DebateSimulator:
         persona: str = "logical",
         context: str = "",
     ) -> str:
-        # Try smart debate system first (enhanced template-based)
+        # Try HuggingFace LLM first (cloud-based, more capable)
+        try:
+            from services.llm_generator import llm_generator
+
+            llm_response = llm_generator.generate_counter_argument(
+                user_argument=user_argument,
+                topic=topic,
+                persona=persona,
+                user_stance=user_stance,
+            )
+            if llm_response:
+                logger.info(f"Generated LLM counter-argument for persona: {persona}")
+                return llm_response
+        except ImportError:
+            pass
+        except Exception as e:
+            logger.warning(f"LLM generation failed, trying templates: {e}")
+
+        # Try smart debate system (enhanced template-based)
         try:
             from services.smart_debate import smart_debate_simulator
 
@@ -102,23 +120,24 @@ class DebateSimulator:
         except Exception as e:
             logger.warning(f"Smart debate failed, using templates: {e}")
 
-        # Try LLM
+        # Try Ollama as fallback (local LLM)
         try:
-            from services.llm_generator import llm_generator
+            from services.ollama_analyzer import ollama_analyzer
 
-            llm_response = llm_generator.generate_counter_argument(
-                user_argument=user_argument,
-                topic=topic,
-                persona=persona,
-                user_stance=user_stance,
-            )
-            if llm_response:
-                logger.info(f"Generated LLM counter-argument for persona: {persona}")
-                return llm_response
-        except ImportError:
-            pass
+            if ollama_analyzer.check_available():
+                ollama_response = ollama_analyzer.generate_counter_argument(
+                    topic=topic,
+                    user_argument=user_argument,
+                    persona=persona,
+                    user_stance=user_stance,
+                )
+                if ollama_response and len(ollama_response) > 20:
+                    logger.info(
+                        f"Generated Ollama counter-argument for persona: {persona}"
+                    )
+                    return ollama_response
         except Exception as e:
-            logger.warning(f"LLM generation failed, using templates: {e}")
+            logger.warning(f"Ollama counter-argument failed: {e}")
 
         # Fallback to template-based
         persona_config = self.personas.get(persona, self.personas["logical"])

@@ -19,11 +19,11 @@ LogicShield's core value proposition is **"Your AI Debate Coach - Real-Time"**. 
 
 | Aspect | Current | Target (V2.0) |
 |--------|---------|---------------|
-| Analysis | Post-hoc (after submit) | Real-time (as you type) |
+| Analysis | Real-time (as you type) ✅ | Enhanced with more fallacies |
 | Visual | Text-only | Argument trees & graphs |
 | Engagement | Solo practice | Multiplayer + tournaments |
 | Learning | Self-directed | Structured courses |
-| Business | None | Communication risk scanner |
+| Business | Basic | Communication risk scanner |
 
 ---
 
@@ -32,7 +32,7 @@ LogicShield's core value proposition is **"Your AI Debate Coach - Real-Time"**. 
 ### Tier 1: Core Differentiators (Must Build)
 
 #### 1. Real-Time Argument Coach
-**Status:** Not implemented
+**Status:** ✅ Implemented
 
 **Description:** Live streaming suggestions as user types - not post-analysis.
 
@@ -40,13 +40,14 @@ LogicShield's core value proposition is **"Your AI Debate Coach - Real-Time"**. 
 - Inline highlighting of potential issues (yellow=weak, red=fallacy)
 - Suggestion pills on hover: "Add evidence", "Avoid absolute terms", "Rephrase"
 - Difficulty toggle: Basic / Intermediate / Advanced feedback
-- Debounced API calls (300ms after typing stops)
+- Debounced API calls (500ms after typing stops)
 - Progressive disclosure
+- Score penalty system for detected issues
 
 **Implementation:**
 ```text
-User types → Local lightweight model quick-check → Highlight issues →
-Show suggestion pill on hover → User clicks for full explanation
+User types → API quick-analyze → Detect issues →
+Calculate score with penalties → Show feedback panel
 ```
 
 **Why Unique:** Kialo, Debatewise all analyze *after* submission. No live coaching during typing.
@@ -246,7 +247,7 @@ Track completion → Identify weak areas → Repeat with variation
 ## Implementation Roadmap
 
 ### Phase 1: Core (Weeks 1-4)
-- [ ] Real-Time Coach with local model
+- [x] Real-Time Coach with local model
 - [ ] Basic Visual Argument Mapper
 - [ ] Communication Risk Scanner
 
@@ -339,17 +340,17 @@ Track completion → Identify weak areas → Repeat with variation
 
 ## Appendix: Feature Priority Matrix
 
-| Priority | Feature | Impact | Effort | Score |
-|----------|---------|--------|--------|-------|
-| P0 | Real-Time Coach | High | Medium | 9 |
-| P0 | Visual Mapper | High | Medium | 8 |
-| P1 | Risk Scanner | High | Low | 8 |
-| P1 | Multiplayer | Medium | High | 6 |
-| P2 | Voice Mode | Medium | Medium | 6 |
-| P2 | Persona Builder | Medium | Medium | 5 |
-| P3 | Courses | Medium | High | 5 |
-| P3 | Learning Path | Medium | High | 4 |
-| P4 | Enterprise API | Low | High | 3 |
+| Priority | Feature | Impact | Effort | Score | Status |
+|----------|---------|--------|--------|-------|--------|
+| P0 | Real-Time Coach | High | Medium | 9 | ✅ Done |
+| P0 | Visual Mapper | High | Medium | 8 | Pending |
+| P1 | Risk Scanner | High | Low | 8 | Pending |
+| P1 | Multiplayer | Medium | High | 6 | Pending |
+| P2 | Voice Mode | Medium | Medium | 6 | Pending |
+| P2 | Persona Builder | Medium | Medium | 5 | Basic Done |
+| P3 | Courses | Medium | High | 5 | Pending |
+| P3 | Learning Path | Medium | High | 4 | Pending |
+| P4 | Enterprise API | Low | High | 3 | Pending |
 
 ---
 

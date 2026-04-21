@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { api, AnalysisResult, DebateSession } from "@/lib/api-app";
 import { RealTimeCoach } from "@/components/coach";
+import { MessageActions } from "@/components/chat/message-actions";
 
 interface Message {
   id: number;
@@ -52,7 +53,22 @@ export default function DebateSessionClient() {
   const [error, setError] = React.useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = React.useState<number | null>(null);
   const [difficulty, setDifficulty] = React.useState<"basic" | "intermediate" | "advanced">("intermediate");
+  const [liveCoachEnabled, setLiveCoachEnabled] = React.useState(true);
+  const [autoReadAloud, setAutoReadAloud] = React.useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await api.getSettings() as Record<string, unknown>;
+        setLiveCoachEnabled(settings.live_coach as boolean ?? true);
+        setAutoReadAloud(settings.auto_read_aloud as boolean ?? false);
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      }
+    }
+    loadSettings();
+  }, []);
 
   React.useEffect(() => {
     async function loadSession() {
@@ -112,9 +128,43 @@ export default function DebateSessionClient() {
       };
 
       setMessages((prev) => [...prev, opponentMessage]);
+
+      if (autoReadAloud && counter.counter_argument) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(counter.counter_argument);
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send message");
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleRegenerate = async (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message || message.isFromUser || !session) return;
+
+    setIsSending(true);
+    try {
+      const counter = await api.getCounterArgument(
+        sessionId,
+        message.content,
+        session.topic,
+        session.user_stance,
+        session.opponent_persona
+      );
+
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, content: counter.counter_argument }
+          : m
+      ));
+    } catch (err) {
+      setError("Failed to regenerate response");
     } finally {
       setIsSending(false);
     }
@@ -334,6 +384,12 @@ export default function DebateSessionClient() {
                             )}
                           </button>
                         )}
+                        
+                        <MessageActions 
+                          content={message.content} 
+                          isFromUser={message.isFromUser}
+                          onRegenerate={!message.isFromUser ? () => handleRegenerate(message.id) : undefined}
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -370,13 +426,15 @@ export default function DebateSessionClient() {
           </div>
 
           <div className="p-4 border-t shrink-0 space-y-3">
-            <RealTimeCoach
-              text={input}
-              difficulty={difficulty}
-              context={session?.topic || ""}
-              disabled={isSending}
-              quickAnalyzeFn={(text, ctx, diff) => api.quickAnalyze(text, ctx, diff)}
-            />
+            {liveCoachEnabled && (
+              <RealTimeCoach
+                text={input}
+                difficulty={difficulty}
+                context={session?.topic || ""}
+                disabled={isSending}
+                quickAnalyzeFn={(text, ctx, diff) => api.quickAnalyze(text, ctx, diff)}
+              />
+            )}
             <div className="flex gap-2">
               <Textarea
                 value={input}

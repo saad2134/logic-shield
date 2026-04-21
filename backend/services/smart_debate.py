@@ -164,6 +164,94 @@ class SmartDebateSimulator:
             user_stance=user_stance,
         )
 
+    def analyze_argument(
+        self, text: str, context: str = "", difficulty: str = "intermediate"
+    ) -> Dict:
+        """Analyze argument using smart template-based detection"""
+        text_lower = text.lower()
+        issues = []
+        suggestions = []
+
+        offensive = [
+            "stupid",
+            "fool",
+            "idiot",
+            "dumb",
+            "ignorant",
+            "shit",
+            "fuck",
+            "ass",
+            "bitch",
+            "retard",
+        ]
+        if any(w in text_lower for w in offensive):
+            issues.append(
+                {
+                    "type": "fallacy",
+                    "name": "ad_hominem",
+                    "confidence": 0.95,
+                    "severity": "high",
+                }
+            )
+            suggestions.append("Remove offensive language")
+            return {
+                "issues": issues,
+                "overall_score": 0.1,
+                "suggestions": suggestions,
+                "is_healthy": False,
+                "should_proceed": False,
+                "recommendation": "not_ready",
+                "word_count": len(text.split()),
+                "has_coherence": False,
+            }
+
+        absolute = ["all", "every", "always", "never", "everyone", "nobody"]
+        if any(w in text_lower for w in absolute):
+            issues.append(
+                {
+                    "type": "fallacy",
+                    "name": "overgeneralization",
+                    "confidence": 0.75,
+                    "severity": "medium",
+                }
+            )
+            suggestions.append("Avoid absolute terms")
+
+        word_count = len(text.split())
+        has_coherence = any(
+            w in text_lower
+            for w in ["because", "therefore", "however", "although", "since"]
+        )
+
+        score = 0.7
+        if issues:
+            score = 0.5
+        if word_count < 5:
+            issues.append(
+                {
+                    "type": "length",
+                    "name": "too_short",
+                    "confidence": 0.9,
+                    "severity": "low",
+                }
+            )
+            suggestions.append("Add more detail")
+            score -= 0.2
+
+        return {
+            "issues": issues,
+            "overall_score": min(1.0, max(0.0, score)),
+            "suggestions": suggestions,
+            "is_healthy": len([i for i in issues if i.get("severity") == "high"]) == 0,
+            "should_proceed": len([i for i in issues if i.get("severity") == "high"])
+            == 0,
+            "recommendation": "ready"
+            if len([i for i in issues if i.get("severity") == "high"]) == 0
+            else "review",
+            "word_count": word_count,
+            "has_coherence": has_coherence,
+        }
+
 
 # Global instance
 smart_debate_simulator = SmartDebateSimulator()

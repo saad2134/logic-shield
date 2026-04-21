@@ -18,12 +18,15 @@
 
 LogicShield combines adversarial argument simulation with structured NLP analysis to help users improve both logic and long-term communication safety.
 
-* 🧠 **AI Debate Simulation** – Real-time adversarial opponent with selectable personas (logical, aggressive, skeptical).
-* ⚖️ **Logical Fallacy Detection** – Automatically identifies common fallacies using transformer-based ML models (ad hominem, strawman, false dilemma, slippery slope).
-* 📊 **Argument Strength Scoring** – Quantifies coherence, evidence support, sentiment, and logical structure.
+* 🧠 **AI Debate Simulation** – Real-time adversarial opponent with selectable personas (logical, aggressive, skeptical, devil's advocate).
+* ⚡ **Real-Time Argument Coach** – Live coaching as you type with instant feedback on fallacies and suggestions.
+* ⚖️ **Logical Fallacy Detection** – Automatically identifies common fallacies using transformer-based ML models (ad hominem, strawman, false dilemma, slippery slope, bandwagon).
+* 📊 **Argument Strength Scoring** – Quantifies coherence, evidence support, sentiment, and logical structure with score penalties for issues.
 * 🛡️ **Reputation Risk Estimation** – Flags extreme phrasing, moral polarity, identity-sensitive language using toxicity and hate speech detection.
 * 📈 **Progress Analytics Dashboard** – Track improvement across debate sessions.
-* 📝 **Rewrite Suggestions** – AI-powered refinement for stronger, clearer, safer arguments.
+* 🎯 **Smart Counter-Arguments** – AI-powered responses that analyze user arguments and provide relevant rebuttals.
+* 📱 **Demo Mode** – Try the platform without authentication with simulated AI responses.
+* 🔐 **Authentication** – Secure JWT-based authentication for personalized experience.
 
 ## 🎯 Use Cases
 
@@ -32,6 +35,9 @@ LogicShield combines adversarial argument simulation with structured NLP analysi
 * 🎤 Public speakers & podcasters
 * 🏢 Executives preparing presentations
 * 📢 Political commentators
+* 📧 Communications professionals (emails, proposals)
+* 👥 Debate club members
+* 💼 Anyone wanting to improve argumentation skills
 
 ---
 
@@ -94,6 +100,7 @@ Copy `.env.template` to `.env` and configure:
   * `distilbert-base-uncased-finetuned-sst-2-english` - Sentiment analysis
 * **Embeddings**: Sentence-BERT (`sentence-transformers/all-MiniLM-L6-v2`)
 * **ML**: scikit-learn
+* **LLM for Counter-Arguments**: Meta Llama 3.2 1B (`meta-llama/Llama-3.2-1B-Instruct`) via HuggingFace Inference Providers - Generates intelligent, persona-aware responses
 
 ---
 

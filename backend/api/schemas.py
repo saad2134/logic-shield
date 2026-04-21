@@ -188,6 +188,10 @@ class QuickAnalysisResponse(BaseModel):
     issues: List[dict]
     overall_score: float
     suggestions: List[str]
-    risk_level: str
+    risk_level: Optional[str] = "low"
     is_healthy: bool
+    should_proceed: Optional[bool] = True
+    recommendation: Optional[str] = "ready"
+    word_count: Optional[int] = 0
+    has_coherence: Optional[bool] = False
     timestamp: str

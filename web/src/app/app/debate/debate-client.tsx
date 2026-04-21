@@ -33,16 +33,18 @@ export default function NewDebateClient() {
 
   const [topic, setTopic] = React.useState("");
   const [userStance, setUserStance] = React.useState<"support" | "oppose" | "neutral">("support");
-  const [opponentPersona, setOpponentPersona] = React.useState<string>(searchParams.get("persona") || "logical");
+  const [opponentPersona, setOpponentPersona] = React.useState<string>("logical");
 
   React.useEffect(() => {
     async function loadPersonas() {
       try {
-        const data = await api.getPersonas();
-        setPersonas(data);
-        if (searchParams.get("persona")) {
-          setOpponentPersona(searchParams.get("persona") || "logical");
-        }
+        const [personasData, settingsData] = await Promise.all([
+          api.getPersonas(),
+          api.getSettings().catch(() => null)
+        ]);
+        setPersonas(personasData);
+        const defaultPersona = searchParams.get("persona") || (settingsData as any)?.default_persona || "logical";
+        setOpponentPersona(defaultPersona);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load personas");
       } finally {
