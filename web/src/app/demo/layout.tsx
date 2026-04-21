@@ -19,7 +19,8 @@ import {
   Zap,
   Settings,
   User,
-  ChevronDown
+  ChevronDown,
+  Network
 } from "lucide-react";
 import AppUI from "@/components/logos/app_icon";
 import {
@@ -69,6 +70,7 @@ const demoNavItems = [
     title: "Tools",
     items: [
       { title: "Argument Analysis", url: "/demo/argument-analysis", icon: Target },
+      { title: "Argument Mapper", url: "/demo/argument-mapper", icon: Network },
     ],
   },
 ];
@@ -186,9 +188,10 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
               {pathname === '/demo/dashboard' && 'Your personal debate dashboard'}
               {pathname === '/demo/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
               {pathname === '/demo/history' && 'View your past debates'}
-              {pathname === '/demo/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
-              {pathname === '/demo/profile' && 'Manage your account details'}
-              {pathname === '/demo/settings' && 'Configure your preferences'}
+{pathname === '/demo/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
+               {pathname === '/demo/argument-mapper' && 'Visualize your argument structure as a mind map'}
+               {pathname === '/demo/profile' && 'Manage your account details'}
+               {pathname === '/demo/settings' && 'Configure your preferences'}
             </p>
           </div>
           <div className="flex items-center gap-2">
