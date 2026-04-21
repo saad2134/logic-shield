@@ -79,7 +79,11 @@ def parse_int(value: Optional[str], default: int = 8000) -> int:
 def is_demo_mode() -> bool:
     demo_env = os.getenv("DEMO_MODE", "")
     vercel_env = os.getenv("VERCEL_ENV")
-    return demo_env.lower() in ("true", "1", "yes") or vercel_env is not None
+    if vercel_env is not None:
+        return True
+    if demo_env.strip() == "":
+        return True
+    return demo_env.lower() in ("true", "1", "yes")
 
 
 class Settings(BaseSettings):

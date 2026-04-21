@@ -261,7 +261,7 @@ counter = simulator.generate_counter_argument(
 
 ### 5. Unified Analysis Service (`services/analysis.py`)
 
-Combines all ML services into a single interface:
+Combines all ML services into a single interface with **smart fallbacks**:
 
 ```python
 from services.analysis import AnalysisService
@@ -274,6 +274,17 @@ result = service.analyze_argument(
 
 # Returns complete analysis with all ML-derived metrics
 ```
+
+#### Analysis Priority System
+
+The analysis service automatically falls back through available methods:
+
+1. **Ollama** (local LLM) - Best quality, fastest
+2. **Hugging Face Inference API** - Uses HF_TOKEN with Llama 3.2
+3. **Smart Templates** - Rule-based with context-aware patterns
+4. **Keyword Detection** - Last resort fallback
+
+This ensures the app works even without ML models installed.
 
 ---
 
@@ -878,8 +889,35 @@ cp backend/.env.template backend/.env
 | `FALLACY_MODEL` | Fallacy detection model | `facebook/bart-large-mnli` |
 | `EMBEDDING_MODEL` | Sentence embedding model | `sentence-transformers/all-MiniLM-L6-v2` |
 | `LOG_LEVEL` | Logging level | `INFO` |
+| `DEMO_MODE` | Enable demo mode (true/false) | `true` (for new clones) |
 
 **Note:** Empty values in `.env` will fall back to defaults automatically.
+
+### Demo Mode
+
+The backend supports **Demo Mode** for deployments without ML model support (like Vercel serverless). When demo mode is enabled:
+- Uses simulated analysis results instead of ML models
+- Works without heavy ML dependencies (`torch`, `transformers`, etc.)
+- Ideal for testing or resource-constrained environments
+
+**Demo Mode Behavior:**
+- Default for new clones (safer - no ML package failures)
+- Auto-enabled on Vercel deployments
+- Returns sample responses for analysis
+
+**Enabling Full ML Models:**
+
+To enable full ML capabilities locally:
+
+```bash
+# In .env file
+DEMO_MODE=false
+```
+
+Also install full dependencies for local development:
+```bash
+pip install -r requirements-local.txt
+```
 
 ---
 
@@ -892,7 +930,19 @@ cd backend
 pip install -r requirements.txt
 ```
 
-**Important**: On first run, the ML models will be downloaded from Hugging Face (~3GB total). Set `HF_TOKEN` environment variable for faster downloads.
+By default, the app runs in **Demo Mode** (simulated responses). No ML model downloads needed.
+
+**For Full ML Models (Local Development):**
+
+```bash
+# Install full dependencies
+pip install -r requirements-local.txt
+
+# Enable ML in .env:
+DEMO_MODE=false
+```
+
+**Important**: When ML is enabled, models will be downloaded from Hugging Face (~3GB total). Set `HF_TOKEN` environment variable for faster downloads.
 
 **Note**: On Windows, if you encounter DLL errors with PyTorch, reinstall with:
 ```bash

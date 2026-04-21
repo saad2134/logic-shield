@@ -89,17 +89,35 @@ Copy `.env.template` to `.env` and configure:
 | `HF_TOKEN` | Hugging Face token | (optional) |
 | `PORT` | Server port | `8000` |
 | `DEBUG` | Debug mode | `true` |
+| `DEMO_MODE` | Demo mode (simulated AI) | `true` (for new clones) |
+
+#### Demo Mode
+
+The backend has **Demo Mode** for quick testing. When enabled:
+- Uses simulated/smart-template responses
+- No ML model downloads needed (~4GB)
+- Works out of the box for new cloners
+
+```bash
+# For full ML models locally, set in .env:
+DEMO_MODE=false
+
+# And install full dependencies:
+pip install -r requirements-local.txt
+```
 
 ### NLP & ML
 
-* **Deep Learning**: PyTorch 2.1+
-* **Transformers**: Hugging Face Transformers
-  * `facebook/bart-large-mnli` - Fallacy detection
-  * `martin-ha/toxic-comment-model` - Toxicity detection
-  * `facebook/roberta-hate-speech-dynabench-r4-target` - Hate speech detection
-  * `distilbert-base-uncased-finetuned-sst-2-english` - Sentiment analysis
-* **Embeddings**: Sentence-BERT (`sentence-transformers/all-MiniLM-L6-v2`)
-* **ML**: scikit-learn
+* **Demo Mode (default)**: Smart templates + keyword detection - works without ML packages
+* **Full ML** (optional):
+  * **Deep Learning**: PyTorch 2.1+
+  * **Transformers**: Hugging Face Transformers
+    * `facebook/bart-large-mnli` - Fallacy detection
+    * `martin-ha/toxic-comment-model` - Toxicity detection
+    * `facebook/roberta-hate-speech-dynabench-r4-target` - Hate speech detection
+    * `distilbert-base-uncased-finetuned-sst-2-english` - Sentiment analysis
+  * **Embeddings**: Sentence-BERT (`sentence-transformers/all-MiniLM-L6-v2`)
+  * **ML**: scikit-learn
 * **LLM for Counter-Arguments**: Meta Llama 3.2 1B (`meta-llama/Llama-3.2-1B-Instruct`) via HuggingFace Inference Providers - Generates intelligent, persona-aware responses
 
 ---
@@ -129,13 +147,25 @@ pip install -r requirements.txt
 # Copy environment template and configure
 cp .env.template .env
 
-# Run the server
+# Run the server (Demo Mode - works out of the box)
 uvicorn main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`
 - API Docs: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+
+### (Optional) Enable Full ML Models
+
+By default, the backend runs in Demo Mode with simulated responses. For full ML:
+
+```bash
+# Install full dependencies
+pip install -r requirements-local.txt
+
+# Enable in .env:
+DEMO_MODE=false
+```
 
 ### 3️⃣ Frontend Setup
 
