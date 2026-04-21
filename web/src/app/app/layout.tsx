@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
 import { useAuth } from "@/context/auth-context";
+import { Network } from "lucide-react";
 
 const appNavItems = [
   {
@@ -70,6 +71,7 @@ const appNavItems = [
     title: "Tools",
     items: [
       { title: "Argument Analysis", url: "/app/argument-analysis", icon: Target },
+      { title: "Argument Mapper", url: "/app/argument-mapper", icon: Network },
     ],
   },
 ];

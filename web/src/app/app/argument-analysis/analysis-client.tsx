@@ -22,18 +22,21 @@ import {
   TriangleAlert,
   BarChart3,
   Scale,
-  MessageSquare
+  MessageSquare,
+  Network,
+  ArrowRight
 } from "lucide-react";
-import { api, AnalysisResult } from "@/lib/api-app";
+import { api, AnalysisResult, ArgumentVisualization } from "@/lib/api-app";
 
 export default function AnalysisClient() {
   const searchParams = useSearchParams();
   const [text, setText] = React.useState("");
   const [context, setContext] = React.useState("");
   const [analysis, setAnalysis] = React.useState<AnalysisResult | null>(null);
+  const [visualization, setVisualization] = React.useState<ArgumentVisualization | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [activeTab, setActiveTab] = React.useState<"overview" | "fallacies" | "risks">("overview");
+  const [activeTab, setActiveTab] = React.useState<"overview" | "fallacies" | "risks" | "structure">("overview");
 
   React.useEffect(() => {
     const textParam = searchParams.get("text");
@@ -43,7 +46,7 @@ export default function AnalysisClient() {
     }
   }, [searchParams]);
 
-  const handleAnalyze = async (textToAnalyze?: string) => {
+const handleAnalyze = async (textToAnalyze?: string) => {
     const textToUse = textToAnalyze || text;
     if (!textToUse.trim()) {
       setError("Please enter text to analyze");
@@ -53,10 +56,15 @@ export default function AnalysisClient() {
     setIsLoading(true);
     setError(null);
     setAnalysis(null);
+    setVisualization(null);
 
     try {
-      const result = await api.analyze(textToUse, context);
-      setAnalysis(result);
+      const [analysisResult, visualizationResult] = await Promise.all([
+        api.analyze(textToUse, context),
+        api.visualizeArgument(textToUse, context).catch(() => null)
+      ]);
+      setAnalysis(analysisResult);
+      setVisualization(visualizationResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to analyze text");
     } finally {
@@ -205,7 +213,7 @@ export default function AnalysisClient() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex gap-2 p-1 bg-muted rounded-lg">
-                      {(["overview", "fallacies", "risks"] as const).map((tab) => (
+                      {(["overview", "structure", "fallacies", "risks"] as const).map((tab) => (
                         <button
                           key={tab}
                           onClick={() => setActiveTab(tab)}
@@ -345,6 +353,112 @@ export default function AnalysisClient() {
                             <p className="text-sm text-muted-foreground">
                               Your argument appears safe for public discourse
                             </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {activeTab === "structure" && (
+                      <div className="space-y-4">
+                        {!visualization || visualization.nodes.length === 0 ? (
+                          <div className="text-center py-8">
+                            <Network className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                            <h3 className="font-semibold">No Structure Detected</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Could not detect argument structure
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                              <div>
+                                <p className="font-medium">Overall Strength</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {visualization.nodes.length} components identified
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-bold">
+                                  {Math.round(visualization.overall_strength * 100)}%
+                                </p>
+                                <Progress 
+                                  value={visualization.overall_strength * 100} 
+                                  className="w-20 h-2 mt-1"
+                                />
+                              </div>
+                            </div>
+
+                            {visualization.weak_links.length > 0 && (
+                              <div className="p-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30">
+                                <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <span className="font-medium">Weak Links Detected</span>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="p-3 rounded-lg bg-muted/30">
+                              <p className="text-sm font-medium mb-1">Analysis Summary</p>
+                              <p className="text-sm text-muted-foreground">{visualization.summary}</p>
+                            </div>
+
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                              {visualization.nodes.map((node, idx) => (
+                                <motion.div
+                                  key={node.id}
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: idx * 0.05 }}
+                                  className={`p-3 rounded-lg border-2 ${
+                                    node.issues.length > 0 
+                                      ? "border-red-400 bg-red-50 dark:bg-red-950/30"
+                                      : node.strength < 0.7
+                                        ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30"
+                                        : "border-green-400 bg-green-50 dark:bg-green-950/30"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge variant="outline" className="text-xs capitalize">
+                                      {node.type}
+                                    </Badge>
+                                    <span className="text-sm font-medium truncate">
+                                      {node.text}
+                                    </span>
+                                  </div>
+                                  {node.issues.length > 0 && (
+                                    <div className="flex gap-1 mt-1 flex-wrap">
+                                      {node.issues.map(issue => (
+                                        <Badge key={issue} variant="destructive" className="text-[10px]">
+                                          {issue.replace("_", " ")}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Progress value={node.strength * 100} className="flex-1 h-1.5" />
+                                    <span className="text-xs text-muted-foreground">
+                                      {Math.round(node.strength * 100)}%
+                                    </span>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+
+                            {visualization.edges.length > 0 && (
+                              <div className="pt-2 border-t">
+                                <p className="text-sm font-medium mb-2">Connections</p>
+                                <div className="space-y-1">
+                                  {visualization.edges.map((edge, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <ArrowRight className="h-3 w-3" />
+                                      <span>
+                                        {edge.source.replace("node_", "Component ")} {edge.label} {edge.target.replace("node_", "Component ")}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

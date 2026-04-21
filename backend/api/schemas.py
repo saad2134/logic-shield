@@ -195,3 +195,30 @@ class QuickAnalysisResponse(BaseModel):
     word_count: Optional[int] = 0
     has_coherence: Optional[bool] = False
     timestamp: str
+
+
+class ArgumentVisualizeRequest(BaseModel):
+    text: str
+    context: Optional[str] = ""
+
+
+class ArgumentNode(BaseModel):
+    id: str
+    text: str
+    type: str  # "claim", "premise", "evidence", "conclusion"
+    strength: float = 1.0
+    issues: list[str] = []
+
+
+class ArgumentEdge(BaseModel):
+    source: str
+    target: str
+    label: str = "supports"
+
+
+class ArgumentVisualizeResponse(BaseModel):
+    nodes: list[ArgumentNode]
+    edges: list[ArgumentEdge]
+    summary: str
+    overall_strength: float
+    weak_links: list[str] = []

@@ -15,9 +15,12 @@ from api.schemas import (
     PersonaInfo,
     QuickAnalysisRequest,
     QuickAnalysisResponse,
+    ArgumentVisualizeRequest,
+    ArgumentVisualizeResponse,
 )
 from services.analysis import AnalysisService
 from services.debate_simulator import DebateSimulator
+from services.argument_visualizer import argument_visualizer
 from app.config import settings
 from datetime import datetime, timezone
 
@@ -64,6 +67,12 @@ def quick_analyze(request: QuickAnalysisRequest):
     result = analysis_service.quick_analyze(
         request.text, request.context or "", request.difficulty
     )
+    return result
+
+
+@router.post("/visualize/argument", response_model=ArgumentVisualizeResponse)
+def visualize_argument(request: ArgumentVisualizeRequest):
+    result = argument_visualizer.parse_argument(request.text, request.context or "")
     return result
 
 

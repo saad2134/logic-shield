@@ -101,6 +101,29 @@ export interface Achievement {
   earned_at?: string;
 }
 
+export interface ArgumentNode {
+  id: string;
+  text: string;
+  text_full?: string;
+  type: string;
+  strength: number;
+  issues: string[];
+}
+
+export interface ArgumentEdge {
+  source: string;
+  target: string;
+  label: string;
+}
+
+export interface ArgumentVisualization {
+  nodes: ArgumentNode[];
+  edges: ArgumentEdge[];
+  summary: string;
+  overall_strength: number;
+  weak_links: string[];
+}
+
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -246,6 +269,12 @@ export const api = {
     fetchApi<QuickAnalysisResult>(`/analyze/quick`, {
       method: "POST",
       body: JSON.stringify({ text, context, difficulty }),
+    }),
+
+  visualizeArgument: (text: string, context: string = "") =>
+    fetchApi<ArgumentVisualization>(`/visualize/argument`, {
+      method: "POST",
+      body: JSON.stringify({ text, context }),
     }),
 
   startDebate: (topic: string, userStance: string, opponentPersona: string) => {
