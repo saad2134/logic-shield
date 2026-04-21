@@ -89,6 +89,16 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
   const { user, isLoading, logout } = useAuth();
 
+  React.useEffect(() => {
+    if (!isLoading) {
+      if (user?.experience_level && pathname === "/app/onboarding") {
+        router.push("/app/dashboard");
+      } else if (user && !user.experience_level && pathname !== "/app/onboarding") {
+        router.push("/app/onboarding");
+      }
+    }
+  }, [user, isLoading, pathname, router]);
+
   const handleLogout = async () => {
     await logout();
     router.push("/");
@@ -150,7 +160,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               <div className="flex gap-2">
                 <Link
                   href="/app/profile"
-                  className={`flex-1 flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                  className={`flex-1 flex items-center gap-3 p-2 border border-foreground/10 rounded-lg transition-colors ${
                     pathname === "/app/profile"
                       ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
                       : "bg-muted/50 hover:bg-muted"
@@ -166,7 +176,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
                 </Link>
                 <Link
                   href="/app/settings"
-                  className={`w-[60px] flex items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`w-[60px] flex items-center justify-center  border border-foreground/10 p-2 rounded-lg transition-colors ${
                     pathname === "/app/settings"
                       ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
                       : "bg-muted/50 hover:bg-muted"
@@ -177,7 +187,7 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               </div>
               <Button
                 variant="ghost"
-                className="w-full justify-start text-muted-foreground"
+                className="w-full justify-start text-muted-foreground  border border-foreground/10"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />

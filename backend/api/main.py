@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from database.core.database import get_db
 from database.models import DebateSession, Argument, AnalysisResult, User
@@ -17,7 +17,7 @@ from api.schemas import (
 from services.analysis import AnalysisService
 from services.debate_simulator import DebateSimulator
 from app.config import settings
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -81,7 +81,7 @@ def start_debate_session(
         topic=str(session.topic),
         user_stance=str(session.user_stance),
         opponent_persona=str(session.opponent_persona),
-        created_at=session.created_at.isoformat()
+        created_at=session.created_at.replace(tzinfo=timezone.utc).isoformat()
     )
 
 
@@ -127,7 +127,7 @@ def add_argument(
         session_id=int(argument.session_id),
         content=str(argument.content),
         is_from_user=bool(argument.is_from_user),
-        created_at=argument.created_at.isoformat()
+        created_at=argument.created_at.replace(tzinfo=timezone.utc).isoformat()
     )
 
 
@@ -191,14 +191,14 @@ def get_debate_history(
             "topic": session.topic,
             "user_stance": session.user_stance,
             "opponent_persona": session.opponent_persona,
-            "created_at": session.created_at.isoformat()
+            "created_at": session.created_at.replace(tzinfo=timezone.utc).isoformat()
         },
         "arguments": [
             {
                 "id": a.id,
                 "content": a.content,
                 "is_from_user": a.is_from_user,
-                "created_at": a.created_at.isoformat()
+                "created_at": a.created_at.replace(tzinfo=timezone.utc).isoformat()
             }
             for a in arguments
         ],
@@ -223,8 +223,34 @@ def end_debate_session(
     if not session:
         raise HTTPException(status_code=404, detail="Debate session not found")
     
-    from datetime import datetime
     session.ended_at = datetime.utcnow()
     db.commit()
     
     return {"message": "Debate session ended", "session_id": session_id}
+
+
+@router.delete("/debate/{session_id}")
+def delete_debate_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    authorization: str = Header(None)
+):
+    from api.auth import get_current_user
+    
+    user = get_current_user(db, authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = db.query(DebateSession).filter(
+        DebateSession.id == session_id,
+        DebateSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Debate session not found")
+    
+    db.query(AnalysisResult).filter(AnalysisResult.session_id == session_id).delete()
+    db.query(Argument).filter(Argument.session_id == session_id).delete()
+    db.delete(session)
+    db.commit()
+    
+    return {"message": "Debate session deleted", "session_id": session_id}
