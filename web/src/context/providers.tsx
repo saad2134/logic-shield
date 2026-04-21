@@ -2,7 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemeProvider, useTheme as useNextTheme } from "next-themes";
-import { useEffect, useState, createContext, useContext } from "react";
+import { useState, createContext, useContext } from "react";
 import { AuthProvider } from "./auth-context";
 
 interface ThemeContextProps {
@@ -23,12 +23,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null;
-
   return (
     <NextThemeProvider
       attribute="class"
