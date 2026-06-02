@@ -1,5 +1,6 @@
 html {
   scroll-behavior: smooth;
+  font-size: 90%; /* Scale down the whole app UI to 90% */
 }
 
 @import "tailwindcss";

@@ -174,52 +174,74 @@ Name persona → Test in preview → Save to library
 ### Tier 3: Learning USPs
 
 #### 7. Structured Rhetoric Courses
-**Status:** Not implemented
+**Status:** ✅ Implemented
 
-**Description:** Built-in lessons on argumentation and logical fallacies.
+**Description:** Brilliant.com-style interactive slide-based courses with animated puzzles, concept explanations, MCQ quizzes, and final course exams with certificate generation.
 
 **Features:**
-- Course catalog: Fallacy Master, Persuasion 101, Business Comm
-- Interactive lessons with examples
-- Quizzes with real debate transcripts
-- Progressive difficulty
-- Certificates upon completion
-- Progress tracking
+- 6 full courses with 14 lessons containing detailed slide configurations
+- Interactive animated widgets: syllogism builders, dialogue fallacy spotters, causal confounder models, reframe balance scales, rhetoric highlighters, objection resolution handshakes
+- Markdown-rendered content with bold/italic support inside slides
+- Slide-by-slide progression with step indicator bubbles and transition animations
+- MCQ concept-check quizzes per lesson with instant feedback
+- Final course exams with 80% passing threshold
+- Printable certificates of completion with user name and date
+- Progress tracking via backend API (completed lessons persisted in DB)
+- Sidebar lock: Course Academy is locked/disabled until onboarding assessment is completed
+- Instant unlock via custom window event (`learning-progress-updated`) when quiz is submitted
 
-**Course Outline:**
+**Course Catalog (Fully Built):**
 ```
-1. Introduction to Arguments (2 lessons)
-2. Logical Fallacies (9 fallacy types)
-3. Evidence & Support (3 lessons)
-4. Counter-Argument Strategy (4 lessons)
-5. Advanced Persuasion (5 lessons)
-6. Business Communication (4 lessons)
+1. Introduction to Arguments (3 lessons: Arguments vs Assertions, Premises & Conclusions, Deductive vs Inductive)
+2. Logical Fallacies Masterclass (5 lessons: Ad Hominem, Straw Man, False Dilemma, Slippery Slope, Circular Reasoning)
+3. Evidence & Support (2 lessons: Correlation vs Causation, Source Credibility)
+4. Counter-Argument Strategy (2 lessons: Framing & Reframing, Strategic Concessions)
+5. Advanced Persuasion (2 lessons: Ethos/Pathos/Logos, Cognitive Biases)
+6. Business Communication (2 lessons: Client Objections & LAER, Interest-Based Bargaining)
 ```
 
-**Why Unique:** Integrated learning keeps users long-term.
+**Key Files:**
+- Course data & schema: `web/src/config/courses.ts`
+- Interactive player: `web/src/app/app/academy/[courseId]/course-player-client.tsx`
+- Course catalog UI: `web/src/app/app/academy/academy-client.tsx`
+- Backend progress API: `backend/api/learning.py`
+
+**Why Unique:** Integrated Brilliant-style interactive learning with animated puzzles keeps users long-term. No competitor offers built-in rhetoric courses with interactive widgets.
 
 ---
 
 #### 8. Personalized Learning Path
-**Status:** Not implemented
+**Status:** ✅ Implemented
 
-**Description:** AI-driven recommendations based on user performance.
+**Description:** Onboarding assessment quiz that identifies weak fallacy types, generates a personalized learning dashboard, and provides spaced repetition flashcard reviews.
 
 **Features:**
-- Onboarding assessment
-- Identify weak fallacy types
-- Recommend practice sessions
-- Spaced repetition system
-- Achievement badges + streaks
-- Weekly progress email
+- 5-question onboarding assessment covering: Deductive Reasoning, Slippery Slope, False Dilemma, Ad Hominem, Correlation vs Causation
+- Automatic skill level classification (Beginner / Intermediate / Advanced) based on score
+- Weak fallacy identification with targeted course recommendations linking directly to relevant lessons
+- Spaced repetition flashcard system with expandable cards for each weak fallacy
+- Retake Assessment button with backend reset endpoint (`POST /learning/reset-assessment`)
+- Sidebar ordering: Learning Path appears first, Course Academy second
+- Pulsing amber indicator dot on Learning Path sidebar link when assessment is pending
+- Course Academy sidebar link is locked (padlock icon, disabled, "LOCKED" badge) until assessment is completed
+- Instant sidebar unlock via custom window event when assessment is submitted (no page refresh needed)
+- Guard redirects: direct URL access to courses redirects back to Learning Path if assessment is incomplete
 
-**Implementation:**
+**Implementation Flow:**
 ```text
-Onboarding quiz → Identify gaps → Recommend courses →
-Track completion → Identify weak areas → Repeat with variation
+User opens Learning Path → Take 5-question assessment → Submit →
+Calculate score & level → Identify weak fallacies → Show dashboard →
+Recommend specific course lessons → Spaced repetition flashcards →
+Instantly unlock Course Academy sidebar → Retake available anytime
 ```
 
-**Why Unique:** Self-improvement drives retention.
+**Key Files:**
+- Learning path UI: `web/src/app/app/learning-path/learning-path-client.tsx`
+- Sidebar lock/unlock logic: `web/src/app/app/layout.tsx`
+- Backend API endpoints: `backend/api/learning.py` (`/progress`, `/assessment`, `/reset-assessment`, `/complete-lesson`, `/spaced-repetition`)
+- Frontend API client: `web/src/lib/api-app.ts`
+
+**Why Unique:** Self-improvement drives retention. No competitor offers integrated assessment → personalized recommendations → spaced repetition within the same debate platform.
 
 ---
 
@@ -257,9 +279,9 @@ Track completion → Identify weak areas → Repeat with variation
 - [ ] Custom persona builder
 
 ### Phase 3: Learning (Weeks 9-12)
-- [ ] Course framework
-- [ ] First 3 courses
-- [ ] Learning path engine
+- [x] Course framework (Brilliant-style slide player with 6 interactive widget types)
+- [x] All 6 courses fully built (14 lessons, puzzles, quizzes, final exams, certificates)
+- [x] Learning path engine (assessment quiz, weak fallacy detection, spaced repetition, retake)
 
 ### Phase 4: Enterprise (Weeks 13-16)
 - [ ] REST API documentation
@@ -348,11 +370,11 @@ Track completion → Identify weak areas → Repeat with variation
 | P1 | Multiplayer | Medium | High | 6 | Pending |
 | P2 | Voice Mode | Medium | Medium | 6 | ✅ Done |
 | P2 | Persona Builder | Medium | Medium | 5 | Basic Done |
-| P3 | Courses | Medium | High | 5 | Pending |
-| P3 | Learning Path | Medium | High | 4 | Pending |
+| P3 | Courses | Medium | High | 5 | ✅ Done |
+| P3 | Learning Path | Medium | High | 4 | ✅ Done |
 | P4 | Enterprise API | Low | High | 3 | Pending |
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: April 2026*
+*Document Version: 2.0*
+*Last Updated: June 2026*

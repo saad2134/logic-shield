@@ -20,6 +20,9 @@ import {
   Settings,
   User,
   Loader2,
+  GraduationCap,
+  Compass,
+  Lock
 } from "lucide-react";
 import AppUI from "@/components/logos/app_icon";
 import {
@@ -53,6 +56,7 @@ import {
 import { siteConfig } from "@/config/site";
 import { useAuth } from "@/context/auth-context";
 import { Network } from "lucide-react";
+import { api, LearningProgress } from "@/lib/api-app";
 
 const appNavItems = [
   {
@@ -65,6 +69,13 @@ const appNavItems = [
     items: [
       { title: "New Debate", url: "/app/debate", icon: Zap },
       { title: "History", url: "/app/history", icon: History },
+    ],
+  },
+  {
+    title: "Academy",
+    items: [
+      { title: "Learning Path", url: "/app/learning-path", icon: Compass },
+      { title: "Course Academy", url: "/app/academy", icon: GraduationCap },
     ],
   },
   {
@@ -91,24 +102,57 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
   const { user, isLoading, logout } = useAuth();
 
+  const [learningProgress, setLearningProgress] = React.useState<LearningProgress | null>(null);
+
+  React.useEffect(() => {
+    async function fetchProgress() {
+      try {
+        const data = await api.getLearningProgress();
+        setLearningProgress(data);
+      } catch (err) {
+        console.error("Failed to load learning progress in sidebar:", err);
+      }
+    }
+    if (user) {
+      fetchProgress();
+    }
+  }, [user]);
+
+  const isQuizPending = learningProgress !== null && learningProgress.assessment === null;
+
   // Dynamic navigation items based on current active session
   const isDebateSession = pathname.startsWith("/app/debate/") && pathname !== "/app/debate";
   const navItems = React.useMemo(() => {
     return appNavItems.map((category) => {
+      let items = [...category.items];
+
+      if (category.title === "Academy") {
+        items = items.map((item) => {
+          if (item.title === "Learning Path" && isQuizPending) {
+            return { ...item, isPending: true };
+          }
+          if (item.title === "Course Academy" && isQuizPending) {
+            return { ...item, isLocked: true };
+          }
+          return item;
+        });
+      }
+
       if (category.title === "Debate" && isDebateSession) {
-        if (!category.items.some((item) => item.title === "Debate Session")) {
-          return {
-            ...category,
-            items: [
-              ...category.items,
-              { title: "Debate Session", url: pathname, icon: MessageSquare },
-            ],
-          };
+        if (!items.some((item) => item.title === "Debate Session")) {
+          items = [
+            ...items,
+            { title: "Debate Session", url: pathname, icon: MessageSquare },
+          ];
         }
       }
-      return category;
+
+      return {
+        ...category,
+        items,
+      };
     });
-  }, [pathname, isDebateSession]);
+  }, [pathname, isDebateSession, isQuizPending]);
 
   React.useEffect(() => {
     if (!isLoading) {
@@ -157,12 +201,37 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               <SidebarMenu>
                 {category.items?.map((item) => {
                   const isActive = pathname === item.url;
+                  const itemWithFlags = item as any;
+                  
+                  if (itemWithFlags.isLocked) {
+                    return (
+                      <SidebarMenuItem key={item.title} className="opacity-50 cursor-not-allowed select-none">
+                        <SidebarMenuButton asChild isActive={false} disabled>
+                          <div className="flex items-center justify-between w-full cursor-not-allowed">
+                            <div className="flex items-center gap-3">
+                              <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <span className="text-muted-foreground">{item.title}</span>
+                            </div>
+                            <span className="text-[8px] uppercase font-bold tracking-widest text-muted-foreground/60 px-1 border border-muted-foreground/20 rounded shrink-0">
+                              Locked
+                            </span>
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive}>
-                        <Link href={item.url} className="flex items-center gap-3">
-                          <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                          <span className={isActive ? "font-medium" : ""}>{item.title}</span>
+                        <Link href={item.url} className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={isActive ? "font-medium" : ""}>{item.title}</span>
+                          </div>
+                          {itemWithFlags.isPending && (
+                            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse mr-1" title="Quiz Pending" />
+                          )}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -248,6 +317,9 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               {pathname === '/app/risk-scanner' && 'Scan emails, proposals, and press materials for tone, factuality, and reputational risk.'}
               {pathname === '/app/profile' && 'Manage your account details'}
               {pathname === '/app/settings' && 'Configure your preferences'}
+              {pathname === '/app/academy' && 'Learn argumentation structure, fallacy types, counter-argument strategies, and communication.'}
+              {pathname.startsWith('/app/academy/') && 'Interactive lesson material, example reviews, and quizzes.'}
+              {pathname === '/app/learning-path' && 'Your personalized logic training path with onboarding assessment, fallacy analysis, and spaced repetition.'}
             </p>
           </div>
           <div className="flex items-center gap-2">

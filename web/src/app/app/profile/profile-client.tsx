@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -327,10 +327,15 @@ export default function ProfileClient() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="text-primary" size={20} />
-                    Skills Overview
-                  </CardTitle>
+                  <div className="space-y-1">
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="text-primary" size={20} />
+                      Skills Overview
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Dynamically calculated as you use the platform
+                    </CardDescription>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

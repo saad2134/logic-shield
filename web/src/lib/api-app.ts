@@ -109,6 +109,24 @@ export interface UserStats {
   reputation_management?: number;
 }
 
+export interface LearningProgress {
+  completed_lessons: string[];
+  assessment: {
+    score: number;
+    level: string;
+    weak_fallacies: string[];
+    completed_at: string;
+  } | null;
+  spaced_repetition: {
+    fallacy: string;
+    next_review: string;
+    interval_days: number;
+    created_at: string;
+  }[];
+  db_detected_fallacies: string[];
+}
+
+
 export interface Achievement {
   id: string;
   title: string;
@@ -432,5 +450,30 @@ export const api = {
     fetchApi<RiskScanResult>(`/analyze/risk`, {
       method: "POST",
       body: JSON.stringify({ text, context }),
+    }),
+
+  getLearningProgress: () => fetchApi<LearningProgress>(`/learning/progress`),
+
+  completeLesson: (courseId: string, lessonId: string) =>
+    fetchApi<{ status: string; completed_lessons: string[] }>(`/learning/complete-lesson`, {
+      method: "POST",
+      body: JSON.stringify({ course_id: courseId, lesson_id: lessonId }),
+    }),
+
+  saveAssessment: (score: number, level: string, weakFallacies: string[]) =>
+    fetchApi<{ status: string; assessment: NonNullable<LearningProgress["assessment"]> }>(`/learning/assessment`, {
+      method: "POST",
+      body: JSON.stringify({ score, level, weak_fallacies: weakFallacies }),
+    }),
+
+  updateSpacedRepetition: (fallacyType: string, action: "add" | "review") =>
+    fetchApi<{ status: string; spaced_repetition: LearningProgress["spaced_repetition"] }>(`/learning/spaced-repetition`, {
+      method: "POST",
+      body: JSON.stringify({ fallacy_type: fallacyType, action }),
+    }),
+
+  resetAssessment: () =>
+    fetchApi<{ status: string }>(`/learning/reset-assessment`, {
+      method: "POST",
     }),
 };
