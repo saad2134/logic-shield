@@ -148,7 +148,7 @@ pip install -r requirements.txt
 cp .env.template .env
 
 # Run the server (Demo Mode - works out of the box)
-uvicorn main:app --reload
+python -m uvicorn main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`

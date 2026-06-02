@@ -220,36 +220,6 @@ export default function DebateSessionClient() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 h-full flex flex-col">
       <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-4"
-        >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => router.push("/demo")}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-lg font-bold">Debate Session</h1>
-                <p className="text-sm text-muted-foreground line-clamp-1">{session?.topic}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="capitalize">
-                {session?.user_stance}
-              </Badge>
-              <Badge variant="secondary" className="capitalize">
-                {session?.opponent_persona?.replace("_", " ")}
-              </Badge>
-              <Button variant="destructive" size="sm" onClick={handleEndDebate}>
-                <X className="mr-1 h-4 w-4" />
-                End
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-
         {error && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -264,11 +234,39 @@ export default function DebateSessionClient() {
         )}
 
         <Card className="flex-1 flex flex-col min-h-0">
-          <CardHeader className="pb-3 border-b shrink-0">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Debate Arena</CardTitle>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MessageSquare className="h-4 w-4" />
+          <CardHeader className="py-3 border-b shrink-0 space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Button variant="ghost" size="icon" onClick={() => router.push("/demo")} className="shrink-0 h-8 w-8" title="Go back">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle className="text-sm md:text-base font-bold line-clamp-1">
+                  {session?.topic}
+                </CardTitle>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleEndDebate}
+                  className="h-7 px-2.5 text-xs font-semibold"
+                >
+                  <X className="mr-1 h-3.5 w-3.5" />
+                  End
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2 flex-wrap text-xs text-muted-foreground pl-10">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="capitalize text-[10px] py-0 px-1.5 font-medium">
+                  {session?.user_stance}
+                </Badge>
+                <Badge variant="secondary" className="capitalize text-[10px] py-0 px-1.5 font-medium">
+                  {session?.opponent_persona?.replace("_", " ")}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-3.5 w-3.5" />
                 <span>{messages.length} messages</span>
               </div>
             </div>

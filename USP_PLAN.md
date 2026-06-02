@@ -23,7 +23,7 @@ LogicShield's core value proposition is **"Your AI Debate Coach - Real-Time"**. 
 | Visual | Text-only | Argument trees & graphs |
 | Engagement | Solo practice | Multiplayer + tournaments |
 | Learning | Self-directed | Structured courses |
-| Business | Basic | Communication risk scanner |
+| Business | Basic | Risk scanner |
 
 ---
 
@@ -55,7 +55,7 @@ Calculate score with penalties → Show feedback panel
 ---
 
 #### 2. Visual Argument Mapper
-**Status:** Not implemented
+**Status:** Implemented
 
 **Description:** Auto-generate interactive argument structure from debate text.
 
@@ -77,8 +77,8 @@ Render interactive visualization → Add interaction controls
 
 ---
 
-#### 3. Communication Risk Scanner
-**Status:** Not implemented
+#### 3. Risk Scanner
+**Status:** ✅ Implemented
 
 **Description:** Business-oriented risk analysis for professional communication.
 
@@ -127,7 +127,7 @@ Show winner → Update rankings
 ---
 
 #### 5. Voice Debate Mode
-**Status:** Not implemented
+**Status:** ✅ Implemented
 
 **Description:** Hands-free debate using speech input/output.
 
@@ -248,12 +248,12 @@ Track completion → Identify weak areas → Repeat with variation
 
 ### Phase 1: Core (Weeks 1-4)
 - [x] Real-Time Coach with local model
-- [ ] Basic Visual Argument Mapper
-- [ ] Communication Risk Scanner
+- [x] Basic Visual Argument Mapper
+- [x] Risk Scanner
 
 ### Phase 2: Engagement (Weeks 5-8)
 - [ ] Multiplayer lobbies
-- [ ] Voice debate mode
+- [x] Voice debate mode
 - [ ] Custom persona builder
 
 ### Phase 3: Learning (Weeks 9-12)
@@ -343,10 +343,10 @@ Track completion → Identify weak areas → Repeat with variation
 | Priority | Feature | Impact | Effort | Score | Status |
 |----------|---------|--------|--------|-------|--------|
 | P0 | Real-Time Coach | High | Medium | 9 | ✅ Done |
-| P0 | Visual Mapper | High | Medium | 8 | Pending |
-| P1 | Risk Scanner | High | Low | 8 | Pending |
+| P0 | Visual Mapper | High | Medium | 8 | ✅ Done |
+| P1 | Risk Scanner | High | Low | 8 | ✅ Done |
 | P1 | Multiplayer | Medium | High | 6 | Pending |
-| P2 | Voice Mode | Medium | Medium | 6 | Pending |
+| P2 | Voice Mode | Medium | Medium | 6 | ✅ Done |
 | P2 | Persona Builder | Medium | Medium | 5 | Basic Done |
 | P3 | Courses | Medium | High | 5 | Pending |
 | P3 | Learning Path | Medium | High | 4 | Pending |

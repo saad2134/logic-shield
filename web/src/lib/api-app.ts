@@ -77,6 +77,18 @@ export interface QuickAnalysisResult {
   timestamp: string;
 }
 
+export interface RiskScanResult {
+  publish_safe_score: number;
+  risk_level: string;
+  tone_score: number;
+  factuality_score: number;
+  sensitivity_score: number;
+  risk_factors: string[];
+  rewrite_suggestion: string;
+  demo_mode?: boolean;
+  timestamp: string;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;
@@ -90,6 +102,11 @@ export interface UserStats {
   fallacy_count: number;
   current_streak: number;
   win_rate: number;
+  logical_reasoning?: number;
+  argument_construction?: number;
+  evidence_usage?: number;
+  fallacy_detection?: number;
+  reputation_management?: number;
 }
 
 export interface Achievement {
@@ -381,14 +398,17 @@ export const api = {
     focus_areas: string[];
   }) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    console.log('Submitting onboarding - token present:', !!token);
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
+    console.log('Submitting onboarding - token present:', !!token, 'userId present:', !!userId);
     
     // Use X-Auth-Token header to work around CORS issues
     const response = await fetch(`${BACKEND_URL}/user/onboarding`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'X-Auth-Token': token || ''
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        'X-Auth-Token': token || '',
+        ...(userId ? { 'X-User-ID': userId } : {})
       },
       body: JSON.stringify(data),
     });
@@ -407,4 +427,10 @@ export const api = {
   deleteAccount: () => fetchApi<{ message: string }>(`/user/account`, {
     method: "DELETE",
   }),
+
+  scanCommunicationRisk: (text: string, context: string = "") =>
+    fetchApi<RiskScanResult>(`/analyze/risk`, {
+      method: "POST",
+      body: JSON.stringify({ text, context }),
+    }),
 };

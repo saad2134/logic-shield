@@ -72,44 +72,54 @@ html {
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
   }
+
   @keyframes appear {
     0% {
       opacity: 0;
       transform: translateY(1rem);
       filter: blur(0.5rem);
     }
+
     50% {
       filter: blur(0);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0);
       filter: blur(0);
     }
   }
+
   @keyframes appear-zoom {
     0% {
       opacity: 0;
       transform: scale(0.5);
     }
+
     100% {
       opacity: 1;
       transform: scale(1);
     }
   }
-  --font-serif: Georgia, serif;
+
+  --font-serif: Georgia,
+  serif;
   --radius: 1.3rem;
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -135,9 +145,12 @@ html {
 }
 
 @keyframes gradient {
-  0%, 100% {
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -151,7 +164,7 @@ html {
 :root {
   /* Accent colors */
   --brand: var(--primary);
---brand-foreground: var(--primary-foreground);
+  --brand-foreground: var(--primary-foreground);
 
   /* Customized shadcn/ui colors */
   --background: oklch(0.9911 0 0);
@@ -219,7 +232,7 @@ html {
 .dark {
   /* Accent colors */
   --brand: var(--primary);
---brand-foreground: var(--primary-foreground);
+  --brand-foreground: var(--primary-foreground);
 
   /* Customized shadcn/ui colors */
   --background: oklch(0 0 0);
@@ -287,6 +300,7 @@ html {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
@@ -297,59 +311,68 @@ html {
 @utility glass-1 {
   @apply border-border from-card/80 to-card/40 dark:border-border/10 dark:border-b-border/5 dark:border-t-border/20 dark:from-card/5 dark:to-card/0 border bg-linear-to-b;
 }
+
 @utility glass-2 {
   @apply border-border from-card/100 to-card/80 dark:border-border/10 dark:border-b-border/5 dark:border-t-border/20 dark:from-card/10 dark:to-card/5 border bg-linear-to-b;
 }
+
 @utility glass-3 {
   @apply border-border from-card/30 to-card/20 dark:border-border/10 dark:border-t-border/20 dark:border-b-border/5 dark:from-primary/5 dark:to-primary/2 border bg-linear-to-b;
 }
+
 @utility glass-4 {
   @apply border-border border-b-input/90 from-card/60 to-card/20 dark:border-border/10 dark:border-t-border/30 dark:from-primary/10 dark:to-primary/5 border bg-linear-to-b dark:border-b-0;
 }
+
 @utility glass-5 {
   @apply border-border border-b-input from-card/100 to-card/20 dark:border-border/10 dark:border-t-border/30 dark:from-primary/15 dark:to-primary/5 border bg-linear-to-b dark:border-b-0;
 }
 
 /* Fade effects */
 @utility fade-x {
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 25%,
-    black 75%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(to right,
+      transparent 0%,
+      black 25%,
+      black 75%,
+      transparent 100%);
 }
+
 @utility fade-y {
-  mask-image: linear-gradient(
-    to top,
-    transparent 0%,
-    black 25%,
-    black 75%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(to top,
+      transparent 0%,
+      black 25%,
+      black 75%,
+      transparent 100%);
 }
+
 @utility fade-top {
   mask-image: linear-gradient(to bottom, transparent 0%, black 35%);
 }
+
 @utility fade-bottom {
   mask-image: linear-gradient(to top, transparent 0%, black 35%);
 }
+
 @utility fade-top-lg {
   mask-image: linear-gradient(to bottom, transparent 15%, black 100%);
 }
+
 @utility fade-bottom-lg {
   mask-image: linear-gradient(to top, transparent 15%, black 100%);
 }
+
 @utility fade-left {
   mask-image: linear-gradient(to right, transparent 0%, black 35%);
 }
+
 @utility fade-right {
   mask-image: linear-gradient(to left, transparent 0%, black 35%);
 }
+
 @utility fade-left-lg {
   mask-image: linear-gradient(to right, transparent 15%, black 100%);
 }
+
 @utility fade-right-lg {
   mask-image: linear-gradient(to left, transparent 15%, black 100%);
 }
@@ -382,6 +405,14 @@ input::placeholder {
   color: #9ca3af !important;
 }
 
+.dark input::placeholder {
+  color: #232a34 !important;
+}
+
 textarea::placeholder {
   color: #9ca3af !important;
+}
+
+.dark textarea::placeholder {
+  color: #374151 !important;
 }

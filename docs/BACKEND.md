@@ -974,14 +974,14 @@ CREATE DATABASE logicshield;
 ```bash
 # Development (CPU)
 cd backend
-uvicorn main:app --reload
+python -m uvicorn main:app --reload
 
 # Development with GPU (if available)
 set CUDA_VISIBLE_DEVICES=0
-uvicorn main:app --reload
+python -m uvicorn main:app --reload
 
 # Production
-uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ### API Documentation

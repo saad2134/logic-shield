@@ -87,6 +87,25 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
 
+  // Dynamic navigation items based on current active session
+  const isDebateSession = pathname.startsWith("/demo/debate/") && pathname !== "/demo/debate";
+  const navItems = React.useMemo(() => {
+    return demoNavItems.map((category) => {
+      if (category.title === "Debate" && isDebateSession) {
+        if (!category.items.some((item) => item.title === "Debate Session")) {
+          return {
+            ...category,
+            items: [
+              ...category.items,
+              { title: "Debate Session", url: pathname, icon: MessageSquare },
+            ],
+          };
+        }
+      }
+      return category;
+    });
+  }, [pathname, isDebateSession]);
+
   if (pathname === "/demo/onboarding") {
     return <>{children}</>;
   }
@@ -104,11 +123,11 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
         
-        <SidebarContent>
-          {demoNavItems.map((category, idx) => (
-            <SidebarGroup key={category.title || idx}>
+        <SidebarContent className="gap-0">
+          {navItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx} className="py-1 px-2">
               {category.title && (
-                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                <SidebarGroupLabel className="text-primary font-semibold px-2 h-6 mt-1 mb-0">
                   {category.title}
                 </SidebarGroupLabel>
               )}
@@ -182,7 +201,7 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
             <h1 className="text-lg font-semibold">
               {pathname === '/demo/profile' ? 'Profile' : 
                pathname === '/demo/settings' ? 'Settings' : 
-               demoNavItems.flatMap(cat => cat.items || []).find(item => item.url === pathname)?.title || "Demo"}
+               navItems.flatMap(cat => cat.items || []).find(item => item.url === pathname)?.title || "Demo"}
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               {pathname === '/demo/dashboard' && 'Your personal debate dashboard'}

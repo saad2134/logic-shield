@@ -142,6 +142,11 @@ class UserStatsResponse(BaseModel):
     fallacy_count: float
     current_streak: int
     win_rate: float
+    logical_reasoning: Optional[float] = None
+    argument_construction: Optional[float] = None
+    evidence_usage: Optional[float] = None
+    fallacy_detection: Optional[float] = None
+    reputation_management: Optional[float] = None
 
 
 class AchievementResponse(BaseModel):
@@ -222,3 +227,20 @@ class ArgumentVisualizeResponse(BaseModel):
     summary: str
     overall_strength: float
     weak_links: list[str] = []
+
+
+class RiskScanRequest(BaseModel):
+    text: str = Field(..., min_length=1)
+    context: Optional[str] = ""
+
+
+class RiskScanResponse(BaseModel):
+    publish_safe_score: float
+    risk_level: str
+    tone_score: float
+    factuality_score: float
+    sensitivity_score: float
+    risk_factors: List[str]
+    rewrite_suggestion: str
+    demo_mode: Optional[bool] = None
+    timestamp: str

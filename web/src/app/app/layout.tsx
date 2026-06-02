@@ -72,6 +72,7 @@ const appNavItems = [
     items: [
       { title: "Argument Analysis", url: "/app/argument-analysis", icon: Target },
       { title: "Argument Mapper", url: "/app/argument-mapper", icon: Network },
+      { title: "Risk Scanner", url: "/app/risk-scanner", icon: Shield },
     ],
   },
 ];
@@ -89,6 +90,25 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { setTheme } = useTheme();
   const { user, isLoading, logout } = useAuth();
+
+  // Dynamic navigation items based on current active session
+  const isDebateSession = pathname.startsWith("/app/debate/") && pathname !== "/app/debate";
+  const navItems = React.useMemo(() => {
+    return appNavItems.map((category) => {
+      if (category.title === "Debate" && isDebateSession) {
+        if (!category.items.some((item) => item.title === "Debate Session")) {
+          return {
+            ...category,
+            items: [
+              ...category.items,
+              { title: "Debate Session", url: pathname, icon: MessageSquare },
+            ],
+          };
+        }
+      }
+      return category;
+    });
+  }, [pathname, isDebateSession]);
 
   React.useEffect(() => {
     if (!isLoading) {
@@ -126,11 +146,11 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
 
-        <SidebarContent>
-          {appNavItems.map((category, idx) => (
-            <SidebarGroup key={category.title || idx}>
+        <SidebarContent className="gap-0">
+          {navItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx} className="py-1 px-2">
               {category.title && (
-                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                <SidebarGroupLabel className="text-primary font-semibold px-2 h-6 mt-1">
                   {category.title}
                 </SidebarGroupLabel>
               )}
@@ -163,11 +183,10 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               <div className="flex gap-2">
                 <Link
                   href="/app/profile"
-                  className={`flex-1 flex items-center gap-3 p-2 border border-foreground/10 rounded-lg transition-colors ${
-                    pathname === "/app/profile"
-                      ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
-                      : "bg-muted/50 hover:bg-muted"
-                  }`}
+                  className={`flex-1 flex items-center gap-3 p-2 border border-foreground/10 rounded-lg transition-colors ${pathname === "/app/profile"
+                    ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
+                    : "bg-muted/50 hover:bg-muted"
+                    }`}
                 >
                   <div className="w-9 h-9 rounded-full bg-primary/50 dark:bg-primary/50 flex items-center justify-center font-semibold text-sm shrink-0">
                     {initials}
@@ -179,11 +198,10 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
                 </Link>
                 <Link
                   href="/app/settings"
-                  className={`w-[60px] flex items-center justify-center  border border-foreground/10 p-2 rounded-lg transition-colors ${
-                    pathname === "/app/settings"
-                      ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
-                      : "bg-muted/50 hover:bg-muted"
-                  }`}
+                  className={`w-[60px] flex items-center justify-center  border border-foreground/10 p-2 rounded-lg transition-colors ${pathname === "/app/settings"
+                    ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
+                    : "bg-muted/50 hover:bg-muted"
+                    }`}
                 >
                   <Settings className="h-4 w-4 text-muted-foreground" />
                 </Link>
@@ -215,20 +233,21 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
           <SidebarTrigger />
           <div className="flex-1">
             <h1 className="text-lg font-semibold">
-              {pathname === '/app/profile' ? 'Profile' : 
-               pathname === '/app/settings' ? 'Settings' : 
-               appNavItems
-                .flatMap((cat) => cat.items || [])
-                .find((item) => item.url === pathname)?.title || "LogicShield"}
+              {pathname === '/app/profile' ? 'Profile' :
+                pathname === '/app/settings' ? 'Settings' :
+                  navItems
+                    .flatMap((cat) => cat.items || [])
+                    .find((item) => item.url === pathname)?.title || "LogicShield"}
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               {pathname === '/app/dashboard' && 'Your personal debate dashboard'}
               {pathname === '/app/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
               {pathname === '/app/history' && 'View your past debates'}
-{pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
-               {pathname === '/app/argument-mapper' && 'Visualize your argument structure as a mind map'}
-               {pathname === '/app/profile' && 'Manage your account details'}
-               {pathname === '/app/settings' && 'Configure your preferences'}
+              {pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
+              {pathname === '/app/argument-mapper' && 'Visualize your argument structure as a mind map'}
+              {pathname === '/app/risk-scanner' && 'Scan emails, proposals, and press materials for tone, factuality, and reputational risk.'}
+              {pathname === '/app/profile' && 'Manage your account details'}
+              {pathname === '/app/settings' && 'Configure your preferences'}
             </p>
           </div>
           <div className="flex items-center gap-2">

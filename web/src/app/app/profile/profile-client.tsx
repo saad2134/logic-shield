@@ -129,11 +129,11 @@ export default function ProfileClient() {
   };
 
   const skillLevels = [
-    { name: "Logical Reasoning", level: stats ? Math.round(stats.avg_argument_strength * 100 * 0.8) : 75, color: "bg-blue-500" },
-    { name: "Argument Construction", level: stats ? Math.round(stats.avg_argument_strength * 100) : 82, color: "bg-green-500" },
-    { name: "Evidence Usage", level: stats ? Math.round(stats.avg_argument_strength * 100 * 0.7) : 68, color: "bg-purple-500" },
-    { name: "Fallacy Detection", level: stats ? Math.round(100 - (stats.fallacy_count / (stats.total_arguments || 1) * 100)) : 90, color: "bg-orange-500" },
-    { name: "Reputation Management", level: 72, color: "bg-pink-500" },
+    { name: "Logical Reasoning", level: stats?.logical_reasoning !== undefined ? Math.round(stats.logical_reasoning) : 75, color: "bg-blue-500" },
+    { name: "Argument Construction", level: stats?.argument_construction !== undefined ? Math.round(stats.argument_construction) : 82, color: "bg-green-500" },
+    { name: "Evidence Usage", level: stats?.evidence_usage !== undefined ? Math.round(stats.evidence_usage) : 68, color: "bg-purple-500" },
+    { name: "Fallacy Detection", level: stats?.fallacy_detection !== undefined ? Math.round(stats.fallacy_detection) : 90, color: "bg-orange-500" },
+    { name: "Reputation Management", level: stats?.reputation_management !== undefined ? Math.round(stats.reputation_management) : 72, color: "bg-pink-500" },
   ];
 
   const initials = user?.full_name

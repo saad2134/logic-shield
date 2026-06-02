@@ -1,4 +1,5 @@
 reference/
+.ruff_cache/
 temp/
 .snapshots/
 backend/DEPLOYMENT_LOG.txt

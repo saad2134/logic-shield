@@ -17,6 +17,8 @@ from api.schemas import (
     QuickAnalysisResponse,
     ArgumentVisualizeRequest,
     ArgumentVisualizeResponse,
+    RiskScanRequest,
+    RiskScanResponse,
 )
 from services.analysis import AnalysisService
 from services.debate_simulator import DebateSimulator
@@ -270,3 +272,11 @@ def delete_debate_session(
     db.commit()
 
     return {"message": "Debate session deleted", "session_id": session_id}
+
+
+@router.post("/analyze/risk", response_model=RiskScanResponse)
+def scan_communication_risk(request: RiskScanRequest):
+    result = analysis_service.scan_communication_risk(
+        request.text, request.context or ""
+    )
+    return result

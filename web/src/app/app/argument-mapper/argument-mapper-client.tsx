@@ -22,9 +22,20 @@ import {
   ZoomOut,
   Maximize2,
   MousePointer2,
-  Move
+  Move,
+  Download,
+  X,
+  Eye
 } from "lucide-react";
 import { api, ArgumentVisualization, ArgumentNode, ArgumentEdge } from "@/lib/api-app";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ArgumentMapperClient() {
   const [text, setText] = React.useState("");
@@ -38,7 +49,48 @@ export default function ArgumentMapperClient() {
   const [selectedNode, setSelectedNode] = React.useState<ArgumentNode | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [showResetConfirm, setShowResetConfirm] = React.useState(false);
   const canvasRef = React.useRef<HTMLDivElement>(null);
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  const svgRef = React.useRef<SVGSVGElement>(null);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
+
+  React.useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const preventDefaultWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        setZoom(prev => Math.min(prev + 0.1, 2));
+      } else {
+        setZoom(prev => Math.max(prev - 0.1, 0.4));
+      }
+    };
+
+    svg.addEventListener("wheel", preventDefaultWheel, { passive: false });
+    return () => {
+      svg.removeEventListener("wheel", preventDefaultWheel);
+    };
+  }, [visualization]);
+
+  const handleToggleFullscreen = () => {
+    setIsFullscreen((prev) => !prev);
+  };
+
+  const handleResetClick = () => {
+    setShowResetConfirm(true);
+  };
 
   const handleVisualize = async () => {
     if (!text.trim()) return;
@@ -65,10 +117,71 @@ export default function ArgumentMapperClient() {
     setZoom(1);
   };
 
+  const handleExportPng = () => {
+    if (!canvasRef.current) return;
+    const svgElement = canvasRef.current.querySelector("svg");
+    if (!svgElement) return;
+
+    try {
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
+      
+      const image = new Image();
+      image.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1200; // high res
+          canvas.height = 750;
+          const context = canvas.getContext("2d");
+          if (context) {
+            context.fillStyle = "#ffffff"; // white background
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            
+            const png = canvas.toDataURL("image/png");
+            const downloadLink = document.createElement("a");
+            downloadLink.href = png;
+            downloadLink.download = "argument_map.png";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+          }
+        } catch (err) {
+          console.warn("Exporting to PNG failed due to tainted canvas or other error. Downloading SVG instead:", err);
+          const downloadLink = document.createElement("a");
+          downloadLink.href = blobURL;
+          downloadLink.download = "argument_map.svg";
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } finally {
+          URL.revokeObjectURL(blobURL);
+        }
+      };
+      
+      // Fallback: If drawing to canvas fails (due to foreignObject browser security restriction), download the SVG directly.
+      image.onerror = () => {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = blobURL;
+        downloadLink.download = "argument_map.svg";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(blobURL);
+      };
+      
+      image.src = blobURL;
+    } catch (err) {
+      console.error("Failed to export:", err);
+    }
+  };
+
   const getNodeColor = (node: ArgumentNode) => {
-    if (node.issues.length > 0) return { bg: "bg-red-500", border: "border-red-500", text: "text-red-500" };
-    if (node.strength < 0.7) return { bg: "bg-yellow-500", border: "border-yellow-500", text: "text-yellow-500" };
-    return { bg: "bg-green-500", border: "border-green-500", text: "text-green-500" };
+    if (node.issues.length > 0) return { bg: "bg-red-500", border: "border-red-500", text: "text-red-500", hex: "#ef4444", bgLightHex: "rgba(239, 68, 68, 0.1)" };
+    if (node.strength < 0.7) return { bg: "bg-yellow-500", border: "border-yellow-500", text: "text-yellow-500", hex: "#eab308", bgLightHex: "rgba(234, 179, 8, 0.1)" };
+    return { bg: "bg-green-500", border: "border-green-500", text: "text-green-500", hex: "#22c55e", bgLightHex: "rgba(34, 197, 94, 0.1)" };
   };
 
   const getNodeIcon = (type: string) => {
@@ -168,18 +281,16 @@ export default function ArgumentMapperClient() {
 
     return (
       <svg 
-        className="w-full h-full"
+        ref={svgRef}
+        className="w-full h-full select-none"
         viewBox="0 0 800 500"
         style={{ 
-          transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`, 
-          transformOrigin: 'center',
           cursor: isPanning ? 'grabbing' : 'grab'
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
       >
         <defs>
           <marker
@@ -222,126 +333,155 @@ export default function ArgumentMapperClient() {
           </linearGradient>
         </defs>
 
-        const nodePositions = getNodePositionsMap();
+        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+          {visualization.edges.map((edge, idx) => {
+            const sourcePos = nodePositions[edge.source];
+            const targetPos = nodePositions[edge.target];
+            if (!sourcePos || !targetPos) return null;
 
-        {visualization.edges.map((edge, idx) => {
-          const sourcePos = nodePositions[edge.source];
-          const targetPos = nodePositions[edge.target];
-          if (!sourcePos || !targetPos) return null;
+            const dx = targetPos.x - sourcePos.x;
+            const dy = targetPos.y - sourcePos.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const nodeRadius = 45;
+            
+            const adjustedSource = {
+              x: sourcePos.x + (dx / length) * nodeRadius,
+              y: sourcePos.y + (dy / length) * nodeRadius
+            };
+            const adjustedTarget = {
+              x: targetPos.x - (dx / length) * (nodeRadius + 8),
+              y: targetPos.y - (dy / length) * (nodeRadius + 8)
+            };
 
-          const dx = targetPos.x - sourcePos.x;
-          const dy = targetPos.y - sourcePos.y;
-          const length = Math.sqrt(dx * dx + dy * dy);
-          const nodeRadius = 45;
-          
-          const adjustedSource = {
-            x: sourcePos.x + (dx / length) * nodeRadius,
-            y: sourcePos.y + (dy / length) * nodeRadius
-          };
-          const adjustedTarget = {
-            x: targetPos.x - (dx / length) * (nodeRadius + 8),
-            y: targetPos.y - (dy / length) * (nodeRadius + 8)
-          };
+            return (
+              <g key={idx}>
+                <line
+                  x1={adjustedSource.x}
+                  y1={adjustedSource.y}
+                  x2={adjustedTarget.x}
+                  y2={adjustedTarget.y}
+                  stroke="#94a3b8"
+                  strokeWidth="2"
+                  markerEnd={edge.label === "also supports" ? "url(#arrowhead-dashed)" : "url(#arrowhead)"}
+                  strokeDasharray={edge.label === "also supports" ? "5,5" : "0"}
+                />
+                {edge.label !== "supports" && (
+                  <g>
+                    <rect 
+                       x={(sourcePos.x + targetPos.x) / 2 - 25} 
+                       y={(sourcePos.y + targetPos.y) / 2 - 8} 
+                       width="50" 
+                       height="16" 
+                       rx="4"
+                       fill="white"
+                       stroke="#e2e8f0"
+                       strokeWidth="1"
+                    />
+                    <text
+                      x={(sourcePos.x + targetPos.x) / 2}
+                      y={(sourcePos.y + targetPos.y) / 2 + 4}
+                      fill="#64748b"
+                      fontSize="9"
+                      fontWeight="500"
+                      textAnchor="middle"
+                    >
+                      {edge.label}
+                    </text>
+                  </g>
+                )}
+              </g>
+            );
+          })}
 
-          return (
-            <g key={idx}>
-              <line
-                x1={adjustedSource.x}
-                y1={adjustedSource.y}
-                x2={adjustedTarget.x}
-                y2={adjustedTarget.y}
-                stroke="#94a3b8"
-                strokeWidth="2"
-                markerEnd={edge.label === "also supports" ? "url(#arrowhead-dashed)" : "url(#arrowhead)"}
-                strokeDasharray={edge.label === "also supports" ? "5,5" : "0"}
-              />
-              {edge.label !== "supports" && (
-                <g>
-                  <rect 
-                    x={(sourcePos.x + targetPos.x) / 2 - 25} 
-                    y={(sourcePos.y + targetPos.y) / 2 - 8} 
-                    width="50" 
-                    height="16" 
-                    rx="4"
-                    fill="background"
-                  />
-                  <text
-                    x={(sourcePos.x + targetPos.x) / 2}
-                    y={(sourcePos.y + targetPos.y) / 2 + 4}
-                    fill="#64748b"
-                    fontSize="9"
-                    fontWeight="500"
-                    textAnchor="middle"
-                  >
-                    {edge.label}
-                  </text>
-                </g>
-              )}
-            </g>
-          );
-        })}
+          {allNodes.map((node, idx) => {
+            const colors = getNodeColor(node);
+            const Icon = getNodeIcon(node.type);
+            const pos = nodePositions[node.id];
+            const isSelected = selectedNode?.id === node.id;
 
-        {allNodes.map((node, idx) => {
-          const colors = getNodeColor(node);
-          const Icon = getNodeIcon(node.type);
-          const pos = nodePositions[node.id];
-          const isSelected = selectedNode?.id === node.id;
-
-          return (
-            <g 
-              key={node.id}
-              onClick={() => setSelectedNode(node)}
-              style={{ cursor: 'pointer' }}
-            >
-              <motion.circle
-                cx={pos.x}
-                cy={pos.y}
-                r="45"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
-                fill="url(#nodeGradient)"
-                stroke={isSelected ? "#3b82f6" : colors.border.replace('border-', '')}
-                strokeWidth={isSelected ? 3 : 2}
-                filter={isSelected ? "url(#glow)" : "url(#shadow)"}
-                className="dark:fill-slate-800"
-              />
-              <foreignObject x={pos.x - 18} y={pos.y - 18} width="36" height="36">
-                <div className={`flex items-center justify-center w-full h-full rounded-full bg-background/80 ${colors.bg}/10`}>
-                  <Icon size={22} className={colors.text} />
-                </div>
-              </foreignObject>
-              <text
-                x={pos.x}
-                y={pos.y + 60}
-                textAnchor="middle"
-                fontSize="11"
-                fontWeight="600"
-                fill="currentColor"
-                className="text-foreground dark:text-slate-200"
+            return (
+              <g 
+                key={node.id}
+                onClick={() => setSelectedNode(node)}
+                style={{ cursor: 'pointer' }}
               >
-                {node.text.length > 20 ? node.text.substring(0, 20) + "..." : node.text}
-              </text>
-              <text
-                x={pos.x}
-                y={pos.y + 75}
-                textAnchor="middle"
-                fontSize="9"
-                fill="#64748b"
-                className="capitalize dark:text-slate-400"
-              >
-                {node.type}
-              </text>
-              <foreignObject x={(pos?.x || 0) - 14} y={(pos?.y || 0) - 58} width="28" height="18">
-                <div className={`flex items-center justify-center w-full h-full ${colors.bg} rounded-full shadow-md`}>
-                  <span className="text-[10px] font-bold text-white">
-                    {Math.round(node.strength * 100)}%
-                  </span>
-                </div>
-              </foreignObject>
-            </g>
-          );
-        })}
+                <motion.circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r="45"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
+                  fill="url(#nodeGradient)"
+                  stroke={isSelected ? "#3b82f6" : colors.hex}
+                  strokeWidth={isSelected ? 3 : 2}
+                  filter={isSelected ? "url(#glow)" : "url(#shadow)"}
+                  className="dark:fill-slate-800"
+                />
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r="18"
+                  fill="white"
+                  stroke={colors.hex}
+                  strokeWidth="1"
+                />
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r="18"
+                  fill={colors.hex}
+                  opacity="0.1"
+                />
+                <Icon 
+                  size={20} 
+                  x={pos.x - 10} 
+                  y={pos.y - 10} 
+                  color={colors.hex}
+                />
+                <text
+                  x={pos.x}
+                  y={pos.y + 60}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fontWeight="600"
+                  fill="currentColor"
+                  className="text-foreground dark:text-slate-200"
+                >
+                  {node.text.length > 20 ? node.text.substring(0, 20) + "..." : node.text}
+                </text>
+                <text
+                  x={pos.x}
+                  y={pos.y + 75}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fill="#64748b"
+                  className="capitalize dark:text-slate-400"
+                >
+                  {node.type}
+                </text>
+                <rect
+                  x={(pos?.x || 0) - 18}
+                  y={(pos?.y || 0) - 58}
+                  width="36"
+                  height="16"
+                  rx="8"
+                  fill={colors.hex}
+                />
+                <text
+                  x={pos?.x || 0}
+                  y={(pos?.y || 0) - 47}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fontWeight="bold"
+                  fill="#ffffff"
+                >
+                  {Math.round(node.strength * 100)}%
+                </text>
+              </g>
+            );
+          })}
+        </g>
       </svg>
     );
   };
@@ -390,37 +530,6 @@ export default function ArgumentMapperClient() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-4"
-        >
-          <div className="flex items-center justify-between">
-            <div />
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mr-2">
-                <Move className="h-3 w-3" />
-                <span>Drag to pan</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={handleZoomOut}>
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <span className="text-xs text-muted-foreground min-w-[40px] text-center">
-                {Math.round(zoom * 100)}%
-              </span>
-              <Button variant="outline" size="sm" onClick={handleZoomIn}>
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleFitToView}>
-                <Maximize2 className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleReset}>
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </motion.div>
 
         {error && (
           <motion.div
@@ -485,9 +594,16 @@ Example: Climate change is primarily caused by human activities. This is because
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <Card className="h-[600px]">
+            <Card 
+              ref={cardRef}
+              className={`transition-all duration-300 ${
+                isFullscreen 
+                  ? "fixed inset-0 z-50 h-screen w-screen bg-background p-6 rounded-none flex flex-col" 
+                  : "h-[600px] flex flex-col border-foreground/10 bg-background/50 backdrop-blur-sm shadow-xl"
+              }`}
+            >
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Target className="text-primary" size={20} />
@@ -497,25 +613,39 @@ Example: Climate change is primarily caused by human activities. This is because
                       Visual structure of your argument
                     </CardDescription>
                   </div>
+                  
                   {visualization && visualization.nodes.length > 0 && (
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-xs text-muted-foreground">Strong</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground mr-2">
+                        <Move className="h-3 w-3" />
+                        <span>Drag to pan</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span className="text-xs text-muted-foreground">Weak</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span className="text-xs text-muted-foreground">Issues</span>
-                      </div>
+                      <Button variant="outline" size="sm" onClick={handleZoomOut} className="h-8 w-8 p-0" title="Zoom Out">
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs text-muted-foreground min-w-[40px] text-center">
+                        {Math.round(zoom * 100)}%
+                      </span>
+                      <Button variant="outline" size="sm" onClick={handleZoomIn} className="h-8 w-8 p-0" title="Zoom In">
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleFitToView} className="h-8 w-8 p-0" title="Fit to View">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleResetClick} className="h-8 w-8 p-0 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10" title="Reset Map">
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleToggleFullscreen} className="h-8 w-8 p-0" title="Toggle Fullscreen">
+                        {isFullscreen ? <X className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleExportPng} className="h-8 w-8 p-0" title="Export as PNG">
+                        <Download className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="h-[calc(100%-80px)]">
+              <CardContent className="flex-1 min-h-0">
                 {!visualization && !isLoading && (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                     <Network className="h-20 w-20 mb-4 opacity-30" />
@@ -534,8 +664,24 @@ Example: Climate change is primarily caused by human activities. This is because
                   <div className="h-full flex gap-4">
                     <div 
                       ref={canvasRef}
-                      className="flex-1 bg-muted/20 rounded-lg overflow-hidden border"
+                      className="flex-1 bg-muted/20 rounded-lg overflow-hidden border relative"
                     >
+                      {/* Legend Overlay */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 p-2 rounded-md bg-background/90 backdrop-blur-xs border shadow-sm z-10 pointer-events-none">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                          <span className="text-[10px] font-medium text-foreground">Strong (&ge;70%)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                          <span className="text-[10px] font-medium text-foreground">Weak (&lt;70%)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                          <span className="text-[10px] font-medium text-foreground">Issues Detected</span>
+                        </div>
+                      </div>
+
                       {renderCanvas()}
                     </div>
 
@@ -554,6 +700,28 @@ Example: Climate change is primarily caused by human activities. This is because
           </motion.div>
         </div>
       </div>
+
+      <Dialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Mind Map</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to reset and clear the current mind map and input text? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-end">
+            <Button variant="outline" onClick={() => setShowResetConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => {
+              handleReset();
+              setShowResetConfirm(false);
+            }}>
+              Confirm Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
