@@ -1,5 +1,4 @@
-
-<img align="center" width="1000" height="227" alt="2026-06-03-LogicShield-ezgif com-crop" src="https://github.com/user-attachments/assets/64793405-d3a5-4314-a450-8ff65a6b35d7" />
+<img align="center" width="1000" height="190" alt="LOL" src="https://github.com/user-attachments/assets/68310070-80cf-4784-8d6f-c86fb67b67e2" />
 
 <h1 align="center"> 🛡️ AI-Argument Simulator With Risk Forecasting</h1>
 
