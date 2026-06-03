@@ -1,4 +1,7 @@
-<h1 align="center"> 🛡️ LogicShield – AI-Argument Simulator With Risk Forecasting</h1>
+<img align="center" width="1000" height="190" alt="LOL" src="https://github.com/user-attachments/assets/68310070-80cf-4784-8d6f-c86fb67b67e2" />
+
+<h1 align="center"> 🛡️ AI-Argument Simulator With Risk Forecasting</h1>
+
 
 > <p align="center">🚀 <strong>An AI-powered debate training and communication risk analysis platform. <b>LogicShield</b> strengthens your arguments, detects logical fallacies, and evaluates reputational risk before you publish, pitch, or perform.</strong></p>
 
