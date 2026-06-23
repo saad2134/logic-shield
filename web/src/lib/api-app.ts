@@ -143,6 +143,8 @@ export interface ArgumentNode {
   type: string;
   strength: number;
   issues: string[];
+  suggestions?: string[];
+  improved_text?: string;
 }
 
 export interface ArgumentEdge {
@@ -171,8 +173,9 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
   const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
   
-const headers = {
-    "Content-Type": "application/json",
+  const isFormData = options?.body instanceof FormData;
+  const headers = {
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
     ...(userId ? { "X-User-ID": userId } : {}),
     ...options?.headers,
@@ -476,4 +479,14 @@ export const api = {
     fetchApi<{ status: string }>(`/learning/reset-assessment`, {
       method: "POST",
     }),
+
+  transcribeAudio: (audioBlob: Blob, topic?: string) => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "speech.webm");
+    const url = topic ? `/debate/transcribe?topic=${encodeURIComponent(topic)}` : `/debate/transcribe`;
+    return fetchApi<{ text: string }>(url, {
+      method: "POST",
+      body: formData,
+    });
+  },
 };

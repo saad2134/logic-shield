@@ -25,7 +25,9 @@ import {
   Move,
   Download,
   X,
-  Eye
+  Eye,
+  Copy,
+  Check
 } from "lucide-react";
 import { api, ArgumentVisualization, ArgumentNode, ArgumentEdge } from "@/lib/api-app";
 import {
@@ -47,6 +49,7 @@ export default function ArgumentMapperClient() {
   const [isPanning, setIsPanning] = React.useState(false);
   const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
   const [selectedNode, setSelectedNode] = React.useState<ArgumentNode | null>(null);
+  const [copiedNodeId, setCopiedNodeId] = React.useState<string | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = React.useState(false);
@@ -486,6 +489,12 @@ export default function ArgumentMapperClient() {
     );
   };
 
+  const handleCopyText = (textToCopy: string, nodeId: string) => {
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedNodeId(nodeId);
+    setTimeout(() => setCopiedNodeId(null), 2000);
+  };
+
   const renderNodeDetails = () => {
     if (!selectedNode) return null;
     const positionsMap = visualization ? getNodePositionsMap() : {};
@@ -494,32 +503,77 @@ export default function ArgumentMapperClient() {
     const Icon = getNodeIcon(selectedNode.type);
 
     return (
-      <div className="w-64 space-y-3 p-3 rounded-lg border bg-muted/30">
+      <div className="w-80 md:w-96 flex-shrink-0 space-y-4 p-4 rounded-lg border bg-muted/30 overflow-y-auto max-h-full">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="capitalize">
             {selectedNode.type}
           </Badge>
           <span className="font-medium text-sm">Details</span>
         </div>
-        <p className="text-sm">{selectedNode.text_full || selectedNode.text}</p>
+        <p className="text-sm text-foreground/90 font-medium leading-relaxed">
+          {selectedNode.text_full || selectedNode.text}
+        </p>
         
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs">
+        <div className="space-y-1.5 pt-1">
+          <div className="flex justify-between text-xs font-semibold">
             <span>Strength</span>
-            <span className="font-medium">{Math.round(selectedNode.strength * 100)}%</span>
+            <span className="font-medium" style={{ color: colors.hex }}>{Math.round(selectedNode.strength * 100)}%</span>
           </div>
           <Progress value={selectedNode.strength * 100} className="h-2" />
         </div>
 
         {selectedNode.issues.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium">Issues Detected</p>
-            <div className="flex flex-wrap gap-1">
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+              <AlertCircle size={14} />
+              Issues Detected
+            </p>
+            <div className="flex flex-wrap gap-1.5">
               {selectedNode.issues.map(issue => (
-                <Badge key={issue} variant="destructive" className="text-[10px]">
+                <Badge key={issue} variant="destructive" className="text-[10px] capitalize">
                   {issue.replace("_", " ")}
                 </Badge>
               ))}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.suggestions && selectedNode.suggestions.length > 0 && (
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="text-xs font-semibold flex items-center gap-1.5 text-amber-500">
+              <Lightbulb size={14} />
+              Suggestions to Strengthen
+            </p>
+            <ul className="space-y-1.5">
+              {selectedNode.suggestions.map((suggestion, idx) => (
+                <li key={idx} className="text-xs text-muted-foreground flex gap-1.5 items-start">
+                  <span className="text-amber-500 mt-0.5">•</span>
+                  <span>{suggestion}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {selectedNode.improved_text && (
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="text-xs font-semibold flex items-center gap-1.5 text-primary">
+              <Zap size={14} />
+              Safer / Stronger Version
+            </p>
+            <div className="relative p-2.5 rounded bg-primary/5 border border-primary/20 text-xs text-foreground pr-8 group">
+              <p className="italic leading-relaxed">"{selectedNode.improved_text}"</p>
+              <button
+                onClick={() => handleCopyText(selectedNode.improved_text!, selectedNode.id)}
+                className="absolute top-2.5 right-2.5 p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                title="Copy to clipboard"
+              >
+                {copiedNodeId === selectedNode.id ? (
+                  <Check size={14} className="text-green-500" />
+                ) : (
+                  <Copy size={14} />
+                )}
+              </button>
             </div>
           </div>
         )}

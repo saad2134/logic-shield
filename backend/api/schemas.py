@@ -213,6 +213,9 @@ class ArgumentNode(BaseModel):
     type: str  # "claim", "premise", "evidence", "conclusion"
     strength: float = 1.0
     issues: list[str] = []
+    text_full: Optional[str] = None
+    suggestions: list[str] = []
+    improved_text: Optional[str] = None
 
 
 class ArgumentEdge(BaseModel):

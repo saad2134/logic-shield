@@ -487,6 +487,38 @@ class AnalysisService:
         # Common Sanitization and Defaults
         final_result["timestamp"] = self._get_timestamp()
 
+        # Ensure issues is a List[dict] and each has required fields
+        issues_raw = final_result.get("issues", [])
+        sanitized_issues = []
+        for issue in issues_raw:
+            if isinstance(issue, dict):
+                name_val = issue.get("name") or issue.get("issue") or issue.get("description") or "unknown_issue"
+                sanitized_issue = {
+                    "type": str(issue.get("type", "fallacy")),
+                    "name": str(name_val),
+                    "severity": str(issue.get("severity", "medium")),
+                }
+                if "confidence" in issue:
+                    try:
+                        sanitized_issue["confidence"] = float(issue["confidence"])
+                    except (ValueError, TypeError):
+                        sanitized_issue["confidence"] = 0.5
+                else:
+                    sanitized_issue["confidence"] = 0.5
+                
+                if "risk_level" in issue:
+                    sanitized_issue["risk_level"] = str(issue["risk_level"])
+                
+                sanitized_issues.append(sanitized_issue)
+            elif isinstance(issue, str):
+                sanitized_issues.append({
+                    "type": "fallacy",
+                    "name": issue,
+                    "severity": "medium",
+                    "confidence": 0.5
+                })
+        final_result["issues"] = sanitized_issues
+
         # Ensure suggestions is a List[str]
         suggestions_raw = final_result.get("suggestions", [])
         sanitized_suggestions = []

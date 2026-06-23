@@ -55,7 +55,7 @@ Calculate score with penalties → Show feedback panel
 ---
 
 #### 2. Visual Argument Mapper
-**Status:** Implemented
+**Status:** ✅ Implemented
 
 **Description:** Auto-generate interactive argument structure from debate text.
 
@@ -101,32 +101,7 @@ Show risk breakdown → Offer rewrite suggestions
 
 ### Tier 2: Engagement USPs
 
-#### 4. Multiplayer Tournaments
-**Status:** Not implemented
-
-**Description:** Collaborative debate features for competitive engagement.
-
-**Features:**
-- Create lobby with 2-8 players
-- Team debates (2v2, 3v3, free-for-all)
-- Public matchmaking queue
-- Bracket-style tournaments
-- Weekly leaderboards
-- Spectator mode with live chat
-- Reaction emojis
-
-**Implementation:**
-```text
-User creates/joins lobby → Wait for players → Start round →
-Debate with turn-based argument exchange → Vote/AI judge →
-Show winner → Update rankings
-```
-
-**Why Unique:** Social debate is underserved in current market.
-
----
-
-#### 5. Voice Debate Mode
+#### 4. Voice Debate Mode
 **Status:** ✅ Implemented
 
 **Description:** Hands-free debate using speech input/output.
@@ -148,32 +123,9 @@ Get AI response → Text-to-speech output → Display analysis
 
 ---
 
-#### 6. Custom AI Persona Builder
-**Status:** Basic (predefined personas); Upgrade to buildable
-
-**Description:** Users create custom debate opponents.
-
-**Features:**
-- Select traits: aggressive, diplomatic, technical, emotional, humorous
-- Set knowledge domain: legal, scientific, political, general, custom
-- Adjust difficulty: easy, medium, hard, expert
-- Save + name custom personas
-- Share with community (gallery)
-- Import community personas
-
-**Implementation:**
-```text
-User selects traits → Configure parameters →
-Name persona → Test in preview → Save to library
-```
-
-**Why Unique:** Community-created personas drive engagement.
-
----
-
 ### Tier 3: Learning USPs
 
-#### 7. Structured Rhetoric Courses
+#### 5. Structured Rhetoric Courses
 **Status:** ✅ Implemented
 
 **Description:** Brilliant.com-style interactive slide-based courses with animated puzzles, concept explanations, MCQ quizzes, and final course exams with certificate generation.
@@ -210,7 +162,7 @@ Name persona → Test in preview → Save to library
 
 ---
 
-#### 8. Personalized Learning Path
+#### 6. Personalized Learning Path
 **Status:** ✅ Implemented
 
 **Description:** Onboarding assessment quiz that identifies weak fallacy types, generates a personalized learning dashboard, and provides spaced repetition flashcard reviews.
@@ -247,7 +199,7 @@ Instantly unlock Course Academy sidebar → Retake available anytime
 
 ### Tier 4: Enterprise USPs
 
-#### 9. API for Enterprise
+#### 7. API for Enterprise
 **Status:** Not implemented
 
 **Description:** White-label integration for businesses.
@@ -266,6 +218,27 @@ Instantly unlock Course Academy sidebar → Retake available anytime
 
 ---
 
+## Future Enhancements
+
+### 1. Multiplayer Lobbies & Real-Time Collaborative Debates
+A multi-user debate mode could be introduced, allowing two or more users to engage in live structured debates with real-time AI moderation, fallacy flagging, and live argument scoring displayed to all participants simultaneously.
+- **Features:**
+  - Create lobby with 2-8 players
+  - Team debates (2v2, 3v3, free-for-all)
+  - Bracket-style tournaments and weekly leaderboards
+  - Spectator mode with live chat and reaction emojis
+- **Status:** [ ] Future Enhancement
+
+### 2. Custom Persona Builder & Expanded Persona Library
+The debate simulation module can be extended with a broader range of AI personas representing diverse cultural, political, and philosophical viewpoints. This would expose users to a wider variety of argumentative styles and rhetorical strategies, providing a more comprehensive and realistic debate training experience.
+- **Features:**
+  - Select traits: aggressive, diplomatic, technical, emotional, humorous
+  - Set knowledge domains (legal, scientific, political, general) and adjust difficulty levels
+  - Save, name, and share custom personas with the community gallery
+- **Status:** [ ] Future Enhancement
+
+---
+
 ## Implementation Roadmap
 
 ### Phase 1: Core (Weeks 1-4)
@@ -274,9 +247,7 @@ Instantly unlock Course Academy sidebar → Retake available anytime
 - [x] Risk Scanner
 
 ### Phase 2: Engagement (Weeks 5-8)
-- [ ] Multiplayer lobbies
 - [x] Voice debate mode
-- [ ] Custom persona builder
 
 ### Phase 3: Learning (Weeks 9-12)
 - [x] Course framework (Brilliant-style slide player with 6 interactive widget types)
@@ -287,6 +258,10 @@ Instantly unlock Course Academy sidebar → Retake available anytime
 - [ ] REST API documentation
 - [ ] Usage dashboard
 - [ ] Enterprise onboarding
+
+### Phase 5: Future Enhancements (TBD)
+- [ ] Multiplayer lobbies (Real-Time Collaborative Debates)
+- [ ] Custom persona builder (Expanded Persona Library)
 
 ---
 
@@ -316,8 +291,7 @@ Instantly unlock Course Academy sidebar → Retake available anytime
 | Tier | Price | Features |
 |------|------|----------|
 | Free | $0 | 3 debates/day, basic analysis, demo mode |
-| Pro | $9.99/mo | Unlimited debates, real-time coach, all personas |
-| Teams | $29.99/mo | Multiplayer, custom personas, exports |
+| Pro | $9.99/mo | Unlimited debates, real-time coach, all personas, exports |
 | Enterprise | Custom | API access, white-label, SLA |
 
 ---
@@ -367,9 +341,9 @@ Instantly unlock Course Academy sidebar → Retake available anytime
 | P0 | Real-Time Coach | High | Medium | 9 | ✅ Done |
 | P0 | Visual Mapper | High | Medium | 8 | ✅ Done |
 | P1 | Risk Scanner | High | Low | 8 | ✅ Done |
-| P1 | Multiplayer | Medium | High | 6 | Pending |
+| P1 | Multiplayer | Medium | High | 6 | Future Enhancement |
 | P2 | Voice Mode | Medium | Medium | 6 | ✅ Done |
-| P2 | Persona Builder | Medium | Medium | 5 | Basic Done |
+| P2 | Persona Builder | Medium | Medium | 5 | Future Enhancement |
 | P3 | Courses | Medium | High | 5 | ✅ Done |
 | P3 | Learning Path | Medium | High | 4 | ✅ Done |
 | P4 | Enterprise API | Low | High | 3 | Pending |

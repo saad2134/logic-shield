@@ -82,6 +82,8 @@ export default function DebateSessionClient() {
   const [voiceModeActive, setVoiceModeActive] = React.useState(false);
   const [voiceState, setVoiceState] = React.useState<"listening" | "thinking" | "speaking" | "paused">("paused");
   const [voiceTranscript, setVoiceTranscript] = React.useState("");
+  const [userVoiceTranscript, setUserVoiceTranscript] = React.useState("");
+  const [opponentVoiceTranscript, setOpponentVoiceTranscript] = React.useState("");
   const [voiceError, setVoiceError] = React.useState<string | null>(null);
 
   const voiceModeActiveRef = React.useRef(voiceModeActive);
@@ -99,6 +101,8 @@ export default function DebateSessionClient() {
   const chunksRef = React.useRef<Blob[]>([]);
   const recognitionRef = React.useRef<any>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
+  const audioContextRef = React.useRef<any>(null);
+  const analyserRef = React.useRef<any>(null);
 
   const inputRef = React.useRef(input);
   const autoSubmitRef = React.useRef(autoSubmit);
@@ -446,58 +450,155 @@ export default function DebateSessionClient() {
     }
   }
 
-  // Start Speech Recognition Helper specifically for Voice Mode
-  const startSpeechRecognitionVoice = () => {
-    if (!recognitionRef.current) return;
-    if (isRecognitionActiveRef.current) return;
+  // Start Voice Recording with Web Audio API silence detection
+  const startVoiceRecording = async () => {
+    setVoiceError(null);
+    setVoiceTranscript("Listening...");
+    chunksRef.current = [];
 
-    // Force release any media recorder streams to prevent audio-capture error
-    releaseUserMedia();
+    // Stop active recording first to release microphone resource lock
+    releaseVoiceModeResources();
 
-    window.speechSynthesis.cancel();
-    recognitionRef.current.continuous = false;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
 
-    isRecognitionActiveRef.current = true;
-    // Small delay to let browser fully release mic hardware
-    setTimeout(() => {
-      try {
-        if (voiceModeActiveRef.current && voiceStateRef.current === "listening") {
-          recognitionRef.current.start();
-          setIsListening(true);
-        } else {
-          isRecognitionActiveRef.current = false;
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
         }
-      } catch (e) {
-        isRecognitionActiveRef.current = false;
-        console.error("Error starting speech recognition in voice mode:", e);
+      };
+
+      recorder.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        if (blob.size < 1000) {
+          // Recording was too short, ignore
+          return;
+        }
+
+        setVoiceState("thinking");
+        setVoiceTranscript("Transcribing audio locally...");
+        try {
+          const res = await api.transcribeAudio(blob, session?.topic || "");
+          if (res.text && res.text.trim()) {
+            setUserVoiceTranscript(res.text);
+            setOpponentVoiceTranscript("");
+            setVoiceTranscript(`You: "${res.text}"`);
+            await handleSendVoice(res.text);
+          } else {
+            // No speech detected, restart listening
+            if (voiceModeActiveRef.current && voiceStateRef.current !== "paused") {
+              setVoiceState("listening");
+              setVoiceTranscript("");
+              startVoiceRecording();
+            }
+          }
+        } catch (err) {
+          console.error("Local ASR error:", err);
+          setVoiceError("Local transcription failed. Check backend connection.");
+          setVoiceState("paused");
+        }
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start(100);
+
+      // Web Audio API silence detection
+      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
+      if (!AudioCtx) {
+        // Fallback: silence detection not supported, just record normally
+        setIsListening(true);
+        setVoiceState("listening");
+        return;
       }
-    }, 150);
+
+      const audioContext = new AudioCtx();
+      audioContextRef.current = audioContext;
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      let lastSoundTime = Date.now();
+      const silenceThreshold = 12; // Volume threshold (0-255)
+      const silenceDuration = 1800; // 1.8 seconds of silence before auto-submission
+
+      const checkVolume = () => {
+        if (!voiceModeActiveRef.current || voiceStateRef.current !== "listening" || !streamRef.current) {
+          return;
+        }
+
+        analyser.getByteFrequencyData(dataArray);
+        
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const averageVolume = sum / bufferLength;
+
+        const now = Date.now();
+        if (averageVolume > silenceThreshold) {
+          lastSoundTime = now;
+        }
+
+        if (now - lastSoundTime > silenceDuration) {
+          if (recorder.state === "recording") {
+            recorder.stop();
+            // Release tracks
+            stream.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+            audioContext.close();
+            audioContextRef.current = null;
+          }
+        } else {
+          requestAnimationFrame(checkVolume);
+        }
+      };
+
+      requestAnimationFrame(checkVolume);
+      setIsListening(true);
+      setVoiceState("listening");
+
+    } catch (err) {
+      console.error("Failed to start voice recording:", err);
+      setVoiceError("Microphone access denied or setup failed. Please check permissions.");
+      setVoiceState("paused");
+    }
+  };
+
+  const releaseVoiceModeResources = () => {
+    releaseUserMedia();
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch (e) {}
+      audioContextRef.current = null;
+    }
   };
 
   const handleStartVoiceMode = () => {
-    if (!recognitionRef.current) {
-      setError("Speech recognition is not supported in this browser.");
-      return;
-    }
     window.speechSynthesis.cancel();
     setVoiceError(null);
     setVoiceModeActive(true);
     setVoiceState("listening");
     setVoiceTranscript("");
+    setUserVoiceTranscript("");
+    setOpponentVoiceTranscript("");
     setInput("");
     speechTranscriptRef.current = "";
     setTimeout(() => {
-      startSpeechRecognitionVoice();
+      startVoiceRecording();
     }, 100);
   };
 
   const handlePauseVoiceMode = () => {
     window.speechSynthesis.cancel();
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) { }
-    }
+    releaseVoiceModeResources();
     setVoiceState("paused");
   };
 
@@ -505,34 +606,32 @@ export default function DebateSessionClient() {
     setVoiceError(null);
     setVoiceState("listening");
     setVoiceTranscript("");
-    startSpeechRecognitionVoice();
+    setUserVoiceTranscript("");
+    setOpponentVoiceTranscript("");
+    startVoiceRecording();
   };
 
   const handleInterruptVoiceMode = () => {
     window.speechSynthesis.cancel();
     setVoiceError(null);
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) { }
-    }
+    releaseVoiceModeResources();
     setVoiceState("listening");
     setVoiceTranscript("");
+    setUserVoiceTranscript("");
+    setOpponentVoiceTranscript("");
     setTimeout(() => {
-      startSpeechRecognitionVoice();
+      startVoiceRecording();
     }, 150);
   };
 
   const handleExitVoiceMode = () => {
     window.speechSynthesis.cancel();
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) { }
-    }
+    releaseVoiceModeResources();
     setVoiceModeActive(false);
     setVoiceState("paused");
     setVoiceTranscript("");
+    setUserVoiceTranscript("");
+    setOpponentVoiceTranscript("");
     setInput("");
   };
 
@@ -573,6 +672,7 @@ export default function DebateSessionClient() {
       setMessages((prev) => [...prev, opponentMessage]);
 
       if (voiceModeActiveRef.current) {
+        setOpponentVoiceTranscript(counter.counter_argument);
         setVoiceTranscript(counter.counter_argument);
         setVoiceState("speaking");
         window.speechSynthesis.cancel();
@@ -589,16 +689,20 @@ export default function DebateSessionClient() {
           if (voiceModeActiveRef.current) {
             setVoiceState("listening");
             setVoiceTranscript("");
-            startSpeechRecognitionVoice();
+            startVoiceRecording();
           }
         };
 
         utterance.onerror = (e) => {
+          if (e.error === "interrupted" || e.error === "canceled") {
+            // Speech was intentionally stopped/interrupted, ignore this event
+            return;
+          }
           console.error("TTS error:", e);
           if (voiceModeActiveRef.current) {
             setVoiceState("listening");
             setVoiceTranscript("");
-            startSpeechRecognitionVoice();
+            startVoiceRecording();
           }
         };
 
@@ -1257,10 +1361,24 @@ export default function DebateSessionClient() {
                       {voiceError}
                     </p>
                   </div>
-                ) : voiceTranscript ? (
-                  <p className="text-sm md:text-base text-center leading-relaxed text-foreground font-medium select-text">
-                    {voiceTranscript}
-                  </p>
+                ) : (userVoiceTranscript || opponentVoiceTranscript) ? (
+                  <div className="space-y-2 select-text text-left max-h-full">
+                    {userVoiceTranscript && (
+                      <p className="text-xs md:text-sm text-cyan-600 dark:text-cyan-400 font-semibold">
+                        You: <span className="font-normal italic text-foreground/85">&ldquo;{userVoiceTranscript}&rdquo;</span>
+                      </p>
+                    )}
+                    {opponentVoiceTranscript && (
+                      <p className="text-xs md:text-sm text-orange-500 font-semibold">
+                        Opponent: <span className="font-normal italic text-foreground/85">&ldquo;{opponentVoiceTranscript}&rdquo;</span>
+                      </p>
+                    )}
+                    {voiceState === "thinking" && (
+                      <p className="text-[10px] md:text-xs text-muted-foreground animate-pulse italic mt-1 pl-1">
+                        AI is preparing counterargument...
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-sm text-center text-muted-foreground italic">
                     {voiceState === "listening" && "Start speaking when ready..."}

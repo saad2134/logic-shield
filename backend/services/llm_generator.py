@@ -14,8 +14,8 @@ class LLMGenerator:
         self.hf_token = os.getenv("HF_TOKEN") or settings.HF_TOKEN
         # Use HF Inference Providers (new API)
         self.api_url = "https://router.huggingface.co/v1/chat/completions"
-        # Use a free model via Inference Providers with provider suffix
-        self.model = "meta-llama/Llama-3.2-1B-Instruct:novita"
+        # Use a free model via Inference Providers
+        self.model = "meta-llama/Llama-3.1-8B-Instruct"
         self.is_available = self.hf_token is not None
 
     def generate_counter_argument(
@@ -198,6 +198,64 @@ Output ONLY the rewritten text, with no explanations, introductions, or quotes:"
         except Exception as e:
             logger.warning(f"HF generate_rewrite failed: {e}")
         return text
+
+    def refine_argument_node(
+        self, text: str, node_type: str, issues: list[str]
+    ) -> Optional[dict]:
+        """Generate suggestions and improved text for a weak argument node"""
+        if not self.hf_token:
+            return None
+
+        import re
+        import json
+
+        issue_str = ", ".join(issues) if issues else "general weakness"
+        prompt = f"""You are a debate coach.
+We have an argument node of type '{node_type}' that has been flagged as weak or fallacious.
+Node Text: "{text}"
+Flagged Issues: {issue_str}
+
+Please generate:
+1. 1-2 constructive suggestions to improve this node (e.g. add evidence, qualify language, remove fallacy).
+2. An improved/rewritten version of the node text that resolves the issues, keeping it concise (1-2 sentences max).
+
+Return your response strictly in the following JSON format:
+{{
+  "suggestions": ["suggestion 1", "suggestion 2"],
+  "improved_text": "improved node text"
+}}
+
+Response:"""
+
+        try:
+            response = requests.post(
+                self.api_url,
+                headers={
+                    "Authorization": f"Bearer {self.hf_token}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 200,
+                    "temperature": 0.3,
+                },
+                timeout=10,
+            )
+            if response.status_code == 200:
+                result = response.json()
+                content = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                try:
+                    parsed = json.loads(content)
+                    return parsed
+                except:
+                    # Try to extract JSON if there's surrounding text
+                    match = re.search(r'\{.*\}', content, re.DOTALL)
+                    if match:
+                        return json.loads(match.group(0))
+        except Exception as e:
+            logger.warning(f"HF refine_argument_node failed: {e}")
+        return None
 
 
 # Global instance

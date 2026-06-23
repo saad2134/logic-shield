@@ -156,7 +156,9 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (!isLoading) {
-      if (user?.experience_level && pathname === "/app/onboarding") {
+      if (!user) {
+        router.push("/auth");
+      } else if (user.experience_level && pathname === "/app/onboarding") {
         router.push("/app/dashboard");
       } else if (user && !user.experience_level && pathname !== "/app/onboarding") {
         router.push("/app/onboarding");
@@ -168,6 +170,14 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
     await logout();
     router.push("/");
   };
+
+  if (isLoading || !user) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (pathname === "/app/onboarding") {
     return <>{children}</>;

@@ -7,3 +7,6 @@ backend/ONBOARDING_LOGS.md
 backend/BACKEND_LOGS.txt
 nul
 *.db
+generate_pdf.py
+backend/logicshield.db
+backend/logicshield.db
