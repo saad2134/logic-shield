@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -419,7 +420,7 @@ export default function AuthPage() {
         </motion.div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          <a href="/" className="hover:text-primary">← Back to Home</a>
+          <Link href="/" className="hover:text-primary">← Back to Home</Link>
         </p>
         </div>
       </div>
