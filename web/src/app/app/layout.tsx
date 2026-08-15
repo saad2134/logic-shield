@@ -20,6 +20,9 @@ import {
   Settings,
   User,
   Loader2,
+  GraduationCap,
+  Compass,
+  Lock
 } from "lucide-react";
 import AppUI from "@/components/logos/app_icon";
 import {
@@ -53,6 +56,7 @@ import {
 import { siteConfig } from "@/config/site";
 import { useAuth } from "@/context/auth-context";
 import { Network } from "lucide-react";
+import { api, LearningProgress } from "@/lib/api-app";
 
 const appNavItems = [
   {
@@ -68,10 +72,18 @@ const appNavItems = [
     ],
   },
   {
+    title: "Academy",
+    items: [
+      { title: "Learning Path", url: "/app/learning-path", icon: Compass },
+      { title: "Course Academy", url: "/app/academy", icon: GraduationCap },
+    ],
+  },
+  {
     title: "Tools",
     items: [
       { title: "Argument Analysis", url: "/app/argument-analysis", icon: Target },
       { title: "Argument Mapper", url: "/app/argument-mapper", icon: Network },
+      { title: "Risk Scanner", url: "/app/risk-scanner", icon: Shield },
     ],
   },
 ];
@@ -90,9 +102,63 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
   const { user, isLoading, logout } = useAuth();
 
+  const [learningProgress, setLearningProgress] = React.useState<LearningProgress | null>(null);
+
+  React.useEffect(() => {
+    async function fetchProgress() {
+      try {
+        const data = await api.getLearningProgress();
+        setLearningProgress(data);
+      } catch (err) {
+        console.error("Failed to load learning progress in sidebar:", err);
+      }
+    }
+    if (user) {
+      fetchProgress();
+    }
+  }, [user]);
+
+  const isQuizPending = learningProgress !== null && learningProgress.assessment === null;
+
+  // Dynamic navigation items based on current active session
+  const isDebateSession = pathname.startsWith("/app/debate/") && pathname !== "/app/debate";
+  const navItems = React.useMemo(() => {
+    return appNavItems.map((category) => {
+      let items = [...category.items];
+
+      if (category.title === "Academy") {
+        items = items.map((item) => {
+          if (item.title === "Learning Path" && isQuizPending) {
+            return { ...item, isPending: true };
+          }
+          if (item.title === "Course Academy" && isQuizPending) {
+            return { ...item, isLocked: true };
+          }
+          return item;
+        });
+      }
+
+      if (category.title === "Debate" && isDebateSession) {
+        if (!items.some((item) => item.title === "Debate Session")) {
+          items = [
+            ...items,
+            { title: "Debate Session", url: pathname, icon: MessageSquare },
+          ];
+        }
+      }
+
+      return {
+        ...category,
+        items,
+      };
+    });
+  }, [pathname, isDebateSession, isQuizPending]);
+
   React.useEffect(() => {
     if (!isLoading) {
-      if (user?.experience_level && pathname === "/app/onboarding") {
+      if (!user) {
+        router.push("/auth");
+      } else if (user.experience_level && pathname === "/app/onboarding") {
         router.push("/app/dashboard");
       } else if (user && !user.experience_level && pathname !== "/app/onboarding") {
         router.push("/app/onboarding");
@@ -104,6 +170,14 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
     await logout();
     router.push("/");
   };
+
+  if (isLoading || !user) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (pathname === "/app/onboarding") {
     return <>{children}</>;
@@ -126,23 +200,48 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
 
-        <SidebarContent>
-          {appNavItems.map((category, idx) => (
-            <SidebarGroup key={category.title || idx}>
+        <SidebarContent className="gap-0">
+          {navItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx} className="py-1 px-2">
               {category.title && (
-                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                <SidebarGroupLabel className="text-primary font-semibold px-2 h-6 mt-1">
                   {category.title}
                 </SidebarGroupLabel>
               )}
               <SidebarMenu>
                 {category.items?.map((item) => {
                   const isActive = pathname === item.url;
+                  const itemWithFlags = item as any;
+                  
+                  if (itemWithFlags.isLocked) {
+                    return (
+                      <SidebarMenuItem key={item.title} className="opacity-50 cursor-not-allowed select-none">
+                        <SidebarMenuButton asChild isActive={false} disabled>
+                          <div className="flex items-center justify-between w-full cursor-not-allowed">
+                            <div className="flex items-center gap-3">
+                              <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <span className="text-muted-foreground">{item.title}</span>
+                            </div>
+                            <span className="text-[8px] uppercase font-bold tracking-widest text-muted-foreground/60 px-1 border border-muted-foreground/20 rounded shrink-0">
+                              Locked
+                            </span>
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive}>
-                        <Link href={item.url} className="flex items-center gap-3">
-                          <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                          <span className={isActive ? "font-medium" : ""}>{item.title}</span>
+                        <Link href={item.url} className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={isActive ? "font-medium" : ""}>{item.title}</span>
+                          </div>
+                          {itemWithFlags.isPending && (
+                            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse mr-1" title="Quiz Pending" />
+                          )}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -163,11 +262,10 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
               <div className="flex gap-2">
                 <Link
                   href="/app/profile"
-                  className={`flex-1 flex items-center gap-3 p-2 border border-foreground/10 rounded-lg transition-colors ${
-                    pathname === "/app/profile"
-                      ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
-                      : "bg-muted/50 hover:bg-muted"
-                  }`}
+                  className={`flex-1 flex items-center gap-3 p-2 border border-foreground/10 rounded-lg transition-colors ${pathname === "/app/profile"
+                    ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
+                    : "bg-muted/50 hover:bg-muted"
+                    }`}
                 >
                   <div className="w-9 h-9 rounded-full bg-primary/50 dark:bg-primary/50 flex items-center justify-center font-semibold text-sm shrink-0">
                     {initials}
@@ -179,11 +277,10 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
                 </Link>
                 <Link
                   href="/app/settings"
-                  className={`w-[60px] flex items-center justify-center  border border-foreground/10 p-2 rounded-lg transition-colors ${
-                    pathname === "/app/settings"
-                      ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
-                      : "bg-muted/50 hover:bg-muted"
-                  }`}
+                  className={`w-[60px] flex items-center justify-center  border border-foreground/10 p-2 rounded-lg transition-colors ${pathname === "/app/settings"
+                    ? "bg-primary/50 dark:bg-primary/20 border border-primary dark:border-primary"
+                    : "bg-muted/50 hover:bg-muted"
+                    }`}
                 >
                   <Settings className="h-4 w-4 text-muted-foreground" />
                 </Link>
@@ -215,20 +312,24 @@ function AppSidebar({ children }: { children: React.ReactNode }) {
           <SidebarTrigger />
           <div className="flex-1">
             <h1 className="text-lg font-semibold">
-              {pathname === '/app/profile' ? 'Profile' : 
-               pathname === '/app/settings' ? 'Settings' : 
-               appNavItems
-                .flatMap((cat) => cat.items || [])
-                .find((item) => item.url === pathname)?.title || "LogicShield"}
+              {pathname === '/app/profile' ? 'Profile' :
+                pathname === '/app/settings' ? 'Settings' :
+                  navItems
+                    .flatMap((cat) => cat.items || [])
+                    .find((item) => item.url === pathname)?.title || "LogicShield"}
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               {pathname === '/app/dashboard' && 'Your personal debate dashboard'}
               {pathname === '/app/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
               {pathname === '/app/history' && 'View your past debates'}
-{pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
-               {pathname === '/app/argument-mapper' && 'Visualize your argument structure as a mind map'}
-               {pathname === '/app/profile' && 'Manage your account details'}
-               {pathname === '/app/settings' && 'Configure your preferences'}
+              {pathname === '/app/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
+              {pathname === '/app/argument-mapper' && 'Visualize your argument structure as a mind map'}
+              {pathname === '/app/risk-scanner' && 'Scan emails, proposals, and press materials for tone, factuality, and reputational risk.'}
+              {pathname === '/app/profile' && 'Manage your account details'}
+              {pathname === '/app/settings' && 'Configure your preferences'}
+              {pathname === '/app/academy' && 'Learn argumentation structure, fallacy types, counter-argument strategies, and communication.'}
+              {pathname.startsWith('/app/academy/') && 'Interactive lesson material, example reviews, and quizzes.'}
+              {pathname === '/app/learning-path' && 'Your personalized logic training path with onboarding assessment, fallacy analysis, and spaced repetition.'}
             </p>
           </div>
           <div className="flex items-center gap-2">

@@ -130,13 +130,14 @@ class SmartDebateSimulator:
         topic_category = self._detect_topic(topic)
 
         # Get topic-specific counters
+        ai_stance = "oppose" if user_stance == "support" else "support"
         if topic_category in self.TOPIC_COUNTERS:
             topic_counters = self.TOPIC_COUNTERS[topic_category].get(
-                user_stance, self.TOPIC_COUNTERS["default"]["support"]
+                ai_stance, self.TOPIC_COUNTERS["default"]["support"]
             )
         else:
             topic_counters = self.TOPIC_COUNTERS["default"].get(
-                user_stance, self.TOPIC_COUNTERS["default"]["support"]
+                ai_stance, self.TOPIC_COUNTERS["default"]["support"]
             )
 
         # Detect argument weaknesses

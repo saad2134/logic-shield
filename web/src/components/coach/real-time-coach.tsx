@@ -191,7 +191,7 @@ export function RealTimeCoach({
                               >
                                 {getSeverityIcon(issue.severity)}
                                 <span className="capitalize">
-                                  {issue.name.replace(/_/g, " ")}
+                                  {(issue.name || issue.type || "issue").replace(/_/g, " ")}
                                 </span>
                               </div>
                             </TooltipTrigger>
