@@ -1,7 +1,8 @@
 {
   "name": "logic-shield",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "license": "GPL-3.0",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
