@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, study, or project, please cite it as below."
+authors:
+  - family-names: "Mohammed"
+    given-names: "Saaduddin"
+  - family-names: "Mohammed"
+    given-names: "Khwaja"
+  - family-names: "Nyamthabad"
+    given-names: "Sandeep"
+title: "LogicShield"
+version: 1.0.0
+date-released: 2026-09-14
+repository-code: "https://github.com/saad2134/logic-shield"
+license: GPL-3.0
