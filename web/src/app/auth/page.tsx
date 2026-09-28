@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,12 +11,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { siteConfig } from "@/config/site";
 import { motion } from "framer-motion";
-import { Briefcase, ArrowRight, Loader2, Form, Sun, Moon } from "lucide-react";
+import { Briefcase, ArrowRight, Loader2, Form, Sun, Moon, Key } from "lucide-react";
 import Silk from "@/components/Silk";
 import Prism from "@/components/Prism";
 import { authService } from "@/lib/auth";
 import { useAuth } from "@/context/auth-context";
 import { useTheme } from "next-themes";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +27,7 @@ import {
 
 export default function AuthPage() {
   const router = useRouter();
-  const { login, register } = useAuth();
+  const { login, register, isLoading: authLoading, user } = useAuth();
   const { setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
@@ -99,6 +101,47 @@ export default function AuthPage() {
     }
   };
 
+  const showSkeleton = authLoading || !!user || authService.isAuthenticated();
+
+  if (showSkeleton) {
+    return (
+      <div className="min-h-screen flex relative">
+        <div className="w-[60%] min-h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
+          <div className="absolute inset-0">
+            <Silk color="#5188ff" speed={8} />
+          </div>
+        </div>
+        <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-4 py-8 lg:py-10">
+          <div className="w-full max-w-md space-y-8">
+            <div className="text-center space-y-3">
+              <Skeleton className="h-9 w-48 mx-auto" />
+              <Skeleton className="h-4 w-64 mx-auto" />
+            </div>
+            <Card className="p-6 space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-4 w-28" />
+              </div>
+              <Skeleton className="h-10 w-full mt-4" />
+              <Skeleton className="h-4 w-48 mx-auto" />
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex relative">
       <div className="w-[60%] min-h-screen relative hidden lg:block" style={{ userSelect: 'none' }}>
@@ -109,7 +152,10 @@ export default function AuthPage() {
       <div className="w-full lg:w-[40%] min-h-screen flex items-center justify-center bg-background p-4 py-8 lg:py-10">
         <div className="w-full max-w-md scale-100 transform ">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Authentication</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+            <Key className="h-7 w-7 text-primary" />
+            Authentication
+          </h1>
           <p className="text-muted-foreground">{siteConfig.tagline}</p>
         </div>
 
@@ -374,7 +420,7 @@ export default function AuthPage() {
         </motion.div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          <a href="/" className="hover:text-primary">← Back to Home</a>
+          <Link href="/" className="hover:text-primary">← Back to Home</Link>
         </p>
         </div>
       </div>

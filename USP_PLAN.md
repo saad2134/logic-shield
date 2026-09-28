@@ -23,7 +23,7 @@ LogicShield's core value proposition is **"Your AI Debate Coach - Real-Time"**. 
 | Visual | Text-only | Argument trees & graphs |
 | Engagement | Solo practice | Multiplayer + tournaments |
 | Learning | Self-directed | Structured courses |
-| Business | Basic | Communication risk scanner |
+| Business | Basic | Risk scanner |
 
 ---
 
@@ -55,7 +55,7 @@ Calculate score with penalties → Show feedback panel
 ---
 
 #### 2. Visual Argument Mapper
-**Status:** Not implemented
+**Status:** ✅ Implemented
 
 **Description:** Auto-generate interactive argument structure from debate text.
 
@@ -77,8 +77,8 @@ Render interactive visualization → Add interaction controls
 
 ---
 
-#### 3. Communication Risk Scanner
-**Status:** Not implemented
+#### 3. Risk Scanner
+**Status:** ✅ Implemented
 
 **Description:** Business-oriented risk analysis for professional communication.
 
@@ -101,33 +101,8 @@ Show risk breakdown → Offer rewrite suggestions
 
 ### Tier 2: Engagement USPs
 
-#### 4. Multiplayer Tournaments
-**Status:** Not implemented
-
-**Description:** Collaborative debate features for competitive engagement.
-
-**Features:**
-- Create lobby with 2-8 players
-- Team debates (2v2, 3v3, free-for-all)
-- Public matchmaking queue
-- Bracket-style tournaments
-- Weekly leaderboards
-- Spectator mode with live chat
-- Reaction emojis
-
-**Implementation:**
-```text
-User creates/joins lobby → Wait for players → Start round →
-Debate with turn-based argument exchange → Vote/AI judge →
-Show winner → Update rankings
-```
-
-**Why Unique:** Social debate is underserved in current market.
-
----
-
-#### 5. Voice Debate Mode
-**Status:** Not implemented
+#### 4. Voice Debate Mode
+**Status:** ✅ Implemented
 
 **Description:** Hands-free debate using speech input/output.
 
@@ -148,84 +123,83 @@ Get AI response → Text-to-speech output → Display analysis
 
 ---
 
-#### 6. Custom AI Persona Builder
-**Status:** Basic (predefined personas); Upgrade to buildable
-
-**Description:** Users create custom debate opponents.
-
-**Features:**
-- Select traits: aggressive, diplomatic, technical, emotional, humorous
-- Set knowledge domain: legal, scientific, political, general, custom
-- Adjust difficulty: easy, medium, hard, expert
-- Save + name custom personas
-- Share with community (gallery)
-- Import community personas
-
-**Implementation:**
-```text
-User selects traits → Configure parameters →
-Name persona → Test in preview → Save to library
-```
-
-**Why Unique:** Community-created personas drive engagement.
-
----
-
 ### Tier 3: Learning USPs
 
-#### 7. Structured Rhetoric Courses
-**Status:** Not implemented
+#### 5. Structured Rhetoric Courses
+**Status:** ✅ Implemented
 
-**Description:** Built-in lessons on argumentation and logical fallacies.
+**Description:** Brilliant.com-style interactive slide-based courses with animated puzzles, concept explanations, MCQ quizzes, and final course exams with certificate generation.
 
 **Features:**
-- Course catalog: Fallacy Master, Persuasion 101, Business Comm
-- Interactive lessons with examples
-- Quizzes with real debate transcripts
-- Progressive difficulty
-- Certificates upon completion
-- Progress tracking
+- 6 full courses with 14 lessons containing detailed slide configurations
+- Interactive animated widgets: syllogism builders, dialogue fallacy spotters, causal confounder models, reframe balance scales, rhetoric highlighters, objection resolution handshakes
+- Markdown-rendered content with bold/italic support inside slides
+- Slide-by-slide progression with step indicator bubbles and transition animations
+- MCQ concept-check quizzes per lesson with instant feedback
+- Final course exams with 80% passing threshold
+- Printable certificates of completion with user name and date
+- Progress tracking via backend API (completed lessons persisted in DB)
+- Sidebar lock: Course Academy is locked/disabled until onboarding assessment is completed
+- Instant unlock via custom window event (`learning-progress-updated`) when quiz is submitted
 
-**Course Outline:**
+**Course Catalog (Fully Built):**
 ```
-1. Introduction to Arguments (2 lessons)
-2. Logical Fallacies (9 fallacy types)
-3. Evidence & Support (3 lessons)
-4. Counter-Argument Strategy (4 lessons)
-5. Advanced Persuasion (5 lessons)
-6. Business Communication (4 lessons)
+1. Introduction to Arguments (3 lessons: Arguments vs Assertions, Premises & Conclusions, Deductive vs Inductive)
+2. Logical Fallacies Masterclass (5 lessons: Ad Hominem, Straw Man, False Dilemma, Slippery Slope, Circular Reasoning)
+3. Evidence & Support (2 lessons: Correlation vs Causation, Source Credibility)
+4. Counter-Argument Strategy (2 lessons: Framing & Reframing, Strategic Concessions)
+5. Advanced Persuasion (2 lessons: Ethos/Pathos/Logos, Cognitive Biases)
+6. Business Communication (2 lessons: Client Objections & LAER, Interest-Based Bargaining)
 ```
 
-**Why Unique:** Integrated learning keeps users long-term.
+**Key Files:**
+- Course data & schema: `web/src/config/courses.ts`
+- Interactive player: `web/src/app/app/academy/[courseId]/course-player-client.tsx`
+- Course catalog UI: `web/src/app/app/academy/academy-client.tsx`
+- Backend progress API: `backend/api/learning.py`
+
+**Why Unique:** Integrated Brilliant-style interactive learning with animated puzzles keeps users long-term. No competitor offers built-in rhetoric courses with interactive widgets.
 
 ---
 
-#### 8. Personalized Learning Path
-**Status:** Not implemented
+#### 6. Personalized Learning Path
+**Status:** ✅ Implemented
 
-**Description:** AI-driven recommendations based on user performance.
+**Description:** Onboarding assessment quiz that identifies weak fallacy types, generates a personalized learning dashboard, and provides spaced repetition flashcard reviews.
 
 **Features:**
-- Onboarding assessment
-- Identify weak fallacy types
-- Recommend practice sessions
-- Spaced repetition system
-- Achievement badges + streaks
-- Weekly progress email
+- 5-question onboarding assessment covering: Deductive Reasoning, Slippery Slope, False Dilemma, Ad Hominem, Correlation vs Causation
+- Automatic skill level classification (Beginner / Intermediate / Advanced) based on score
+- Weak fallacy identification with targeted course recommendations linking directly to relevant lessons
+- Spaced repetition flashcard system with expandable cards for each weak fallacy
+- Retake Assessment button with backend reset endpoint (`POST /learning/reset-assessment`)
+- Sidebar ordering: Learning Path appears first, Course Academy second
+- Pulsing amber indicator dot on Learning Path sidebar link when assessment is pending
+- Course Academy sidebar link is locked (padlock icon, disabled, "LOCKED" badge) until assessment is completed
+- Instant sidebar unlock via custom window event when assessment is submitted (no page refresh needed)
+- Guard redirects: direct URL access to courses redirects back to Learning Path if assessment is incomplete
 
-**Implementation:**
+**Implementation Flow:**
 ```text
-Onboarding quiz → Identify gaps → Recommend courses →
-Track completion → Identify weak areas → Repeat with variation
+User opens Learning Path → Take 5-question assessment → Submit →
+Calculate score & level → Identify weak fallacies → Show dashboard →
+Recommend specific course lessons → Spaced repetition flashcards →
+Instantly unlock Course Academy sidebar → Retake available anytime
 ```
 
-**Why Unique:** Self-improvement drives retention.
+**Key Files:**
+- Learning path UI: `web/src/app/app/learning-path/learning-path-client.tsx`
+- Sidebar lock/unlock logic: `web/src/app/app/layout.tsx`
+- Backend API endpoints: `backend/api/learning.py` (`/progress`, `/assessment`, `/reset-assessment`, `/complete-lesson`, `/spaced-repetition`)
+- Frontend API client: `web/src/lib/api-app.ts`
+
+**Why Unique:** Self-improvement drives retention. No competitor offers integrated assessment → personalized recommendations → spaced repetition within the same debate platform.
 
 ---
 
 ### Tier 4: Enterprise USPs
 
-#### 9. API for Enterprise
+#### 7. API for Enterprise
 **Status:** Not implemented
 
 **Description:** White-label integration for businesses.
@@ -244,27 +218,50 @@ Track completion → Identify weak areas → Repeat with variation
 
 ---
 
+## Future Enhancements
+
+### 1. Multiplayer Lobbies & Real-Time Collaborative Debates
+A multi-user debate mode could be introduced, allowing two or more users to engage in live structured debates with real-time AI moderation, fallacy flagging, and live argument scoring displayed to all participants simultaneously.
+- **Features:**
+  - Create lobby with 2-8 players
+  - Team debates (2v2, 3v3, free-for-all)
+  - Bracket-style tournaments and weekly leaderboards
+  - Spectator mode with live chat and reaction emojis
+- **Status:** [ ] Future Enhancement
+
+### 2. Custom Persona Builder & Expanded Persona Library
+The debate simulation module can be extended with a broader range of AI personas representing diverse cultural, political, and philosophical viewpoints. This would expose users to a wider variety of argumentative styles and rhetorical strategies, providing a more comprehensive and realistic debate training experience.
+- **Features:**
+  - Select traits: aggressive, diplomatic, technical, emotional, humorous
+  - Set knowledge domains (legal, scientific, political, general) and adjust difficulty levels
+  - Save, name, and share custom personas with the community gallery
+- **Status:** [ ] Future Enhancement
+
+---
+
 ## Implementation Roadmap
 
 ### Phase 1: Core (Weeks 1-4)
 - [x] Real-Time Coach with local model
-- [ ] Basic Visual Argument Mapper
-- [ ] Communication Risk Scanner
+- [x] Basic Visual Argument Mapper
+- [x] Risk Scanner
 
 ### Phase 2: Engagement (Weeks 5-8)
-- [ ] Multiplayer lobbies
-- [ ] Voice debate mode
-- [ ] Custom persona builder
+- [x] Voice debate mode
 
 ### Phase 3: Learning (Weeks 9-12)
-- [ ] Course framework
-- [ ] First 3 courses
-- [ ] Learning path engine
+- [x] Course framework (Brilliant-style slide player with 6 interactive widget types)
+- [x] All 6 courses fully built (14 lessons, puzzles, quizzes, final exams, certificates)
+- [x] Learning path engine (assessment quiz, weak fallacy detection, spaced repetition, retake)
 
 ### Phase 4: Enterprise (Weeks 13-16)
 - [ ] REST API documentation
 - [ ] Usage dashboard
 - [ ] Enterprise onboarding
+
+### Phase 5: Future Enhancements (TBD)
+- [ ] Multiplayer lobbies (Real-Time Collaborative Debates)
+- [ ] Custom persona builder (Expanded Persona Library)
 
 ---
 
@@ -294,8 +291,7 @@ Track completion → Identify weak areas → Repeat with variation
 | Tier | Price | Features |
 |------|------|----------|
 | Free | $0 | 3 debates/day, basic analysis, demo mode |
-| Pro | $9.99/mo | Unlimited debates, real-time coach, all personas |
-| Teams | $29.99/mo | Multiplayer, custom personas, exports |
+| Pro | $9.99/mo | Unlimited debates, real-time coach, all personas, exports |
 | Enterprise | Custom | API access, white-label, SLA |
 
 ---
@@ -343,16 +339,16 @@ Track completion → Identify weak areas → Repeat with variation
 | Priority | Feature | Impact | Effort | Score | Status |
 |----------|---------|--------|--------|-------|--------|
 | P0 | Real-Time Coach | High | Medium | 9 | ✅ Done |
-| P0 | Visual Mapper | High | Medium | 8 | Pending |
-| P1 | Risk Scanner | High | Low | 8 | Pending |
-| P1 | Multiplayer | Medium | High | 6 | Pending |
-| P2 | Voice Mode | Medium | Medium | 6 | Pending |
-| P2 | Persona Builder | Medium | Medium | 5 | Basic Done |
-| P3 | Courses | Medium | High | 5 | Pending |
-| P3 | Learning Path | Medium | High | 4 | Pending |
+| P0 | Visual Mapper | High | Medium | 8 | ✅ Done |
+| P1 | Risk Scanner | High | Low | 8 | ✅ Done |
+| P1 | Multiplayer | Medium | High | 6 | Future Enhancement |
+| P2 | Voice Mode | Medium | Medium | 6 | ✅ Done |
+| P2 | Persona Builder | Medium | Medium | 5 | Future Enhancement |
+| P3 | Courses | Medium | High | 5 | ✅ Done |
+| P3 | Learning Path | Medium | High | 4 | ✅ Done |
 | P4 | Enterprise API | Low | High | 3 | Pending |
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: April 2026*
+*Document Version: 2.0*
+*Last Updated: June 2026*

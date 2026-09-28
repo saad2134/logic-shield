@@ -77,6 +77,18 @@ export interface QuickAnalysisResult {
   timestamp: string;
 }
 
+export interface RiskScanResult {
+  publish_safe_score: number;
+  risk_level: string;
+  tone_score: number;
+  factuality_score: number;
+  sensitivity_score: number;
+  risk_factors: string[];
+  rewrite_suggestion: string;
+  demo_mode?: boolean;
+  timestamp: string;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;
@@ -90,7 +102,30 @@ export interface UserStats {
   fallacy_count: number;
   current_streak: number;
   win_rate: number;
+  logical_reasoning?: number;
+  argument_construction?: number;
+  evidence_usage?: number;
+  fallacy_detection?: number;
+  reputation_management?: number;
 }
+
+export interface LearningProgress {
+  completed_lessons: string[];
+  assessment: {
+    score: number;
+    level: string;
+    weak_fallacies: string[];
+    completed_at: string;
+  } | null;
+  spaced_repetition: {
+    fallacy: string;
+    next_review: string;
+    interval_days: number;
+    created_at: string;
+  }[];
+  db_detected_fallacies: string[];
+}
+
 
 export interface Achievement {
   id: string;
@@ -108,6 +143,8 @@ export interface ArgumentNode {
   type: string;
   strength: number;
   issues: string[];
+  suggestions?: string[];
+  improved_text?: string;
 }
 
 export interface ArgumentEdge {
@@ -136,8 +173,9 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
   const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
   
-const headers = {
-    "Content-Type": "application/json",
+  const isFormData = options?.body instanceof FormData;
+  const headers = {
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
     ...(userId ? { "X-User-ID": userId } : {}),
     ...options?.headers,
@@ -381,14 +419,17 @@ export const api = {
     focus_areas: string[];
   }) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    console.log('Submitting onboarding - token present:', !!token);
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
+    console.log('Submitting onboarding - token present:', !!token, 'userId present:', !!userId);
     
     // Use X-Auth-Token header to work around CORS issues
     const response = await fetch(`${BACKEND_URL}/user/onboarding`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'X-Auth-Token': token || ''
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        'X-Auth-Token': token || '',
+        ...(userId ? { 'X-User-ID': userId } : {})
       },
       body: JSON.stringify(data),
     });
@@ -407,4 +448,45 @@ export const api = {
   deleteAccount: () => fetchApi<{ message: string }>(`/user/account`, {
     method: "DELETE",
   }),
+
+  scanCommunicationRisk: (text: string, context: string = "") =>
+    fetchApi<RiskScanResult>(`/analyze/risk`, {
+      method: "POST",
+      body: JSON.stringify({ text, context }),
+    }),
+
+  getLearningProgress: () => fetchApi<LearningProgress>(`/learning/progress`),
+
+  completeLesson: (courseId: string, lessonId: string) =>
+    fetchApi<{ status: string; completed_lessons: string[] }>(`/learning/complete-lesson`, {
+      method: "POST",
+      body: JSON.stringify({ course_id: courseId, lesson_id: lessonId }),
+    }),
+
+  saveAssessment: (score: number, level: string, weakFallacies: string[]) =>
+    fetchApi<{ status: string; assessment: NonNullable<LearningProgress["assessment"]> }>(`/learning/assessment`, {
+      method: "POST",
+      body: JSON.stringify({ score, level, weak_fallacies: weakFallacies }),
+    }),
+
+  updateSpacedRepetition: (fallacyType: string, action: "add" | "review") =>
+    fetchApi<{ status: string; spaced_repetition: LearningProgress["spaced_repetition"] }>(`/learning/spaced-repetition`, {
+      method: "POST",
+      body: JSON.stringify({ fallacy_type: fallacyType, action }),
+    }),
+
+  resetAssessment: () =>
+    fetchApi<{ status: string }>(`/learning/reset-assessment`, {
+      method: "POST",
+    }),
+
+  transcribeAudio: (audioBlob: Blob, topic?: string) => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "speech.webm");
+    const url = topic ? `/debate/transcribe?topic=${encodeURIComponent(topic)}` : `/debate/transcribe`;
+    return fetchApi<{ text: string }>(url, {
+      method: "POST",
+      body: formData,
+    });
+  },
 };

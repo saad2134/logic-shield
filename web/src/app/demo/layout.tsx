@@ -20,7 +20,9 @@ import {
   Settings,
   User,
   ChevronDown,
-  Network
+  Network,
+  GraduationCap,
+  Compass,
 } from "lucide-react";
 import AppUI from "@/components/logos/app_icon";
 import {
@@ -67,10 +69,18 @@ const demoNavItems = [
     ],
   },
   {
+    title: "Academy",
+    items: [
+      { title: "Learning Path", url: "/demo/learning-path", icon: Compass },
+      { title: "Course Academy", url: "/demo/academy", icon: GraduationCap },
+    ],
+  },
+  {
     title: "Tools",
     items: [
       { title: "Argument Analysis", url: "/demo/argument-analysis", icon: Target },
       { title: "Argument Mapper", url: "/demo/argument-mapper", icon: Network },
+      { title: "Risk Scanner", url: "/demo/risk-scanner", icon: Shield },
     ],
   },
 ];
@@ -86,6 +96,25 @@ export default function DemoLayout({
 function DemoSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
+
+  // Dynamic navigation items based on current active session
+  const isDebateSession = pathname.startsWith("/demo/debate/") && pathname !== "/demo/debate";
+  const navItems = React.useMemo(() => {
+    return demoNavItems.map((category) => {
+      if (category.title === "Debate" && isDebateSession) {
+        if (!category.items.some((item) => item.title === "Debate Session")) {
+          return {
+            ...category,
+            items: [
+              ...category.items,
+              { title: "Debate Session", url: pathname, icon: MessageSquare },
+            ],
+          };
+        }
+      }
+      return category;
+    });
+  }, [pathname, isDebateSession]);
 
   if (pathname === "/demo/onboarding") {
     return <>{children}</>;
@@ -104,17 +133,17 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
         
-        <SidebarContent>
-          {demoNavItems.map((category, idx) => (
-            <SidebarGroup key={category.title || idx}>
+        <SidebarContent className="gap-0">
+          {navItems.map((category, idx) => (
+            <SidebarGroup key={category.title || idx} className="py-1 px-2">
               {category.title && (
-                <SidebarGroupLabel className="text-primary font-semibold px-2 mb-1">
+                <SidebarGroupLabel className="text-primary font-semibold px-2 h-6 mt-1 mb-0">
                   {category.title}
                 </SidebarGroupLabel>
               )}
               <SidebarMenu>
                 {category.items?.map((item) => {
-                  const isActive = pathname === item.url;
+                  const isActive = pathname === item.url || (item.url === "/demo/academy" && pathname.startsWith("/demo/academy/"));
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive}>
@@ -182,16 +211,20 @@ function DemoSidebar({ children }: { children: React.ReactNode }) {
             <h1 className="text-lg font-semibold">
               {pathname === '/demo/profile' ? 'Profile' : 
                pathname === '/demo/settings' ? 'Settings' : 
-               demoNavItems.flatMap(cat => cat.items || []).find(item => item.url === pathname)?.title || "Demo"}
+               navItems.flatMap(cat => cat.items || []).find(item => item.url === pathname)?.title || "Demo"}
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               {pathname === '/demo/dashboard' && 'Your personal debate dashboard'}
               {pathname === '/demo/debate' && 'Challenge yourself against an AI opponent and improve your argumentation skills'}
               {pathname === '/demo/history' && 'View your past debates'}
-{pathname === '/demo/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
-               {pathname === '/demo/argument-mapper' && 'Visualize your argument structure as a mind map'}
-               {pathname === '/demo/profile' && 'Manage your account details'}
-               {pathname === '/demo/settings' && 'Configure your preferences'}
+              {pathname === '/demo/argument-analysis' && 'Analyze any argument for logical fallacies, strength, and reputational risks'}
+              {pathname === '/demo/argument-mapper' && 'Visualize your argument structure as a mind map'}
+              {pathname === '/demo/risk-scanner' && 'Scan emails, proposals, and press materials for tone, factuality, and reputational risk.'}
+              {pathname === '/demo/profile' && 'Manage your account details'}
+              {pathname === '/demo/settings' && 'Configure your preferences'}
+              {pathname === '/demo/academy' && 'Learn argumentation structure, fallacy types, counter-argument strategies, and communication.'}
+              {pathname.startsWith('/demo/academy/') && 'Interactive lesson material, example reviews, and quizzes.'}
+              {pathname === '/demo/learning-path' && 'Your personalized logic training path with onboarding assessment, fallacy analysis, and spaced repetition.'}
             </p>
           </div>
           <div className="flex items-center gap-2">

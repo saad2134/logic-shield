@@ -120,6 +120,151 @@ class AnalysisService:
 
         return datetime.utcnow().isoformat()
 
+    def _demo_rewrite(self, text: str) -> str:
+        import re
+        replacements = {
+            "stupid": "uninformed",
+            "fool": "misguided",
+            "idiot": "incorrect",
+            "dumb": "flawed",
+            "ignorant": "unaware",
+            "moron": "unwise",
+            "shit": "issues",
+            "fuck": "disregard",
+            "ass": "perspective",
+            "bitch": "complain",
+            "bastard": "individual",
+            "crap": "substandard work",
+            "suck": "is unsatisfactory",
+            "hate": "disagree with",
+            "garbage": "unhelpful",
+            "trash": "poor quality",
+            "you are wrong": "there may be another perspective",
+            "wrong": "incorrect",
+            "liar": "mistaken",
+        }
+        rewritten = text
+        for word, rep in replacements.items():
+            pattern = re.compile(r'\b' + re.escape(word) + r'\b', re.IGNORECASE)
+            rewritten = pattern.sub(rep, rewritten)
+        if rewritten == text:
+            if not rewritten.strip().endswith((".", "!", "?")):
+                rewritten += "."
+            return f"Dear team, I would like to suggest: {rewritten} Let me know your thoughts. Best regards."
+        return rewritten
+
+    def scan_communication_risk(self, text: str, context: str = "") -> Dict:
+        # Check if in demo mode or models not initialized
+        is_demo = settings.DEMO_MODE or (self.fallacy_detector is None)
+
+        if is_demo:
+            # Rule-based / template evaluation for demo mode
+            text_lower = text.lower()
+            
+            # Simple tone evaluation
+            negative_words = ["bad", "terrible", "worse", "harm", "failure", "decline", "weak", "wrong", "problem", "hate", "suck", "stupid", "idiot"]
+            neg_count = sum(1 for w in negative_words if w in text_lower)
+            tone_score = max(0.2, 0.9 - (neg_count * 0.15))
+            
+            # Simple factuality evaluation
+            evidence_indicators = ["study", "research", "evidence", "data", "statistics", "percent", "according to", "report", "show", "prove"]
+            ev_count = sum(1 for w in evidence_indicators if w in text_lower)
+            factuality_score = min(1.0, 0.4 + (ev_count * 0.15))
+            
+            # Simple sensitivity evaluation
+            offensive_keywords = ["stupid", "fool", "idiot", "dumb", "ignorant", "moron", "shit", "fuck", "ass", "bitch", "bastard", "crap", "suck", "retard", "loser", "pathetic"]
+            off_count = sum(1 for w in offensive_keywords if w in text_lower)
+            sensitivity_score = max(0.1, 1.0 - (off_count * 0.3))
+            
+            # Risk factors
+            risk_factors = []
+            if sensitivity_score < 0.8:
+                risk_factors.append("Contains potential inflammatory or sensitive language")
+            if tone_score < 0.6:
+                risk_factors.append("Tone appears aggressive or overly negative")
+            if factuality_score < 0.5:
+                risk_factors.append("Lacks citations, evidence, or supporting data indicators")
+            
+            # Combined publish safe score
+            publish_safe_score = (tone_score * 0.3 + factuality_score * 0.3 + sensitivity_score * 0.4)
+            
+            risk_level = "low"
+            if publish_safe_score < 0.4:
+                risk_level = "high"
+            elif publish_safe_score < 0.7:
+                risk_level = "medium"
+                
+            rewrite_suggestion = self._demo_rewrite(text)
+            
+            return {
+                "publish_safe_score": round(publish_safe_score, 3),
+                "risk_level": risk_level,
+                "tone_score": round(tone_score, 3),
+                "factuality_score": round(factuality_score, 3),
+                "sensitivity_score": round(sensitivity_score, 3),
+                "risk_factors": risk_factors,
+                "rewrite_suggestion": rewrite_suggestion,
+                "demo_mode": True,
+                "timestamp": self._get_timestamp()
+            }
+            
+        else:
+            # Full ML mode
+            # Detect fallacies
+            fallacies, fallacy_confidences = self.fallacy_detector.detect_fallacies(text)
+            # Calculate strength
+            strength_results = self.strength_scorer.calculate_strength(text, context)
+            # Estimate risk
+            risk_results = self.risk_estimator.estimate_risk(text)
+            
+            # Extract scores
+            sentiment_score = strength_results.get("sentiment", 0.5)
+            # Normalize/derive tone score
+            tone_score = sentiment_score
+            
+            factuality_score = strength_results.get("evidence", 0.5)
+            
+            # Sensitivity score: inverse of toxicity and hate speech
+            toxicity_score = risk_results["details"].get("inflammatory", 0.0)
+            hate_score = risk_results["details"].get("identity_sensitive", 0.0)
+            sensitivity_score = 1.0 - max(toxicity_score, hate_score)
+            
+            # Reputation risk score
+            reputation_risk_score = risk_results.get("risk_score", 0.0)
+            argument_strength = strength_results.get("overall", 0.5)
+            
+            # Publish-safe score: combines argument strength and low reputation risk
+            publish_safe_score = (argument_strength + (1.0 - reputation_risk_score)) / 2.0
+            
+            # Risk factors
+            risk_factors = list(risk_results.get("risk_factors", []))
+            for f in fallacies:
+                if f != "no_fallacy" and fallacy_confidences.get(f, 0.0) > 0.5:
+                    risk_factors.append(f"Logical Fallacy: {f.replace('_', ' ').title()}")
+                    
+            if factuality_score < 0.4:
+                risk_factors.append("Low evidence or factual support")
+                
+            # Rewrite suggestion
+            from services.llm_generator import llm_generator
+            rewrite_suggestion = llm_generator.generate_rewrite(text, risk_factors)
+            refusal_keywords = ["cannot fulfill", "can't fulfill", "sorry", "apologize", "as an ai", "inappropriate", "offensive", "cannot rewrite", "unable to provide"]
+            is_refusal = any(kw in rewrite_suggestion.lower() for kw in refusal_keywords)
+            if rewrite_suggestion == text or not llm_generator.is_available or is_refusal:
+                rewrite_suggestion = self._demo_rewrite(text)
+                
+            return {
+                "publish_safe_score": round(publish_safe_score, 3),
+                "risk_level": risk_results.get("risk_level", "low"),
+                "tone_score": round(tone_score, 3),
+                "factuality_score": round(factuality_score, 3),
+                "sensitivity_score": round(sensitivity_score, 3),
+                "risk_factors": risk_factors,
+                "rewrite_suggestion": rewrite_suggestion,
+                "demo_mode": False,
+                "timestamp": self._get_timestamp()
+            }
+
     def get_supported_fallacies(self) -> Dict:
         return self.fallacy_detector.get_fallacy_descriptions()
 
@@ -198,16 +343,13 @@ class AnalysisService:
             logger.warning(f"HF failed: {e}")
 
         # Use best available: Ollama > HF > Smart > Keyword
+        final_result = None
         if ollama_result:
-            result = ollama_result
-            result["llm_powered"] = True
-            result["timestamp"] = self._get_timestamp()
-            return result
+            final_result = ollama_result
+            final_result["llm_powered"] = True
         elif hf_result:
-            result = hf_result
-            result["llm_powered"] = True
-            result["timestamp"] = self._get_timestamp()
-            return result
+            final_result = hf_result
+            final_result["llm_powered"] = True
         else:
             # Try Smart Templates third
             try:
@@ -217,137 +359,191 @@ class AnalysisService:
                     text, context, difficulty
                 )
                 if result and result.get("overall_score", 0) > 0:
-                    result["llm_powered"] = False
-                    result["timestamp"] = self._get_timestamp()
-                    return result
+                    final_result = result
+                    final_result["llm_powered"] = False
             except Exception as e:
                 logger.warning(f"Smart failed: {e}")
 
-        # Keyword detection as LAST RESORT
-        text_lower = text.lower()
+        if not final_result:
+            # Keyword detection as LAST RESORT
+            text_lower = text.lower()
 
-        # Check offensive words first
-        offensive_keywords = [
-            "stupid",
-            "fool",
-            "idiot",
-            "dumb",
-            "ignorant",
-            "moron",
-            "shit",
-            "fuck",
-            "ass",
-            "bitch",
-            "bastard",
-            "crap",
-            "hell",
-            "suck",
-            "retard",
-            "loser",
-            "pathetic",
-            "disgusting",
-            "garbage",
-            "trash",
-        ]
-        if any(word in text_lower for word in offensive_keywords):
-            return {
-                "issues": [
-                    {
-                        "type": "fallacy",
-                        "name": "ad_hominem",
-                        "confidence": 0.95,
-                        "severity": "high",
-                    }
-                ],
-                "overall_score": 0.1,
-                "suggestions": ["⚠️ DO NOT SEND - Contains offensive language"],
-                "risk_level": "medium",
-                "is_healthy": False,
-                "should_proceed": False,
-                "recommendation": "not_ready",
-                "word_count": len(text.split()),
-                "has_coherence": False,
-                "timestamp": self._get_timestamp(),
-                "llm_powered": False,
-            }
-
-        full_analysis = self.analyze_argument(text, context)
-
-        issues = []
-        suggestions = []
-
-        fallacy_detected = full_analysis.get("fallacy_detected", [])
-        fallacy_confidences = full_analysis.get("fallacy_confidences", {})
-
-        major_fallacies = [
-            "ad_hominem",
-            "strawman",
-            "slippery_slope",
-            "false_dilemma",
-            "bandwagon",
-            "appeal_to_authority",
-        ]
-
-        for fallacy in fallacy_detected:
-            if fallacy != "no_fallacy":
-                confidence = fallacy_confidences.get(fallacy, 0)
-                # Lower threshold to catch more fallacies
-                threshold = 0.5 if difficulty == "advanced" else 0.55
-                if confidence >= threshold:
-                    issues.append(
+            # Check offensive words first
+            offensive_keywords = [
+                "stupid",
+                "fool",
+                "idiot",
+                "dumb",
+                "ignorant",
+                "moron",
+                "shit",
+                "fuck",
+                "ass",
+                "bitch",
+                "bastard",
+                "crap",
+                "hell",
+                "suck",
+                "retard",
+                "loser",
+                "pathetic",
+                "disgusting",
+                "garbage",
+                "trash",
+            ]
+            if any(word in text_lower for word in offensive_keywords):
+                final_result = {
+                    "issues": [
                         {
                             "type": "fallacy",
-                            "name": fallacy,
-                            "confidence": confidence,
-                            "severity": "high" if confidence > 0.75 else "medium",
+                            "name": "ad_hominem",
+                            "confidence": 0.95,
+                            "severity": "high",
+                        }
+                    ],
+                    "overall_score": 0.1,
+                    "suggestions": ["⚠️ DO NOT SEND - Contains offensive language"],
+                    "risk_level": "medium",
+                    "is_healthy": False,
+                    "should_proceed": False,
+                    "recommendation": "not_ready",
+                    "word_count": len(text.split()),
+                    "has_coherence": False,
+                    "llm_powered": False,
+                }
+            else:
+                full_analysis = self.analyze_argument(text, context)
+
+                issues = []
+                suggestions = []
+
+                fallacy_detected = full_analysis.get("fallacy_detected", [])
+                fallacy_confidences = full_analysis.get("fallacy_confidences", {})
+
+                for fallacy in fallacy_detected:
+                    if fallacy != "no_fallacy":
+                        confidence = fallacy_confidences.get(fallacy, 0)
+                        # Lower threshold to catch more fallacies
+                        threshold = 0.5 if difficulty == "advanced" else 0.55
+                        if confidence >= threshold:
+                            issues.append(
+                                {
+                                    "type": "fallacy",
+                                    "name": fallacy,
+                                    "confidence": confidence,
+                                    "severity": "high" if confidence > 0.75 else "medium",
+                                }
+                            )
+                            if difficulty != "basic":
+                                suggestions.append(
+                                    f"Avoid {fallacy.replace('_', ' ')} - consider rephrasing with evidence"
+                                )
+
+                if difficulty == "advanced":
+                    if full_analysis.get("evidence_score", 0) < 0.5:
+                        suggestions.append(
+                            "Add supporting evidence or data to strengthen your argument"
+                        )
+                    if full_analysis.get("coherence_score", 0) < 0.5:
+                        suggestions.append(
+                            "Improve logical flow - use connecting words like 'therefore', 'because'"
+                        )
+
+                if difficulty in ["intermediate", "advanced"]:
+                    if full_analysis.get("sentiment_score", 0) < 0.3:
+                        suggestions.append(
+                            "Tone may be too negative - consider balancing with positive points"
+                        )
+                    if full_analysis.get("sentiment_score", 0) > 0.8:
+                        suggestions.append(
+                            "Tone may seem overly emotional - maintain objectivity"
+                        )
+
+                risk_level = full_analysis.get("reputation_risk_level", "low")
+                if risk_level in ["medium", "high"]:
+                    issues.append(
+                        {
+                            "type": "risk",
+                            "name": "reputation",
+                            "risk_level": risk_level,
+                            "severity": "medium" if risk_level == "medium" else "high",
                         }
                     )
                     if difficulty != "basic":
-                        suggestions.append(
-                            f"Avoid {fallacy.replace('_', ' ')} - consider rephrasing with evidence"
-                        )
+                        for factor in full_analysis.get("risk_factors", []):
+                            suggestions.append(f"Risk factor: {factor}")
 
-        if difficulty == "advanced":
-            if full_analysis.get("evidence_score", 0) < 0.5:
-                suggestions.append(
-                    "Add supporting evidence or data to strengthen your argument"
-                )
-            if full_analysis.get("coherence_score", 0) < 0.5:
-                suggestions.append(
-                    "Improve logical flow - use connecting words like 'therefore', 'because'"
-                )
+                is_healthy = len([i for i in issues if i.get("severity") == "high"]) == 0
 
-        if difficulty in ["intermediate", "advanced"]:
-            if full_analysis.get("sentiment_score", 0) < 0.3:
-                suggestions.append(
-                    "Tone may be too negative - consider balancing with positive points"
-                )
-            if full_analysis.get("sentiment_score", 0) > 0.8:
-                suggestions.append(
-                    "Tone may seem overly emotional - maintain objectivity"
-                )
-
-        risk_level = full_analysis.get("reputation_risk_level", "low")
-        if risk_level in ["medium", "high"]:
-            issues.append(
-                {
-                    "type": "risk",
-                    "name": "reputation",
+                final_result = {
+                    "issues": issues,
+                    "overall_score": full_analysis.get("argument_strength", 0.5),
+                    "suggestions": suggestions[:5],
                     "risk_level": risk_level,
-                    "severity": "medium" if risk_level == "medium" else "high",
+                    "is_healthy": is_healthy,
+                    "llm_powered": False,
                 }
-            )
-            if difficulty != "basic":
-                for factor in full_analysis.get("risk_factors", []):
-                    suggestions.append(f"Risk factor: {factor}")
 
-        is_healthy = len([i for i in issues if i.get("severity") == "high"]) == 0
+        # Common Sanitization and Defaults
+        final_result["timestamp"] = self._get_timestamp()
 
-        return {
-            "issues": issues,
-            "overall_score": full_analysis.get("argument_strength", 0.5),
-            "suggestions": suggestions[:5],
-            "risk_level": risk_level,
-            "is_healthy": is_healthy,
-            "timestamp": self._get_timestamp(),
-        }
+        # Ensure issues is a List[dict] and each has required fields
+        issues_raw = final_result.get("issues", [])
+        sanitized_issues = []
+        for issue in issues_raw:
+            if isinstance(issue, dict):
+                name_val = issue.get("name") or issue.get("issue") or issue.get("description") or "unknown_issue"
+                sanitized_issue = {
+                    "type": str(issue.get("type", "fallacy")),
+                    "name": str(name_val),
+                    "severity": str(issue.get("severity", "medium")),
+                }
+                if "confidence" in issue:
+                    try:
+                        sanitized_issue["confidence"] = float(issue["confidence"])
+                    except (ValueError, TypeError):
+                        sanitized_issue["confidence"] = 0.5
+                else:
+                    sanitized_issue["confidence"] = 0.5
+                
+                if "risk_level" in issue:
+                    sanitized_issue["risk_level"] = str(issue["risk_level"])
+                
+                sanitized_issues.append(sanitized_issue)
+            elif isinstance(issue, str):
+                sanitized_issues.append({
+                    "type": "fallacy",
+                    "name": issue,
+                    "severity": "medium",
+                    "confidence": 0.5
+                })
+        final_result["issues"] = sanitized_issues
+
+        # Ensure suggestions is a List[str]
+        suggestions_raw = final_result.get("suggestions", [])
+        sanitized_suggestions = []
+        for s in suggestions_raw:
+            if isinstance(s, str):
+                sanitized_suggestions.append(s)
+            elif isinstance(s, dict):
+                val = s.get("name") or s.get("description") or str(s)
+                sanitized_suggestions.append(val)
+            else:
+                sanitized_suggestions.append(str(s))
+        final_result["suggestions"] = sanitized_suggestions
+
+        # Ensure other fields required by QuickAnalysisResponse have defaults
+        if "risk_level" not in final_result:
+            final_result["risk_level"] = "low"
+        if "is_healthy" not in final_result:
+            final_result["is_healthy"] = len([i for i in final_result.get("issues", []) if i.get("severity") == "high"]) == 0
+        if "should_proceed" not in final_result:
+            final_result["should_proceed"] = final_result["is_healthy"]
+        if "recommendation" not in final_result:
+            final_result["recommendation"] = "ready" if final_result["is_healthy"] else "review"
+        if "word_count" not in final_result:
+            final_result["word_count"] = len(text.split())
+        if "has_coherence" not in final_result:
+            final_result["has_coherence"] = any(w in text.lower() for w in ["because", "therefore", "however", "although", "since"])
+
+        return final_result

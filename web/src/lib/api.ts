@@ -59,6 +59,18 @@ export interface QuickAnalysisResult {
   timestamp: string;
 }
 
+export interface RiskScanResult {
+  publish_safe_score: number;
+  risk_level: string;
+  tone_score: number;
+  factuality_score: number;
+  sensitivity_score: number;
+  risk_factors: string[];
+  rewrite_suggestion: string;
+  demo_mode?: boolean;
+  timestamp: string;
+}
+
 let isBackendConnected = true;
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
@@ -435,6 +447,74 @@ export const api = {
       );
     } catch {
       return { message: "Debate session ended", session_id: sessionId };
+    }
+  },
+
+  scanCommunicationRisk: async (text: string, context: string = ""): Promise<RiskScanResult> => {
+    try {
+      return await fetchJson<RiskScanResult>(`${API_BASE}/analyze/risk`, {
+        method: "POST",
+        body: JSON.stringify({ text, context }),
+      });
+    } catch (e) {
+      console.warn("Communication Risk Scan API failed, using mock fallback:", e);
+      const textLower = text.toLowerCase();
+      const risk_factors: string[] = [];
+      let tone_score = 0.85;
+      let factuality_score = 0.75;
+      let sensitivity_score = 0.95;
+      
+      if (textLower.includes("stupid") || textLower.includes("idiot") || textLower.includes("dumb") || textLower.includes("shit") || textLower.includes("fuck")) {
+        sensitivity_score = 0.3;
+        risk_factors.push("Contains potential inflammatory or sensitive language");
+      }
+      if (textLower.includes("hate") || textLower.includes("suck") || textLower.includes("awful") || textLower.includes("terrible")) {
+        tone_score = 0.45;
+        risk_factors.push("Tone appears aggressive or overly negative");
+      }
+      if (textLower.length < 25) {
+        factuality_score = 0.4;
+        risk_factors.push("Lacks citations, evidence, or supporting data indicators");
+      }
+      
+      const publish_safe_score = (tone_score * 0.3 + factuality_score * 0.3 + sensitivity_score * 0.4);
+      const risk_level = publish_safe_score < 0.4 ? "high" : publish_safe_score < 0.7 ? "medium" : "low";
+      
+      // Simple rewrite
+      let rewrite_suggestion = text;
+      const replacements: Record<string, string> = {
+        stupid: "uninformed",
+        idiot: "incorrect",
+        dumb: "flawed",
+        hate: "disagree with",
+        suck: "is unsatisfactory",
+        shit: "issues",
+        fuck: "disregard",
+      };
+      
+      for (const [key, value] of Object.entries(replacements)) {
+        const regex = new RegExp(key, "gi");
+        rewrite_suggestion = rewrite_suggestion.replace(regex, value);
+      }
+      
+      if (rewrite_suggestion === text) {
+        if (!rewrite_suggestion.trim().endsWith(".")) {
+          rewrite_suggestion += ".";
+        }
+        rewrite_suggestion = `Dear team, I suggest: ${rewrite_suggestion} Let me know your thoughts.`;
+      }
+      
+      return {
+        publish_safe_score: parseFloat(publish_safe_score.toFixed(3)),
+        risk_level,
+        tone_score,
+        factuality_score,
+        sensitivity_score,
+        risk_factors,
+        rewrite_suggestion,
+        demo_mode: true,
+        timestamp: new Date().toISOString(),
+      };
     }
   },
 };

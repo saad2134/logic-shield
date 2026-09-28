@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowRight,
   ArrowLeft,
@@ -84,7 +85,7 @@ const frequencyOptions = [
 
 export default function OnboardingClient() {
   const router = useRouter();
-  const { user, refreshUser, logout } = useAuth();
+  const { user, isLoading: authLoading, refreshUser, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [step, setStep] = React.useState(1);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -178,6 +179,46 @@ export default function OnboardingClient() {
     await logout();
     router.push("/auth");
   };
+
+  const showSkeleton = authLoading || !user || !!user?.experience_level;
+
+  if (showSkeleton) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 py-16">
+        <div className="absolute top-4 right-4 flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-md" />
+          <Skeleton className="h-10 w-10 rounded-md" />
+        </div>
+        <div className="w-full max-w-2xl space-y-8">
+          <div className="text-center flex flex-col items-center space-y-4 mb-8">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Card className="p-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+            <Skeleton className="h-2 w-full" />
+            <div className="space-y-4 pt-4">
+              <Skeleton className="h-4 w-40" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            </div>
+            <div className="flex justify-between items-center pt-6 border-t">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 py-16">

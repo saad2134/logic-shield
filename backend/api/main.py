@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Header, UploadFile, File
 from sqlalchemy.orm import Session
 from database.core.database import get_db
 from database.models import DebateSession, Argument, AnalysisResult, User
@@ -17,6 +18,8 @@ from api.schemas import (
     QuickAnalysisResponse,
     ArgumentVisualizeRequest,
     ArgumentVisualizeResponse,
+    RiskScanRequest,
+    RiskScanResponse,
 )
 from services.analysis import AnalysisService
 from services.debate_simulator import DebateSimulator
@@ -270,3 +273,36 @@ def delete_debate_session(
     db.commit()
 
     return {"message": "Debate session deleted", "session_id": session_id}
+
+
+@router.post("/analyze/risk", response_model=RiskScanResponse)
+def scan_communication_risk(request: RiskScanRequest):
+    result = analysis_service.scan_communication_risk(
+        request.text, request.context or ""
+    )
+    return result
+
+
+@router.post("/debate/transcribe")
+def transcribe_audio(file: UploadFile = File(...), topic: Optional[str] = None):
+    import os
+    import shutil
+    import tempfile
+    from services.speech_transcriber import speech_transcriber
+
+    suffix = os.path.splitext(file.filename)[1] or ".webm" if (file.filename and "." in file.filename) else ".webm"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+        shutil.copyfileobj(file.file, tmp_file)
+        tmp_path = tmp_file.name
+
+    try:
+        text = speech_transcriber.transcribe(tmp_path, topic)
+        return {"text": text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except:
+                pass

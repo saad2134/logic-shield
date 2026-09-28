@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import AnalysisClient from "./analysis-client";
+import { Suspense } from "react";
 
 export const metadata = {
   title: `Argument Analysis ✦ ${siteConfig.name}`,
@@ -7,5 +8,9 @@ export const metadata = {
 };
 
 export default function AnalysisPage() {
-  return <AnalysisClient />;
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <AnalysisClient />
+    </Suspense>
+  );
 }

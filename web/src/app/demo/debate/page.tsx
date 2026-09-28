@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import NewDebateClient from "./debate-client";
+import { Suspense } from "react";
 
 export const metadata = {
   title: `Start Debate ✦ ${siteConfig.name}`,
@@ -7,5 +8,10 @@ export const metadata = {
 };
 
 export default function NewDebatePage() {
-  return <NewDebateClient />;
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <NewDebateClient />
+    </Suspense>
+  );
 }
+
